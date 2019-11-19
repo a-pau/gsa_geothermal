@@ -1,7 +1,7 @@
 import numpy as np
 
 # Local functions
-from Utils.lookup_func import lookup_geothermal
+from utils.lookup_func import lookup_geothermal
 
 
 class GeothermalEnhancedModel:

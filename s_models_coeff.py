@@ -7,11 +7,11 @@ import numpy as np
 import os
 
 # Set working directry
-path = "D:\Andrea\OneDrive - University College London\S4CE\LCA\GSA\Geothermal\BW model"
+path = "."
 os.chdir(path)
 
 # Local functions
-from lookup_func import lookup_geothermal
+from utils.lookup_func import lookup_geothermal
 
 # Set project
 bw.projects.set_current("Geothermal")
@@ -174,11 +174,14 @@ class2 = ["climate change total", "ionising radiation", "ozone layer depletion",
 
 chi1, chi2, chi3, chi4, chi5, \
 delta1, delta2, delta3, delta4, delta5 = {},{},{},{},{},{},{},{},{},{}
+chi3_ws, delta3_ws = {},{}
+a={}
 for method, row in coeff_matrix.iterrows():
     if method[2] in class1 :
         chi1[method] = a2 * (D*row["i2.1"] + C_S*row["i2.2"] + C_C*row["i2.3"] + DM * row["i2.4"] + row["i2.5"] + row["i2.6"])
         chi2[method] = row["i4.1"] + row["i4.2"] * CT_n + row["i4.3"] * OF
         chi3[method] = ( a2 * row["i1"] ) + ((W_pi_n / SR_pi) * CP * row["i3"]) + ( SW_n * S_w * ( row["i5.1"] + S_el * row["i5.2"] ) )
+        #chi3_ws[method] = ( a2 * row["i1"] ) + ((W_pi_n / SR_pi) * CP * row["i3"])
         chi4[method] = c2
         chi5[method] = d2
     elif method[2] in class2:
@@ -186,6 +189,8 @@ for method, row in coeff_matrix.iterrows():
         delta2[method] = row["i4.1"] + row["i4.2"] * CT_n + row["i4.3"] * OF
         delta3[method] = W_d * a2 * (C_S*row["i2.2"] + C_C*row["i2.3"] + DM * row["i2.4"] + row["i2.5"] + row["i2.6"]) \
                          + (a2 * row["i1"]) + ( (W_pi_n / SR_pi) * CP * row["i3"] ) + ( SW_n * S_w * ( row["i5.1"] + S_el * row["i5.2"] ))
+        #delta3_ws[method] = W_d * a2 * (C_S*row["i2.2"] + C_C*row["i2.3"] + DM * row["i2.4"] + row["i2.5"] + row["i2.6"]) \
+                         + (a2 * row["i1"]) + ( (W_pi_n / SR_pi) * CP * row["i3"] )
         delta4[method] = c2
         delta5[method] = d2
         
