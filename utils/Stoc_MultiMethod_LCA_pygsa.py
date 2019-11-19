@@ -39,33 +39,27 @@ def find_where_in_techparams(cge_parameters_sto, lca):
     return where_tech, amt_tech, where_bio, amt_bio
 
 
-def get_cf_matrices(methods_list):
-    lca = bw.LCA({bw.Database('ecoinvent 3.5 cutoff').random(): 1}, methods_list[0])
-    lca.lci()
-    lca.lcia()
-    CF_matr = {}
-    for method in methods_list:
-        lca.switch_method(method)
-        CF_matr[method] = sum(lca.characterization_matrix)
-    return CF_matr
 
-
-def run_mc(n_iter, cge_parameters_sto, lca, methods_list):
+def run_mc(parameters, demand , methods, n_iter):
     
+    # Parameters has the format presamples, and is the outpuyt from cge or ege model.
+    
+    lca = bw.LCA({demand:1}, )
     lca.lci()
-    lca.lcia()
     lca.build_demand_array()
     demand_array = lca.demand_array
     tech_params = lca.tech_params['amount']
     bio_params = lca.bio_params['amount']
 
-    where_tech, amt_tech, where_bio, amt_bio = find_where_in_techparams(cge_parameters_sto, lca)
-    CF_matr = get_cf_matrices(methods_list)
-
+    where_tech, amt_tech, where_bio, amt_bio = find_where_in_techparams(parameters, lca)         
+    
     scores = {}
     
-    for method in methods_list:
-
+    for method in methods:
+        
+        lca.switch_method(method)
+        CF_matr = sum(lca.characterization_matrix) 
+        
         scores_m = np.zeros(n_iter)
         
         for i in range(n_iter):
@@ -78,7 +72,7 @@ def run_mc(n_iter, cge_parameters_sto, lca, methods_list):
                 np.put(bio_params, where_bio, amt_bio[:,i])
                 lca.rebuild_biosphere_matrix(bio_params)
 
-            score = (CF_matr[method]*lca.biosphere_matrix) * \
+            score = (CF_matr*lca.biosphere_matrix) * \
                      spsolve(lca.technosphere_matrix, demand_array)
             scores_m[i] = score
             

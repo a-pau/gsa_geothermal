@@ -64,7 +64,7 @@ for p in cge_parameters:
     # Reference model
     cge_model = GeothermalConventionalModel(p)
     cge_parameters_sto=cge_model.run_ps(p)
-    ref_cge = run_mc(n_iter, cge_parameters_sto, lca, ILCD_CC)
+    ref_cge = run_mc_2(cge_parameters_sto, electricity_conv_prod, ILCD_CC, n_iter)
     
     # TODO parameter passed to simplified_model needs to be a list! Need to change this.
     s_cge = simplified_cge_model(p, ILCD_CC[0], alpha, static=True)

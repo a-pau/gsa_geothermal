@@ -22,8 +22,8 @@ from ege_klausen import parameters as ege_parameters
 from cge_model import GeothermalConventionalModel
 from ege_model import GeothermalEnhancedModel
 from s_models import simplified_cge_model, simplified_ege_model
-from Utils.lookup_func import lookup_geothermal
-from Utils.Stoc_MultiMethod_LCA_pygsa import *
+from utils.lookup_func import lookup_geothermal
+from utils.Stoc_MultiMethod_LCA_pygsa import run_mc
 
 # Set project
 bw.projects.set_current("Geothermal")
@@ -66,7 +66,7 @@ lca.lcia()
 # Reference model
 cge_model = GeothermalConventionalModel(cge_parameters)
 cge_parameters_sto=cge_model.run_ps(cge_parameters)
-ref_cge = run_mc(n_iter, cge_parameters_sto, lca, ILCD)
+ref_cge = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD, n_iter)
 
 # Simplified model
 s_cge = {}
