@@ -39,10 +39,11 @@ ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=100
+n_iter=10
 
 # Load simplified models coefficients
-coeffs_=pd.read_excel(os.path.join(path, "Simplified models coefficients - analytical.xlsx"), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
+absolute_path = os.path.abspath(path)
+coeffs_=pd.read_excel(os.path.join(absolute_path, "generated_files/Simplified models coefficients - analytical.xlsx"), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
 alpha = coeffs_["alpha"].to_dict()
 beta = coeffs_["beta"].to_dict()
 chi = coeffs_["chi"].to_dict()
@@ -56,22 +57,13 @@ warnings.filterwarnings("ignore")
 # Generate stochastic values
 cge_parameters.stochastic(iterations=n_iter)
 
-# Initiate lca object
-demand = {electricity_conv_prod: 1}
-method = ILCD[0]
-lca = bw.LCA(demand, method)
-lca.lci()
-lca.lcia()
-
 # Reference model
 cge_model = GeothermalConventionalModel(cge_parameters)
-cge_parameters_sto=cge_model.run_ps(cge_parameters)
+cge_parameters_sto = cge_model.run_ps(cge_parameters)
 ref_cge = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD, n_iter)
 
 # Simplified model
-s_cge = {}
-for method in ILCD:
-    s_cge[method]=simplified_cge_model(cge_parameters, method, alpha, beta)
+s_cge = simplified_cge_model(cge_parameters, ILCD, alpha, beta)
 
 #%% Conventional plot    
 ref_cge_df=pd.DataFrame.from_dict(ref_cge, orient="columns").melt(var_name=["method_1", "method_2", "method_3"],value_name="Reference")
@@ -89,27 +81,18 @@ cge_plot = sb.catplot(data=cge_df2, x="model", y="score", col="method_3", kind="
 # Generate stochastic values
 ege_parameters.stochastic(iterations=n_iter)
 
-# Initiate lca object
-demand = {electricity_enh_prod: 1}
-method = ILCD[0]
-lca = bw.LCA(demand, method)
-lca.lci()
-lca.lcia()
-
 # Reference model
 ege_model = GeothermalEnhancedModel(ege_parameters)
 ege_parameters_sto=ege_model.run_ps(ege_parameters)
 ref_ege = run_mc(ege_parameters_sto, electricity_enh_prod, ILCD, n_iter)
 
 # Simplified model
-s_ege={}
-for method in ILCD:
-    s_ege[method]=simplified_ege_model(ege_parameters, method, chi, delta)
+s_ege=simplified_ege_model(ege_parameters, ILCD, chi, delta)
     
 #%% Plot enhanced
 
 ref_ege_df=pd.DataFrame.from_dict(ref_ege, orient="columns").melt(var_name=["method_1", "method_2", "method_3"],value_name="Reference")
-ref_ege_NR_df=pd.DataFrame.from_dict(ref_ege_NR, orient="columns").melt(var_name=["method_1", "method_2", "method_3"],value_name="Reference_NR")
+#ref_ege_NR_df=pd.DataFrame.from_dict(ref_ege_NR, orient="columns").melt(var_name=["method_1", "method_2", "method_3"],value_name="Reference_NR")
 s_ege_df=pd.DataFrame.from_dict(s_ege, orient="columns").melt(var_name=["method_1", "method_2", "method_3"], value_name="Simplified")
 
 ege_df = pd.merge(ref_ege_df, s_ege_df["Simplified"], how="left", left_index=True, right_index=True)
@@ -181,44 +164,3 @@ for i, method in enumerate(ILCD):
     sb.lineplot(x=[0, 1e10], y=[0, 1e10], color="black")
     plt.xlim(lim)   
     plt.ylim(lim)          
-
-
-#%% Printing stuff
-par = {}
-
-for k in cge_parameters.keys():
-    par[k] = cge_parameters[k]
-    
-par_df = pd.DataFrame.from_dict(par)
-
-par_sto = {}
-for i in range(len(cge_parameters_sto)):
-    name= bw.get_activity(cge_parameters_sto[i][0])
-    par_sto[name] = cge_parameters_sto[i][2]
-    
-par_sto_df = pd.DataFrame.from_dict(par_sto)
-
-par_df.to_excel("par_df.xlsx")
-par_sto_df.to_excel("par_sto_df.xlsx")
-
-# Plot with Matplotlib only
-#fig, ax = plt.subplots(4, 4)
-#j=0
-#k=0
-#
-#for i, method in enumerate(ILCD):
-#    df = cge_df[cge_df.method_3 == method[2]]
-#    ax[k,j].scatter(x=df.Reference, y=df.Simplified)
-#    if j==3:
-#        j=0
-#        k+=1
-#    else:
-#        j+=1
-        
-# Used to checlk r squared 
-#from sklearn.metrics import r2_score
-#
-#cge_r_squared_SK={}
-#for method in ILCD:
-#    df = cge_df[cge_df.method_3 == method[2]] 
-#    cge_r_squared_SK[method]=r2_score(df.Reference, df.Simplified)

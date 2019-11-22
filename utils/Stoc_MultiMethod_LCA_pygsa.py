@@ -55,6 +55,10 @@ def run_mc(parameters, demand , methods, n_iter):
     
     scores = {}
     
+    # This enables the code to work if only one method is passed as tuple
+    if type(methods) == tuple:
+        methods = [methods]
+         
     for method in methods:
         
         lca.switch_method(method)

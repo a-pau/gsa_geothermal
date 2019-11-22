@@ -1,6 +1,6 @@
 # Simplified models for conventional and enhanced geothermal
 
-def simplified_cge_model(params, method, alpha=None, beta=None, static=False):
+def simplified_cge_model(params, methods, alpha=None, beta=None, static=False):
     
     # alpha, beta, chi and gamma are pandas DataFrame with methods as indices and coefficients as columns.
     # params needs to be a dictionary of arrays.
@@ -16,6 +16,9 @@ def simplified_cge_model(params, method, alpha=None, beta=None, static=False):
         len_1 = len(params["co2_emissions"])
         len_2 = len(params["average_depth_of_wells"])
     
+    # This enables the code to work if only one method is passed as tuple
+    if type(methods) == tuple:
+        methods = [methods]
     
     # Define methodologies
     ILCD_CC = ('ILCD 2.0 2018 midpoint no LT', 'climate change', 'climate change total')
@@ -37,25 +40,34 @@ def simplified_cge_model(params, method, alpha=None, beta=None, static=False):
     
         
     # Calculate results
-    results = []
-    if method == ILCD_CC:
-        for i in range(len_1):
-            results.append( params["co2_emissions"][i] * alpha["alpha1"][str(method)] + alpha["alpha2"][str(method)] )
-    elif method in ILCD_EQ or method in ILCD_HH or method in ILCD_RE:
-        for i in range(len_2):
-            results.append( (( params["average_depth_of_wells"][i] * beta["beta1"][str(method)] + beta["beta2"][str(method)] )\
-                   / params["gross_power_per_well"][i] ) + params["average_depth_of_wells"][i] * beta["beta3"][str(method)] + beta["beta4"][str(method)] )
-    else:
-        raise Exception("The simplified model does not work with the impact category:  ", method)
+    results = {}   
+    
+    for method in methods:
+        if method == ILCD_CC:
+            results[method] = [ params["co2_emissions"][i] * alpha["alpha1"][str(method)] + alpha["alpha2"][str(method)]
+                                for i in range(len_1) ]
+        elif method in ILCD_EQ or method in ILCD_HH or method in ILCD_RE:
+            results[method] = [ (( params["average_depth_of_wells"][i] * beta["beta1"][str(method)] + beta["beta2"][str(method)] )\
+                               / params["gross_power_per_well"][i] ) + params["average_depth_of_wells"][i] * beta["beta3"][str(method)] + beta["beta4"][str(method)] 
+                            for i in range(len_2) ]
+        else:
+            raise Exception("The simplified model does not work with the impact category:  ", method)
             
     return results       
-            
-def simplified_ege_model(params, method, chi=None, delta=None, static=False):      
+    
+
+
+
+       
+def simplified_ege_model(params, methods, chi=None, delta=None, static=False):      
      
     if static:
         len_ = 1
     else:
-        len_ = len(params["average_depth_of_wells"])
+        len_ = len(params["installed_capacity"])
+        
+    if type(methods) == tuple:
+        methods = [methods]
             
     class1 = [('ILCD 2.0 2018 midpoint no LT', 'human health', 'carcinogenic effects'),
               ('ILCD 2.0 2018 midpoint no LT', 'human health', 'non-carcinogenic effects'),
@@ -76,18 +88,20 @@ def simplified_ege_model(params, method, chi=None, delta=None, static=False):
               ('ILCD 2.0 2018 midpoint no LT', 'resources', 'fossils')]
     
     # Calculate results
-    results = []
-    if method in class1 :
-        for i in range(len_):
-            results.append( ( params["average_depth_of_wells"][i] * chi["chi1"][str(method)] \
-                        + params["installed_capacity"][i] * chi["chi2"][str(method)] + chi["chi3"][str(method)] ) \
-                        / (params["installed_capacity"][i] * chi["chi4"][str(method)] - chi["chi5"][str(method)]) )
-    elif method in class2:
-        for i in range(len_):
-            results.append( (params["specific_diesel_consumption"][i] * delta["delta1"][str(method)] \
-                        + params["installed_capacity"][i] * delta["delta2"][str(method)] + delta["delta3"][str(method)] ) \
-                        / (params["installed_capacity"][i] * delta["delta4"][str(method)] - delta["delta5"][str(method)]) )
-    else:
-        raise Exception("The simplified model does not work with the impact category:  ", method)
+    results = {}
+    
+    for method in methods:
+        if method in class1 :
+            results[method] = [ ( params["average_depth_of_wells"][i] * chi["chi1"][str(method)] \
+                            + params["installed_capacity"][i] * chi["chi2"][str(method)] + chi["chi3"][str(method)] ) \
+                            / (params["installed_capacity"][i] * chi["chi4"][str(method)] - chi["chi5"][str(method)])
+                            for i in range(len_) ]
+        elif method in class2 :
+            results[method] = [ (params["specific_diesel_consumption"][i] * delta["delta1"][str(method)] \
+                            + params["installed_capacity"][i] * delta["delta2"][str(method)] + delta["delta3"][str(method)] ) \
+                            / (params["installed_capacity"][i] * delta["delta4"][str(method)] - delta["delta5"][str(method)])
+                            for i in range(len_)]
+        else:
+            raise Exception("The simplified model does not work with the impact category:  ", method)
         
     return results

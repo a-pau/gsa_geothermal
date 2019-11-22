@@ -1,6 +1,7 @@
 import stats_arrays as sa
 import numpy as np
 import klausen
+import copy
 
 # Insert parameters distribution and generate klausen instance
 
@@ -93,55 +94,55 @@ parameters_test = {
 # Installed capacity as MW and specific diesel consumption as MJ
 
 # Frick et al. 2010 
-parameters_Fr_A1 = dict(parameters_test)
+parameters_Fr_A1 = copy.deepcopy(parameters_test)
 parameters_Fr_A1["installed_capacity"]["loc"] = 1.24   
 parameters_Fr_A1["specific_diesel_consumption"]["loc"] = 7.5 * 1000    
 parameters_Fr_A1 = klausen.NamedParameters(parameters_Fr_A1)  
 
-parameters_Fr_B1 = dict(parameters_test)
+parameters_Fr_B1 = copy.deepcopy(parameters_test)
 parameters_Fr_B1["installed_capacity"]["loc"] = 1.29  
 parameters_Fr_B1["specific_diesel_consumption"]["loc"] = 7.5 * 1000    
 parameters_Fr_B1 = klausen.NamedParameters(parameters_Fr_B1)
         
-parameters_Fr_C1 = dict(parameters)
+parameters_Fr_C1 = copy.deepcopy(parameters_test)
 parameters_Fr_C1["installed_capacity"]["loc"] = 11.1  
 parameters_Fr_C1["specific_diesel_consumption"]["loc"] = 8.5 * 1000
 parameters_Fr_C1 = klausen.NamedParameters(parameters_Fr_C1)
 
-parameters_Fr_D1 = dict(parameters)
+parameters_Fr_D1 = copy.deepcopy(parameters_test)
 parameters_Fr_D1["installed_capacity"]["loc"] = 0.46  
 parameters_Fr_D1["specific_diesel_consumption"]["loc"] = 9.5 * 1000
 parameters_Fr_D1 = klausen.NamedParameters(parameters_Fr_D1)  
 
 # Lacirignola and Blanc 2013
-parameters_LandB_base = dict(parameters)
+parameters_LandB_base = copy.deepcopy(parameters_test)
 parameters_LandB_base["installed_capacity"]["loc"] =  2.28 
 parameters_LandB_base["specific_diesel_consumption"]["loc"] = 4 * 1000  
 parameters_LandB_base = klausen.NamedParameters(parameters_LandB_base)
 
-parameters_LandB_C8 = dict(parameters)
+parameters_LandB_C8 = copy.deepcopy(parameters_test)
 parameters_LandB_C8["installed_capacity"]["loc"] =  5.46 
 parameters_LandB_C8["specific_diesel_consumption"]["loc"] = 5 * 1000  
 parameters_LandB_C8 = klausen.NamedParameters(parameters_LandB_C8)
 
-parameters_LandB_C2 = dict(parameters)
+parameters_LandB_C2 = copy.deepcopy(parameters_test)
 parameters_LandB_C2["installed_capacity"]["loc"] =  1.14 
 parameters_LandB_C2["specific_diesel_consumption"]["loc"] = 6 * 1000  
 parameters_LandB_C2 = klausen.NamedParameters(parameters_LandB_C2)
 
 # Pratiwi et al. 2018 
-parameters_Pr = dict(parameters)
+parameters_Pr = copy.deepcopy(parameters_test)
 parameters_Pr["installed_capacity"]["loc"] =  4.943
 parameters_Pr["specific_diesel_consumption"]["loc"] = 5.8 * 1000  
 parameters_Pr = klausen.NamedParameters(parameters_Pr)
 
 # Paulillo et al. 2019 
-parameters_Pa_base = dict(parameters)
+parameters_Pa_base = copy.deepcopy(parameters_test)
 parameters_Pa_base["installed_capacity"]["loc"] =  1
 parameters_Pa_base["specific_diesel_consumption"]["loc"] = 7.2 * 1000  
 parameters_Pa_base = klausen.NamedParameters(parameters_Pa_base)
 
-parameters_Pa_2 = dict(parameters)
+parameters_Pa_2 = copy.deepcopy(parameters_test)
 parameters_Pa_2["installed_capacity"]["loc"] =  3
 parameters_Pa_2["specific_diesel_consumption"]["loc"] = 7.2 * 1000  
 parameters_Pa_2 = klausen.NamedParameters(parameters_Pa_2)
