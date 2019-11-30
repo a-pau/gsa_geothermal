@@ -34,8 +34,8 @@ n_iter=1000
 
 #%% CHOOSE OPTION
 
-exploration = True
-success_rate = True
+exploration = False
+success_rate = False
 
 #%% Load simplified models coefficients data
 file_name = get_file_name("Simplified models coefficients - analytical.xlsx", exploration=exploration, success_rate=success_rate) 

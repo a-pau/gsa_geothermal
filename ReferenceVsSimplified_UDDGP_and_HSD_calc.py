@@ -39,8 +39,8 @@ warnings.filterwarnings("ignore")
 
 #%% CHOOSE OPTION
 
-exploration = True
-success_rate = True
+exploration = False
+success_rate = False
 
 file_name = get_file_name("Simplified models coefficients - analytical.xlsx", exploration=exploration, success_rate=success_rate) 
 
