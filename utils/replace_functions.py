@@ -1,5 +1,5 @@
 import brightway2 as bw
-from .lookup_func import lookup_geothermal
+from utils.lookup_func import lookup_geothermal
 
 def replace_cge(parameters,gt_model):
 

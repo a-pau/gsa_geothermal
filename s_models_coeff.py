@@ -9,9 +9,11 @@ import os
 # Set working directry
 path = "."
 os.chdir(path)
+absolute_path = os.path.abspath(path)
 
 # Local functions
 from utils.lookup_func import lookup_geothermal
+from utils.FileNameFromOptions import get_file_name
 
 # Set project
 bw.projects.set_current("Geothermal")
@@ -63,7 +65,7 @@ coeff_matrix = pd.DataFrame.from_dict(coeff, orient="index", columns=col_names)
 # Re-arrange matrix
 coeff_matrix["concrete"] = coeff_matrix["cement"] + coeff_matrix["water"] * 1/0.65
 coeff_matrix["ORC_fluid_tot"] = coeff_matrix["ORC_fluid"] - coeff_matrix["ORC_fluid_wst"]
-coeff_matrix["electricity_stim"] = coeff_matrix["diesel_stim"] * 3.6 / 0.3
+coeff_matrix["electricity_stim"] = coeff_matrix["diesel_stim"] * 3.6 
 coeff_matrix["drill_wst"] = coeff_matrix["drill_wst"] * -1 * drilling_waste_per_metre
 coeff_matrix=coeff_matrix.drop(columns=["cement", "ORC_fluid", "ORC_fluid_wst", "diesel_stim"])
 
@@ -78,6 +80,11 @@ is_= ["i1", "i2.1", "i2.2", "i2.3", "i2.4", "i2.5", \
 if len(coeff_matrix.columns) == len(is_):
     coeff_matrix.columns=is_
 
+#%% SET OPTIONS
+    
+exploration = False
+success_rate = False
+        
 #%% Conventional geothermal
 # Klausen
 from cge_klausen import parameters
@@ -87,11 +94,8 @@ parameters.static()
 P_ne=parameters["installed_capacity"]
 PW_ne=parameters["gross_power_per_well"]
 PI_ratio=parameters["production_to_injection_ratio"]
-SR_pi=parameters["success_rate_primary_wells"]/100
 D_i=parameters["initial_harmonic_decline_rate"]
 LT=parameters["lifetime"]
-SR_m=parameters["success_rate_makeup_wells"]/100
-SR_e=parameters["success_rate_exploration_wells"]/100
 D = parameters["specific_diesel_consumption"]
 C_S = parameters["specific_steel_consumption"]
 C_C = parameters["specific_cement_consumption"]
@@ -102,10 +106,24 @@ CF = parameters["capacity_factor"]
 A_p = parameters["auxiliary_power"]
 E_co2 = parameters["co2_emissions"]
 
+if exploration:
+    W_e_en = 3 * 0.3
+else:
+    W_e_en = 0
+    
+if success_rate:
+    SR_pi=parameters["success_rate_primary_wells"]/100
+    SR_m=parameters["success_rate_makeup_wells"]/100
+    SR_e=parameters["success_rate_exploration_wells"]/100
+else:
+    SR_pi=1
+    SR_m=1
+    SR_e=1
+
+
 # Constants
 CT_el = 864
 CT_n = 7/303.3
-W_e_en = 3 * 0.3
 
 a1 = P_ne * ( (PI_ratio+1) / (PI_ratio * SR_pi) + (D_i*LT/SR_m) )
 b1 = W_e_en/SR_e
@@ -115,7 +133,7 @@ d1 = (CT_el * CT_n *1000 * 30)
 den1= (c1-d1)
 
 # Calculate coefficients
-alpha1, alpha2, beta1, beta2, beta3, beta4 = {},{},{},{},{}, {}
+alpha1, alpha2, beta1, beta2, beta3, beta4 = {},{},{},{},{},{}
 for method, row in coeff_matrix.iterrows():
     if method == ILCD_CC[0]:
         alpha1[method]= row["i6"]
@@ -138,9 +156,7 @@ for method, row in coeff_matrix.iterrows():
 from ege_klausen import parameters
 parameters.static()   
 
-SR_pi=parameters["success_rate_primary_wells"]/100
 LT=parameters["lifetime"]
-SR_e=parameters["success_rate_exploration_wells"]/100
 D = parameters["specific_diesel_consumption"]
 C_S = parameters["specific_steel_consumption"]
 C_C = parameters["specific_cement_consumption"]
@@ -149,15 +165,28 @@ W_d = parameters["average_depth_of_wells"]
 CP = parameters["collection_pipelines"]
 CF = parameters["capacity_factor"]
 A_p = parameters["auxiliary_power"]
-W_pi_n = parameters["number_of_wells"] 
-SW_n = np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * parameters["number_of_wells"])
+# W_pi_n = parameters["number_of_wells"] 
+# Set static value of number of wells to the actual (non-integer) average.
+W_pi_n = 2.5
+SW_n = 0.5 + parameters["number_of_wells_stimulated_0to1"] * W_pi_n
 S_w = parameters["water_stimulation"]
 S_el = (parameters["specific_electricity_stimulation"]/ 1000)
+
+if exploration:
+    W_e_en = 3 * 0.3
+else:
+    W_e_en = 0
+    
+if success_rate:
+    SR_pi=parameters["success_rate_primary_wells"]/100
+    SR_e=parameters["success_rate_exploration_wells"]/100
+else:
+    SR_pi=1
+    SR_e=1
 
 # Constants
 CT_el = 864
 CT_n = 7/303.3
-W_e_en = 3 * 0.3
 OF = 300
 
 a2 = (W_pi_n / SR_pi) + (W_e_en / SR_e)
@@ -190,7 +219,7 @@ for method, row in coeff_matrix.iterrows():
         delta3[method] = W_d * a2 * (C_S*row["i2.2"] + C_C*row["i2.3"] + DM * row["i2.4"] + row["i2.5"] + row["i2.6"]) \
                          + (a2 * row["i1"]) + ( (W_pi_n / SR_pi) * CP * row["i3"] ) + ( SW_n * S_w * ( row["i5.1"] + S_el * row["i5.2"] ))
         #delta3_ws[method] = W_d * a2 * (C_S*row["i2.2"] + C_C*row["i2.3"] + DM * row["i2.4"] + row["i2.5"] + row["i2.6"]) \
-                         + (a2 * row["i1"]) + ( (W_pi_n / SR_pi) * CP * row["i3"] )
+                        # + (a2 * row["i1"]) + ( (W_pi_n / SR_pi) * CP * row["i3"] )
         delta4[method] = c2
         delta5[method] = d2
         
@@ -221,7 +250,10 @@ delta4_df = pd.DataFrame.from_dict(delta4, orient="index", columns=["delta4"])
 delta5_df = pd.DataFrame.from_dict(delta5, orient="index", columns=["delta5"])
 delta_df = pd.concat([delta1_df, delta2_df, delta3_df, delta4_df, delta5_df], axis=1)      
 
-with pd.ExcelWriter(os.path.join(path, 'Simplified models coefficients - analytical.xlsx')) as writer:
+# Name is assigned based on the options chosen
+file_name = get_file_name("Simplified models coefficients - analytical.xlsx", exploration=exploration, success_rate=success_rate) 
+    
+with pd.ExcelWriter(os.path.join(absolute_path, "generated_files", file_name)) as writer:
         alpha_df.to_excel(writer, sheet_name='alpha')
         beta_df.to_excel(writer, sheet_name='beta')
         chi_df.to_excel(writer, sheet_name='chi')

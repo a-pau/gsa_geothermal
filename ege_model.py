@@ -102,7 +102,9 @@ class GeothermalEnhancedModel:
         
         total_water_consumption = water_cem_consumption + water_stim_consumption
         
-        diesel_for_stim = ((water_stim_consumption / 1000) * params["specific_electricity_stimulation"] * 3.6) / 0.3 # To convert from electricity to thermal energy
+        # Note that we are assuming that the "specific electricity stimulation actually represents the thermal energy required.
+        # Only Treyer et al. consider that value as electrical energy (in case we wanted to we would need to consider efficiency of conversion of ~ 30%)
+        diesel_for_stim = ((water_stim_consumption / 1000) * params["specific_electricity_stimulation"] * 3.6) # 3.6 is to convert to MJ from kWh.  
         
         ORC_fluid_consumption = 300 * params["installed_capacity"]
         

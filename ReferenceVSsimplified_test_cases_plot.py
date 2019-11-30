@@ -4,18 +4,31 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os 
+from utils.FileNameFromOptions import get_file_name
 
 # Set working directory
 path = "."
 os.chdir(path)
 absolute_path = os.path.abspath(path)
 
-# Load carbon footprints of reference and simplified models
-load_=pd.read_excel(os.path.join(absolute_path, "generated_files/Carbon footprint - test cases.xlsx"), sheet_name=["conventional reference model", "conventional simplified model", "enhanced reference model", "enhanced simplified model"], index_col=0, dtype=object)
-cge_ref_df= load_["conventional reference model"].melt(var_name="study", value_name="carbon footprint")
-cge_s_df= load_["conventional simplified model"].melt(var_name="study", value_name="carbon footprint")
-ege_ref_df= load_["enhanced reference model"].melt(var_name="study", value_name="carbon footprint")
-ege_s_df= load_["enhanced simplified model"].melt(var_name="study", value_name="carbon footprint")
+#%% Choose option
+
+exploration = True
+success_rate = True
+
+#%% Load data
+n_iter = 100
+file_name =get_file_name("ReferenceVsSimplified_test_cases CC", exploration=exploration, success_rate=success_rate) 
+file_name = file_name + " N" + str(n_iter)
+
+cge_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional Ref")) \
+            .melt(var_name="study", value_name="carbon footprint")
+cge_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional Sim")) \
+            .melt(var_name="study", value_name="carbon footprint")
+ege_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Ref")) \
+            .melt(var_name="study", value_name="carbon footprint")
+ege_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Sim")) \
+            .melt(var_name="study", value_name="carbon footprint")
 
 #%% Conventional 
 
@@ -35,7 +48,7 @@ cge_study_list = cge_cfs.Study.tolist()
 # Stripplot enables categorical plotting of scatterplot
 # We need to iterate of axes so that we can change labels and reset legend
 
-f, ax = plt.subplots(2, 4)
+f1, ax1 = plt.subplots(2, 4)
 
 for counter, study_ in enumerate(cge_study_list):
     if counter <= 3:
@@ -44,18 +57,18 @@ for counter, study_ in enumerate(cge_study_list):
     elif counter >3:
         i= counter-4
         j=1
-    sb.boxplot(data=cge_ref_df[cge_ref_df.study==study_], x="study", y="carbon footprint", color="white", showfliers=False, ax=ax[j][i])
-    sb.stripplot(data=cge_s_and_lit_df[cge_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True, ax=ax[j][i])
-    ax[j][i].get_legend().remove()
-    ax[j][i].set_xlabel("")
+    sb.boxplot(data=cge_ref_df[cge_ref_df.study==study_], x="study", y="carbon footprint", color="white", showfliers=False, whis=[5,95], ax=ax1[j][i])
+    sb.stripplot(data=cge_s_and_lit_df[cge_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True, ax=ax1[j][i])
+    ax1[j][i].get_legend().remove()
+    ax1[j][i].set_xlabel("")
     
     if i != 0:
-        ax[j][i].set_ylabel("")
+        ax1[j][i].set_ylabel("")
     elif i == 0:
-        ax[j][i].set_ylabel(r"$g CO{2} eq./ kWh$")
+        ax1[j][i].set_ylabel(r"$g CO{2} eq./ kWh$")
         
-handles, labels = ax[0][0].get_legend_handles_labels()
-f.legend(handles, labels, loc='upper center', ncol=2)
+handles, labels = ax1[0][0].get_legend_handles_labels()
+f1.legend(handles, labels, loc='upper center', ncol=2)
 
 #%% Enhanced
 
@@ -74,7 +87,7 @@ ege_study_list = ege_cfs.Study.tolist()
 # Stripplot enables categorical plotting of scatterplot
 # We need to iterate of axes so that we can change labels and reset legend
 
-f, ax = plt.subplots(2, 5)
+f2, ax2 = plt.subplots(2, 5)
 
 for counter, study_ in enumerate(ege_study_list):
     if counter <= 4:
@@ -83,15 +96,22 @@ for counter, study_ in enumerate(ege_study_list):
     elif counter >4:
         i= counter-5
         j=1
-    sb.boxplot(data=ege_ref_df[ege_ref_df.study==study_], x="study", y="carbon footprint", color="white", showfliers=False, ax=ax[j][i])
-    sb.stripplot(data=ege_s_and_lit_df[ege_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True, ax=ax[j][i])
-    ax[j][i].get_legend().remove()
-    ax[j][i].set_xlabel("")
+    sb.boxplot(data=ege_ref_df[ege_ref_df.study==study_], x="study", y="carbon footprint", color="white", showfliers=False, whis=[5,95], ax=ax2[j][i])
+    sb.stripplot(data=ege_s_and_lit_df[ege_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True, ax=ax2[j][i])
+    ax2[j][i].get_legend().remove()
+    ax2[j][i].set_xlabel("")
     
     if i != 0:
-        ax[j][i].set_ylabel("")
+        ax2[j][i].set_ylabel("")
     elif i == 0:
-        ax[j][i].set_ylabel(r"$g CO{2} eq./ kWh$")
+        ax2[j][i].set_ylabel(r"$g CO{2} eq./ kWh$")
         
-handles, labels = ax[0][0].get_legend_handles_labels()
-f.legend(handles, labels, loc='upper center', ncol=2)
+handles, labels = ax2[0][0].get_legend_handles_labels()
+f2.legend(handles, labels, loc='upper center', ncol=2)
+
+#%% Save plots
+
+file_name = get_file_name("ReferenceVsSmplified_test_cases", exploration=exploration, success_rate=success_rate)
+file_name = file_name + " N" + str(n_iter)
+f1.savefig(os.path.join(absolute_path, "generated_plots", file_name + " - Conventional"), dpi=600, format="png")
+f2.savefig(os.path.join(absolute_path, "generated_plots", file_name + " - Enhanced"), dpi=600, format="png")

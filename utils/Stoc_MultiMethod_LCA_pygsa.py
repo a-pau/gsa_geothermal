@@ -42,7 +42,7 @@ def find_where_in_techparams(cge_parameters_sto, lca):
 
 def run_mc(parameters, demand , methods, n_iter):
     
-    # Parameters has the format presamples, and is the outpuyt from cge or ege model.
+    # Parameters has the format presamples, and is the output from cge or ege model.
     
     lca = bw.LCA({demand:1}, )
     lca.lci()

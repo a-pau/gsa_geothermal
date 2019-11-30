@@ -91,6 +91,8 @@ parameters_test = {
                 
 }
 
+# Parameters for calculating carbon footprint
+
 # Installed capacity as MW and specific diesel consumption as MJ
 
 # Frick et al. 2010 
@@ -142,7 +144,16 @@ parameters_Pa_base["installed_capacity"]["loc"] =  1
 parameters_Pa_base["specific_diesel_consumption"]["loc"] = 7.2 * 1000  
 parameters_Pa_base = klausen.NamedParameters(parameters_Pa_base)
 
+# Pa_base for all impact categories
+parameters_Pa_base_all = copy.deepcopy(parameters_test)
+parameters_Pa_base_all["installed_capacity"]["loc"] =  1
+parameters_Pa_base_all["specific_diesel_consumption"]["loc"] = 7.2 * 1000  
+parameters_Pa_base_all["average_depth_of_wells"]["loc"] = 4000
+parameters_Pa_base_all["average_depth_of_wells"]["uncertainty_type"] = sa.NoUncertainty.id
+parameters_Pa_base_all = klausen.NamedParameters(parameters_Pa_base_all)
+
 parameters_Pa_2 = copy.deepcopy(parameters_test)
 parameters_Pa_2["installed_capacity"]["loc"] =  3
 parameters_Pa_2["specific_diesel_consumption"]["loc"] = 7.2 * 1000  
 parameters_Pa_2 = klausen.NamedParameters(parameters_Pa_2)
+
