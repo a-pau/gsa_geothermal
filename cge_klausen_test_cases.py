@@ -7,7 +7,7 @@ import copy
 
 parameters_test = {
         "gross_power_per_well": {
-                "minimum": 0.1,
+                "minimum": 0,
                 "maximum": 20,
                 "uncertainty_type": sa.LognormalUncertainty.id,
                 "loc": np.log(5.887808397013443),
@@ -41,18 +41,18 @@ parameters_test = {
                 "uncertainty_type": sa.UniformUncertainty.id,
         },
         "auxiliary_power": {
-                "minimum": 0.032,
-                "maximum": 0.048,
+                "minimum": 0.03,
+                "maximum": 0.04,
                 "uncertainty_type": sa.UniformUncertainty.id
         },
         "specific_diesel_consumption": {
-                "minimum": 1600,
-                "maximum": 2800,
+                "minimum": 1650,
+                "maximum": 2750,
                 "uncertainty_type": sa.UniformUncertainty.id
         },
         "specific_steel_consumption": {
-                "minimum": 80,
-                "maximum": 130,
+                "minimum": 75,
+                "maximum": 125,
                 "uncertainty_type": sa.UniformUncertainty.id
         },
         "specific_cement_consumption": {
@@ -95,8 +95,7 @@ parameters_test = {
                 "maximum": 100,
                 "amount": 79.50384339693929,
                 "uncertainty_type": sa.TriangularUncertainty.id,
-                "loc": 99,
-                
+                "loc": 99,    
         },
         "co2_emissions": {
                 "uncertainty_type": sa.NoUncertainty.id,
@@ -151,8 +150,8 @@ parameters_Pa_DF_all["average_depth_of_wells"]["loc"] = 2220
 parameters_Pa_DF_all["average_depth_of_wells"]["uncertainty_type"] = sa.NoUncertainty.id
 del parameters_Pa_DF_all["average_depth_of_wells"]["minimum"]
 del parameters_Pa_DF_all["average_depth_of_wells"]["maximum"]
-parameters_Pa_DF_all["installed_capacity"]["loc"]= 303.3
-parameters_Pa_DF_all["installed_capacity"]["uncertainty_type"] = sa.NoUncertainty.id
-del parameters_Pa_DF_all["installed_capacity"]["minimum"]
-del parameters_Pa_DF_all["installed_capacity"]["maximum"]
+parameters_Pa_DF_all["gross_power_per_well"]["loc"]= 9
+parameters_Pa_DF_all["gross_power_per_well"]["uncertainty_type"] = sa.NoUncertainty.id
+del parameters_Pa_DF_all["gross_power_per_well"]["minimum"]
+del parameters_Pa_DF_all["gross_power_per_well"]["maximum"]
 parameters_Pa_DF_all = klausen.NamedParameters(parameters_Pa_DF_all)

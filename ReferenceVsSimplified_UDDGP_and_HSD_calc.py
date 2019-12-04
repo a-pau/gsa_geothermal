@@ -17,6 +17,7 @@ from s_models import simplified_cge_model, simplified_ege_model
 from utils.lookup_func import lookup_geothermal
 from utils.Stoc_MultiMethod_LCA_pygsa import run_mc
 from utils.FileNameFromOptions import get_file_name
+from utils.Create_Presamples_File import create_presamples
 
 # Set project
 bw.projects.set_current("Geothermal")
@@ -39,12 +40,12 @@ warnings.filterwarnings("ignore")
 
 #%% CHOOSE OPTION
 
-exploration = False
-success_rate = False
+exploration = True
+success_rate = True
 
+#%% Load simplified models coefficients.
 file_name = get_file_name("Simplified models coefficients - analytical.xlsx", exploration=exploration, success_rate=success_rate) 
 
-# Load simplified models coefficients. Choose file name!
 coeffs_=pd.read_excel(os.path.join(absolute_path, "generated_files", file_name), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
 alpha = coeffs_["alpha"].to_dict()
 beta = coeffs_["beta"].to_dict()
@@ -59,8 +60,8 @@ from cge_klausen_test_cases import parameters_Pa_DF_all
 parameters_Pa_DF_all.stochastic(iterations=n_iter)     
 cge_model = GeothermalConventionalModel(parameters_Pa_DF_all, exploration = exploration, success_rate = success_rate)
 cge_parameters_sto=cge_model.run_ps(parameters_Pa_DF_all)
+cge_ps_filepath=create_presamples(cge_parameters_sto)
 
-# Time for one iteration of run_mc is ~ 43 sec 
 cge_ref = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD, n_iter)   
 cge_s = simplified_cge_model(parameters_Pa_DF_all, ILCD, alpha=alpha, beta=beta, static=True)
 
@@ -75,8 +76,8 @@ from ege_klausen_test_cases import parameters_Pa_base_all
 parameters_Pa_base_all.stochastic(iterations=n_iter)     
 ege_model = GeothermalEnhancedModel(parameters_Pa_base_all, exploration = exploration, success_rate = success_rate)
 ege_parameters_sto=ege_model.run_ps(parameters_Pa_base_all)
+ege_ps_filepath=create_presamples(ege_parameters_sto)
 
-# Time for one iteration of run_mc is ~ 43 sec 
 ege_ref = run_mc(ege_parameters_sto, electricity_enh_prod, ILCD, n_iter)   
 ege_s = simplified_ege_model(parameters_Pa_base_all, ILCD, chi=chi, delta=delta, static=True)
 
@@ -88,10 +89,12 @@ file_name = get_file_name("ReferenceVsSmplified_UDDGP_and_HSD", exploration=expl
 file_name = file_name + " N" + str(n_iter)   
 print("Saving ", file_name)
 
-cge_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name+ " - Conventional Ref"))
-cge_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name +  " - Conventional Sim"))
-ege_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Ref"))
-ege_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Sim"))
+# Pd to json truncates by default at 10 decimal places. This is a problem for some categories that are in the range of 1E-10.  
+# With "double precision = 15" we are enabling 5 decimal places more.
+cge_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional Ref"), double_precision=15)
+cge_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name +  " - Conventional Sim"), double_precision=15)
+ege_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Ref"), double_precision=15)
+ege_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Sim"), double_precision=15)
 
            
         

@@ -8,8 +8,7 @@ import klausen
 
 parameters = {
         "gross_power_per_well": {
-                "amount": 8,
-                
+                "amount": 9,      
         },
         "average_depth_of_wells": {
                 "amount": 2220,
@@ -33,7 +32,7 @@ parameters = {
                 "amount": 0.04,
         },
         "specific_diesel_consumption": {
-                "amount": 2220,
+                "amount": 2200,
         },
         "specific_steel_consumption": {
                 "amount": 100,
@@ -42,19 +41,23 @@ parameters = {
                 "amount": 40,
         },
         "specific_drilling_mud_consumption": {
-                "amount": 8.7,
+                "amount": 0.7, #Used to check influence of high consumption of drilling mud,
+                #"amount": 8.7,
         },
         "initial_harmonic_decline_rate": {
-                "amount" : 0.02,
+                "amount" : 0.03,
         },
         "success_rate_exploration_wells": {
                 "amount": 1,
         },
+        "production_to_injection_ratio": {
+                "amount":2,
+        },
         "success_rate_primary_wells": {
-                "amount": 1,
+                "amount": 100,
        },
         "success_rate_makeup_wells": {
-                "amount": 1,     
+                "amount": 100,     
         }
 }
 

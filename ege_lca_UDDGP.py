@@ -15,9 +15,10 @@ bw.projects.set_current("Geothermal")
 
 # Import local
 from utils.lookup_func import lookup_geothermal
-from cge_model import GeothermalConventionalModel
-from cge_klausen_Hellisheidi import parameters
+from ege_model import GeothermalEnhancedModel
+from ege_klausen_UDDGP import parameters
 from utils.Create_Presamples_File import create_presamples
+
 
 # Method 
 ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "climate change total" in str(method)]
@@ -27,7 +28,7 @@ ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 
 # Find demand
-_, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod, _ = lookup_geothermal()
+_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod = lookup_geothermal()
 
 #Options
 exploration=True
@@ -36,7 +37,7 @@ success_rate = True
 #%% Set-up LCA
 # Static LCA with presamples
 parameters.static()
-model = GeothermalConventionalModel(parameters, exploration=exploration, success_rate=success_rate)
+model = GeothermalEnhancedModel(parameters, exploration=exploration, success_rate=success_rate)
 parameters_sta=model.run_ps(parameters)
 static_filepath = create_presamples(parameters_sta)
 
@@ -52,10 +53,10 @@ for method in ILCD:
 sta_result_df = pd.DataFrame(sta_results).melt(var_name=["method_1", "method_2", "method_3"], value_name="impact")
 
 #%% Write excel
-file_name = os.path.join(absolute_path, "generated_files", "Hellisheidi impacts.xlsx")
+file_name = os.path.join(absolute_path, "generated_files", "UDDGP impacts.xlsx")
 sta_result_df.to_excel(file_name)
 
-#%% Other ....
+#%% Other
 # Contribution analysis
 electricity_prod_act = bw.Database("geothermal energy").get(electricity_prod[1])
 

@@ -1,3 +1,4 @@
+# This version of the script used impacts of HSD and UDDGP directly from Gabi.
 #%% Set up
 import seaborn as sb
 import matplotlib.pyplot as plt
@@ -28,9 +29,8 @@ success_rate = True
 
 #%% Load data
 
-#Hellisheidi impacts
-HSD_scores = pd.read_excel(os.path.join(absolute_path, "generated_files", "Hellisheidi impacts.xlsx"), sheet_name="Sheet1", index_col=0)
-UDDGP_scores = pd.read_excel(os.path.join(absolute_path, "generated_files", "UDDGP impacts.xlsx"), sheet_name="Sheet1", index_col=0)
+# Impact scores Hellisheidi and UDDGP
+all_scores = pd.read_excel(os.path.join(absolute_path, "data_and_models/EF 2.0 impacts Hellisheidi and UDDGP.xlsx"), sheet_name="Scores", index_col=None, usecols=[1,2,3])
 
 # Reference and conventional model
 n_iter = 1000
@@ -42,13 +42,11 @@ cge_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name
 ege_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Ref"))
 ege_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Sim"))
 
-cge_s_and_Hellisheidi_df = pd.merge(cge_s_df, HSD_scores[["method_3", "impact"]], left_on="method_3", right_on="method_3")
-cge_s_and_Hellisheidi_df=cge_s_and_Hellisheidi_df.rename(columns={"impact":"HSD"})
-cge_s_and_Hellisheidi_df=cge_s_and_Hellisheidi_df.drop(columns=["method_1", "method_2"]).melt(id_vars="method_3", var_name="type", value_name="impact score")
+cge_s_and_Hellisheidi_df = pd.merge(cge_s_df, all_scores[["Method","Hellisheidi"]], left_on="method_3", right_on="Method")
+cge_s_and_Hellisheidi_df=cge_s_and_Hellisheidi_df.drop(columns=["method_1", "method_2", "Method"]).melt(id_vars="method_3", var_name="type", value_name="impact score")
 
-ege_s_and_UDDGP_df = pd.merge(ege_s_df, UDDGP_scores[["method_3","impact"]], left_on="method_3", right_on="method_3")
-ege_s_and_UDDGP_df = ege_s_and_UDDGP_df.rename(columns={"impact":"UDDGP"})
-ege_s_and_UDDGP_df=ege_s_and_UDDGP_df.drop(columns=["method_1", "method_2"]).melt(id_vars="method_3", var_name="type", value_name="impact score")
+ege_s_and_UDDGP_df = pd.merge(ege_s_df, all_scores[["Method","UDDGP (with stim)"]], left_on="method_3", right_on="Method")
+ege_s_and_UDDGP_df=ege_s_and_UDDGP_df.drop(columns=["method_1", "method_2", "Method"]).melt(id_vars="method_3", var_name="type", value_name="impact score")
 
 #%% Conventional model plots
 
@@ -114,7 +112,6 @@ ege_plot.subplots_adjust(top=0.85)
 
 file_name = get_file_name("ReferenceVsSmplified_UDDGP_and_HSD", exploration=exploration, success_rate=success_rate)
 file_name = file_name + " N" + str(n_iter)
-print("Saving ", file_name)
 
 cge_plot.savefig(os.path.join(absolute_path, "generated_plots", file_name + " - Conventional.png"), dpi=600, format="png")
 ege_plot.savefig(os.path.join(absolute_path, "generated_plots", file_name + " - Enhanced.png"), dpi=600, format="png")

@@ -1,12 +1,13 @@
 import stats_arrays as sa
 import numpy as np
 import klausen
+import copy
 
 # Insert parameters distribution and generate klausen instance
 
 parameters = {
         "gross_power_per_well": {
-                "minimum": 0.1,
+                "minimum": 0,
                 "maximum": 20,
                 "uncertainty_type": sa.LognormalUncertainty.id,
                 "loc": np.log(5.887808397013443),
@@ -47,18 +48,18 @@ parameters = {
                 "uncertainty_type": sa.UniformUncertainty.id,
         },
         "auxiliary_power": {
-                "minimum": 0.032,
-                "maximum": 0.048,
+                "minimum": 0.03,
+                "maximum": 0.05,
                 "uncertainty_type": sa.UniformUncertainty.id
         },
         "specific_diesel_consumption": {
-                "minimum": 1600,
-                "maximum": 2800,
+                "minimum": 1650,
+                "maximum": 2750,
                 "uncertainty_type": sa.UniformUncertainty.id
         },
         "specific_steel_consumption": {
-                "minimum": 80,
-                "maximum": 130,
+                "minimum": 75,
+                "maximum": 125,
                 "uncertainty_type": sa.UniformUncertainty.id
         },
         "specific_cement_consumption": {
@@ -106,7 +107,16 @@ parameters = {
         }
 }
 
+# Parameters with Lifetime distributed normally
+
+parameters_LT = copy.deepcopy(parameters)
+parameters_LT["lifetime"]["uncertainty_type"] = sa.UniformUncertainty.id
+
+
 parameters = klausen.NamedParameters(parameters)
+parameters_LT = klausen.NamedParameters(parameters_LT)
+
+
 
 # =============================================================================
 # This includes truncated triangular for success rate.

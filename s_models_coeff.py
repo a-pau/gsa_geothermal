@@ -82,8 +82,8 @@ if len(coeff_matrix.columns) == len(is_):
 
 #%% SET OPTIONS
     
-exploration = False
-success_rate = False
+exploration = True
+success_rate = True
         
 #%% Conventional geothermal
 # Klausen
