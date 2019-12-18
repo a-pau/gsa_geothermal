@@ -109,7 +109,6 @@ venv.bak/
 # Local files
 data_and_models/Distributions
 data_and_models/Normalisation
-dask-worker-space
 
 # IDE PyCharm 
 .idea/
