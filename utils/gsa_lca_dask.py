@@ -13,7 +13,7 @@ from pypardiso import spsolve
 import scipy.sparse as sp
 from klausen.named_parameters import NamedParameters
 
-from convert_distributions import *
+from .convert_distributions import *
 
 
 
@@ -44,6 +44,9 @@ class GSAinLCA:
             self.parameters.static()
             self.convert_named_parameters_to_array()
             self.obtain_parameterized_exchanges(parameters, ParametersModel)
+        else:
+            self.parameters = None
+            self.ParametersModel = None
 
         # 2. Generate dictionary of uncertain exchanges based on options
         self.obtain_uncertain_exchanges()
@@ -61,6 +64,14 @@ class GSAinLCA:
 
         indices_tech_all = np.array([], dtype=int)
         indices_bio_all  = np.array([], dtype=int)
+
+        if self.options == None:
+            uncertain_exc_dict['tech_params_where'] = np.array([])
+            uncertain_exc_dict['tech_params_amounts'] = np.array([])
+            uncertain_exc_dict['bio_params_where'] = np.array([])
+            uncertain_exc_dict['bio_params_amounts'] = np.array([])
+            self.uncertain_exchanges_dict = uncertain_exc_dict
+            return
 
         for option in self.options:
 
@@ -85,6 +96,22 @@ class GSAinLCA:
                     mask = lambda j : np.all( [lca.bio_params['uncertainty_type']!=0, lca.bio_params['col']==j], axis=0 )
                     indices_bio = [ np.where(mask(j))[0] for j in range(db_act_index_min_tech, db_act_index_max_tech+1) ]
                     indices_bio = np.concatenate(indices_bio)
+
+            elif option == 'demand_acts':
+                cols = np.where(lca.demand_array)[0]
+                # Indices corresponding to exchanges in the tech_params depending on the given demand
+                mask = lambda i : np.all( [lca.tech_params['uncertainty_type']!=0, 
+                                           lca.tech_params['col']==i,
+                                           lca.tech_params['amount']!=0], axis=0 )
+                indices_tech = [ np.where( mask(i) ) [0] for i in cols ]
+                indices_tech = np.concatenate(indices_tech)
+
+                # Indices corresponding to flows in the biosphere params depending on the given demand
+                mask = lambda i : np.all( [lca.bio_params['uncertainty_type']!=0, 
+                                           lca.bio_params['col']==i,
+                                           lca.bio_params['amount']!=0], axis=0 )
+                indices_bio = [ np.where( mask(i) ) [0] for i in cols ]
+                indices_bio = np.concatenate(indices_bio)
 
             indices_tech = np.sort(indices_tech)
             indices_bio  = np.sort(indices_bio)
@@ -274,9 +301,6 @@ class GSAinLCA:
         parameters_subsample = sample[self.i_sample : self.i_sample+n_parameters]
         self.i_sample += n_parameters
 
-        print(len(parameters_subsample))
-
-
         # Convert uniform [0,1] sample to proper parameters distributions
         converted_sample = self.convert_sample_to_proper_distribution(self.parameters_array, parameters_subsample)
         
@@ -390,8 +414,10 @@ class GSAinLCA:
         self.amount_bio  = self.lca.bio_params['amount']
 
         self.i_sample = 0
-        self.replace_non_parameterized_exchanges(sample)
-        self.replace_parameterized_exchanges(sample)
+        if self.options != None:
+            self.replace_non_parameterized_exchanges(sample)
+        if self.parameters != None and self.ParametersModel != None:
+            self.replace_parameterized_exchanges(sample)
         
         A = self.rebuild_technosphere_matrix(self.lca, self.amount_tech) #TODO change
         B = self.rebuild_biosphere_matrix(self.lca, self.amount_bio)  
