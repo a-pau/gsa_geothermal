@@ -109,7 +109,7 @@ venv.bak/
 # Local files
 data_and_models/Distributions
 data_and_models/Normalisation
-plotting/write_images/*
+plotting/write_images
 dask-worker-space
 generated_files/write_files
 
