@@ -30,7 +30,7 @@ ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=1000
+n_iter=100
 
 #%% CHOOSE OPTION
 
@@ -113,12 +113,14 @@ ege_s_df = pd.DataFrame.from_dict(ege_s, orient="columns")
 #%% Write to rxcel
 file_name_2 = get_file_name("ReferenceVsSimplified_test_cases CC", exploration=exploration, success_rate=success_rate) 
 file_name_2 = file_name_2 + " N" + str(n_iter)
-print("Saving ", file_name_2)
+folder = "generated_files/validation_ecoinvent3.6"
 
-cge_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name_2 + " - Conventional Ref"))
-cge_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name_2 +  " - Conventional Sim"))
-ege_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name_2 + " - Enhanced Ref"))
-ege_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name_2 + " - Enhanced Sim"))
+print("Saving ", file_name_2, "in", folder)
+
+cge_ref_df.to_json(os.path.join(absolute_path, folder, file_name_2 + " - Conventional Ref"))
+cge_s_df.to_json(os.path.join(absolute_path, folder, file_name_2 +  " - Conventional Sim"))
+ege_ref_df.to_json(os.path.join(absolute_path, folder, file_name_2 + " - Enhanced Ref"))
+ege_s_df.to_json(os.path.join(absolute_path, folder, file_name_2 + " - Enhanced Sim"))
 
         
         

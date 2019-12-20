@@ -33,7 +33,7 @@ ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=1000
+n_iter=100
 
 # To ignore warnings from MC (Sparse Efficiency Warning)
 warnings.filterwarnings("ignore")
@@ -86,15 +86,17 @@ ege_s_df = pd.DataFrame.from_dict(ege_s, orient="columns").melt(var_name=["metho
 
 #%% Save data
 file_name = get_file_name("ReferenceVsSmplified_UDDGP_and_HSD", exploration=exploration, success_rate=success_rate)
-file_name = file_name + " N" + str(n_iter)   
-print("Saving ", file_name)
+file_name = file_name + " N" + str(n_iter)
+folder = "generated_files/validation_ecoinvent3.6"
+   
+print("Saving ", file_name, "in", folder)
 
 # Pd to json truncates by default at 10 decimal places. This is a problem for some categories that are in the range of 1E-10.  
 # With "double precision = 15" we are enabling 5 decimal places more.
-cge_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional Ref"), double_precision=15)
-cge_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name +  " - Conventional Sim"), double_precision=15)
-ege_ref_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Ref"), double_precision=15)
-ege_s_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Sim"), double_precision=15)
+cge_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Conventional Ref"), double_precision=15)
+cge_s_df.to_json(os.path.join(absolute_path, folder, file_name +  " - Conventional Sim"), double_precision=15)
+ege_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced Ref"), double_precision=15)
+ege_s_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced Sim"), double_precision=15)
 
            
         

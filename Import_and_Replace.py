@@ -2,7 +2,6 @@ import brightway2 as bw
 import os
 
 from utils.replace_functions import replace_ege, replace_cge
-# from utils.import_geothermal import import_geothermal_database
 from ege_klausen import parameters as parameters_ege
 from cge_klausen import parameters as parameters_cge
 from cge_model import GeothermalConventionalModel

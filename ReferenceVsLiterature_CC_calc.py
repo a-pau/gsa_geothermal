@@ -27,7 +27,7 @@ ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=10000
+n_iter=100
 
 #%% Options
 exploration= True
@@ -61,6 +61,9 @@ ege_ref_df["carbon footprint"] = ege_ref_df["carbon footprint"] *1000
 
 #%% Save data 
 file_name = "ReferenceVsLiterature CC N" + str(n_iter)
+folder = "generated_files/validation_ecoinvent3.6"
 
-cge_ref_df.to_json(os.path.join(absolute_path, "generated_files", cge_file_name + " - Conventional"))
-ege_ref_df.to_json(os.path.join(absolute_path, "generated_files", ege_file_name + " - Enhanced"))
+print("Saving ", file_name, "in", folder)
+
+cge_ref_df.to_json(os.path.join(absolute_path, folder, cge_file_name + " - Conventional"))
+ege_ref_df.to_json(os.path.join(absolute_path, folder, ege_file_name + " - Enhanced"))

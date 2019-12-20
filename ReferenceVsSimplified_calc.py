@@ -32,7 +32,7 @@ ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=1000
+n_iter=100
 
 # Load simplified models coefficients
 absolute_path = os.path.abspath(path)
@@ -82,7 +82,10 @@ ege_df = pd.merge(ref_ege_df, s_ege_df["Simplified"], how="left", left_index=Tru
     
 #%% Save data
 file_name = "ReferenceVsSimplified N" + str(n_iter)
-print("Saving ", file_name)
-cge_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional"))
-ege_df.to_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced"))
+folder = "generated_files/validation_ecoinvent3.6"
+
+print("Saving ", file_name, "in", folder)
+
+cge_df.to_json(os.path.join(absolute_path, folder, file_name + " - Conventional"))
+ege_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced"))
        
