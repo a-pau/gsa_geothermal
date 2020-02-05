@@ -111,8 +111,11 @@ data_and_models/Distributions
 data_and_models/Normalisation
 dask-worker-space
 generated_files/write_files
+generated_files/ecoinvent_3.5
+generated_files/ecoinvent_3.6
 generated_plots/write_images
-
+generated_plots/validation_ecoinvent_3.6
+generated_plots/validation_ecoinvent_3.5
 
 # IDE PyCharm 
 .idea/

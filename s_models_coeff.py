@@ -18,10 +18,13 @@ from utils.FileNameFromOptions import get_file_name
 # Set project
 bw.projects.set_current("Geothermal")
 
+# Ecoinvent version
+ecoinvent = "ecoinvent 3.6 cutoff"
+
 # Retrieve activities
 wellhead, diesel, steel, cement, water, \
 drilling_mud, drill_wst, wells_closr, coll_pipe, \
-plant, ORC_fluid, ORC_fluid_wst, diesel_stim, co2,_, _ = lookup_geothermal()
+plant, ORC_fluid, ORC_fluid_wst, diesel_stim, co2,_, _ = lookup_geothermal(ecoinvent = ecoinvent)
 cooling_tower=bw.Database("geothermal energy").search("cooling tower")[0].key
 
 list_act = [wellhead, diesel, steel, cement, water, 

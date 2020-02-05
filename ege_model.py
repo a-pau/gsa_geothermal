@@ -6,12 +6,12 @@ from utils.lookup_func import lookup_geothermal
 
 class GeothermalEnhancedModel:
     
-    def __init__(self, params, exploration = True, success_rate = True):
+    def __init__(self, params, exploration = True, success_rate = True, ecoinvent= "ecoinvent 3.6 cutoff"):
         
         self.wellhead, self.diesel, self.steel, self.cement, self.water, \
         self.drilling_mud, self.drill_wst, self.wells_closr, self.coll_pipe, \
         self.plant, self.ORC_fluid, self.ORC_fluid_wst, self.diesel_stim, self.co2, \
-        _, self.electricity_prod = lookup_geothermal()
+        _, self.electricity_prod = lookup_geothermal(ecoinvent = ecoinvent)
         
         #Init constants
         self.drilling_waste_per_metre = 450 # kilogram (for open hole diameter of 8.5 in and assume factor 3 production line to total volume drilled)

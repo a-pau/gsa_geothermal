@@ -4,12 +4,12 @@ import os
 import contextlib
 
 # Conventional
-def lookup_geothermal():
+def lookup_geothermal(ecoinvent = "ecoinvent 3.6 cutoff"):
     
     bw.projects.set_current('Geothermal')
 
     db_geothe = bw.Database("geothermal energy")
-    db_ecoinv = bw.Database("ecoinvent 3.5 cutoff")
+    db_ecoinv = bw.Database(ecoinvent)
     db_biosph = bw.Database("biosphere3")
     
     #needed to exclude print statements from the search function

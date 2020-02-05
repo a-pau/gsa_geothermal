@@ -20,11 +20,12 @@ ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
 ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 
-n_iter=1000
+n_iter=10000
 file_name= "ReferenceVsSimplified N" + str(n_iter)
+ecoinvent_version = "ecoinvent_3.6"
 
-cge_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional"))
-ege_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced"))
+cge_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional"))
+ege_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Enhanced"))
 
 #%% Box plot
 
@@ -43,10 +44,14 @@ for counter, ax in enumerate(ege_boxplot.axes.flatten()):
     ax.set(xlabel="", title=ILCD[counter][2])
 ege_boxplot.fig.subplots_adjust(hspace = 0.3, wspace= 0.25, top=0.95)
 
+#%% First make plot full screen
+#cge_boxplot.tight_layout()
+#ege_boxplot.tight_layout()
+
 #%% Save boxlot
 file_name_box = file_name + " Boxplot"
-cge_boxplot.savefig(os.path.join(absolute_path, "generated_plots", file_name_box + " - Conventional.png"))
-ege_boxplot.savefig(os.path.join(absolute_path, "generated_plots", file_name_box + " - Enhanced.png"))
+cge_boxplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_box + " - Conventional.png"))
+ege_boxplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_box + " - Enhanced.png"))
 
 #%% Coefficient of determination
 
@@ -85,10 +90,7 @@ def set_axlims(series, marginfactor):
     minlim = minv-border
 
     return minlim,maxlim
-
-
-# TODO Need to fix axis labels and include R squared as text in the graphs
-    
+  
 cge_parityplot=plt.figure()
 for i, method in enumerate(ILCD):
     ax_=cge_parityplot.add_subplot(4,4,i+1)
@@ -108,8 +110,8 @@ for i, method in enumerate(ILCD):
 figManager = plt.get_current_fig_manager()
 figManager.window.showMaximized()
 #cge_parityplot.subplots_adjust(hspace = 0.9)
-cge_parityplot.tight_layout()
-        
+
+       
 ege_parityplot=plt.figure()
 for i, method in enumerate(ILCD):
     ax_=ege_parityplot.add_subplot(4,4,i+1)
@@ -128,14 +130,16 @@ for i, method in enumerate(ILCD):
 # Make figure full screen
 figManager = plt.get_current_fig_manager()
 figManager.window.showMaximized()
-# Adjust plot
+
+#%% First make plot full screen
+cge_parityplot.tight_layout()
 ege_parityplot.tight_layout()
 
 #%% Save figures
 
 file_name_par = file_name + " Parity_Plot"
-cge_parityplot.savefig(os.path.join(absolute_path, "generated_plots", file_name_par + " - Conventional.png"))
-ege_parityplot.savefig(os.path.join(absolute_path, "generated_plots", file_name_par + " - Enhanced.png"))
+cge_parityplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_par + " - Conventional.png"))
+ege_parityplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_par + " - Enhanced.png"))
 
 #%%   
 # TODO Seabon categorical plot doesn't work for unknown reasons.

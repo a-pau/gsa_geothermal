@@ -36,11 +36,12 @@ UDDGP_scores = pd.read_excel(os.path.join(absolute_path, "generated_files", "UDD
 n_iter = 1000
 file_name =get_file_name("ReferenceVsSmplified_UDDGP_and_HSD", exploration=exploration, success_rate=success_rate) 
 file_name = file_name + " N" + str(n_iter)
+ecoinvent_version = "ecoinvent_3.6"
 
-cge_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional Ref"))
-cge_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional Sim"))
-ege_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Ref"))
-ege_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Enhanced Sim"))
+cge_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional Ref"))
+cge_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional Sim"))
+ege_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Enhanced Ref"))
+ege_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Enhanced Sim"))
 
 cge_s_and_Hellisheidi_df = pd.merge(cge_s_df, HSD_scores[["method_3", "impact"]], left_on="method_3", right_on="method_3")
 cge_s_and_Hellisheidi_df=cge_s_and_Hellisheidi_df.rename(columns={"impact":"HSD"})
@@ -116,5 +117,5 @@ file_name = get_file_name("ReferenceVsSmplified_UDDGP_and_HSD", exploration=expl
 file_name = file_name + " N" + str(n_iter)
 print("Saving ", file_name)
 
-cge_plot.savefig(os.path.join(absolute_path, "generated_plots", file_name + " - Conventional.png"), dpi=600, format="png")
-ege_plot.savefig(os.path.join(absolute_path, "generated_plots", file_name + " - Enhanced.png"), dpi=600, format="png")
+cge_plot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name + " - Conventional.png"), dpi=600, format="png")
+ege_plot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name + " - Enhanced.png"), dpi=600, format="png")

@@ -6,16 +6,16 @@ from utils.lookup_func import lookup_geothermal
 
 class GeothermalConventionalModel:
 
-    def __init__(self, params, exploration = True, success_rate = True):
+    def __init__(self, params, exploration = True, success_rate = True, ecoinvent= "ecoinvent 3.6 cutoff"):
 
         self.wellhead, self.diesel, self.steel, self.cement, self.water, \
         self.drilling_mud, self.drill_wst, self.wells_closr, self.coll_pipe, \
-        self.plant, _, _, _, self.co2, self.electricity_prod, _ = lookup_geothermal()
+        self.plant, _, _, _, self.co2, self.electricity_prod, _ = lookup_geothermal(ecoinvent = ecoinvent)
 
         # Init constants
         self.cooling_tower_electricity = 864  # megawatt hour that we assume is the yearly electricity consumption
         self.cooling_tower_number = 7/303.3
-        self.drilling_waste_per_metre = 450 # kilogram (for open hole diameter of 8.5 in and assume factor 3 production line to total volume drilled)
+        self.drilling_waste_per_metre = 450 # kilogram (for open hole diameter of 8.5 in and assume factor 3 production liner to total volume drilled)
 
         if exploration:
             self.number_of_expl_wells = 3

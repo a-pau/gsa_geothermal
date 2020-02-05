@@ -1,4 +1,5 @@
 #%% Set up
+
 import brightway2 as bw
 import pandas as pd
 import os
@@ -27,7 +28,7 @@ ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=100
+n_iter=10000
 
 #%% Options
 exploration= True
@@ -61,9 +62,9 @@ ege_ref_df["carbon footprint"] = ege_ref_df["carbon footprint"] *1000
 
 #%% Save data 
 file_name = "ReferenceVsLiterature CC N" + str(n_iter)
-folder = "generated_files/validation_ecoinvent3.6"
+folder = "generated_files/validation_ecoinvent_3.6"
 
 print("Saving ", file_name, "in", folder)
 
-cge_ref_df.to_json(os.path.join(absolute_path, folder, cge_file_name + " - Conventional"))
-ege_ref_df.to_json(os.path.join(absolute_path, folder, ege_file_name + " - Enhanced"))
+cge_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Conventional"))
+ege_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced"))

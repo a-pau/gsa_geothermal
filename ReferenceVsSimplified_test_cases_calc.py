@@ -30,7 +30,7 @@ ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=100
+n_iter=10000
 
 #%% CHOOSE OPTION
 
@@ -113,7 +113,7 @@ ege_s_df = pd.DataFrame.from_dict(ege_s, orient="columns")
 #%% Write to rxcel
 file_name_2 = get_file_name("ReferenceVsSimplified_test_cases CC", exploration=exploration, success_rate=success_rate) 
 file_name_2 = file_name_2 + " N" + str(n_iter)
-folder = "generated_files/validation_ecoinvent3.6"
+folder = "generated_files/validation_ecoinvent_3.6"
 
 print("Saving ", file_name_2, "in", folder)
 

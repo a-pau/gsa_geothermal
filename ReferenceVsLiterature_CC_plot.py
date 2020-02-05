@@ -28,9 +28,10 @@ ege_cfs.columns= ["study", "carbon footprint"]
 
 # Reference model carbon footprints
 n_iter = 10000
+ecoinvent_version = "ecoinvent_3.6"
 file_name="ReferenceVsLiterature CC N" + str(n_iter)
-cge_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - Conventional"))
-ege_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", file_name + " - ENhanced"))
+cge_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional"))
+ege_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - ENhanced"))
 
 #%% Reference model plot
 
@@ -62,5 +63,5 @@ g2.set_xticks([])
 #file_name = get_file_name("cge_ReferenceModel_validation.png", exploration=exploration, success_rate=success_rate)
 #file_name = get_file_name("ege_ReferenceModel_validation.png", exploration=exploration, success_rate=success_rate)
 
-f1.savefig(os.path.join(absolute_path, "generated_plots", cge_file_name+".png"), dpi=600, format="png")
-f2.savefig(os.path.join(absolute_path, "generated_plots", ege_file_name+".png"), dpi=600, format="png")
+f1.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name + " - Conventional.png"), dpi=600, format="png")
+f2.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name+" - Enhanced.png"), dpi=600, format="png")
