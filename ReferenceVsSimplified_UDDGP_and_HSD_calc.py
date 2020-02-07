@@ -45,8 +45,9 @@ success_rate = True
 
 #%% Load simplified models coefficients.
 file_name = get_file_name("Simplified models coefficients - analytical.xlsx", exploration=exploration, success_rate=success_rate) 
+folder_IN = os.path.join("generated_files", ecoinvent_version)
 
-coeffs_=pd.read_excel(os.path.join(absolute_path, "generated_files", file_name), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
+coeffs_=pd.read_excel(os.path.join(folder_IN, file_name), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
 alpha = coeffs_["alpha"].to_dict()
 beta = coeffs_["beta"].to_dict()
 chi = coeffs_["chi"].to_dict()
@@ -87,16 +88,16 @@ ege_s_df = pd.DataFrame.from_dict(ege_s, orient="columns").melt(var_name=["metho
 #%% Save data
 file_name = get_file_name("ReferenceVsSmplified_UDDGP_and_HSD", exploration=exploration, success_rate=success_rate)
 file_name = file_name + " N" + str(n_iter)
-folder = "generated_files/validation_ecoinvent_3.6"
+folder_OUT = os.path.join("generated_files", ecoinvent_version, "validation")
    
-print("Saving ", file_name, "in", folder)
+print("Saving ", file_name, "in", folder_OUT)
 
 # Pd to json truncates by default at 10 decimal places. This is a problem for some categories that are in the range of 1E-10.  
 # With "double precision = 15" we are enabling 5 decimal places more.
-cge_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Conventional Ref"), double_precision=15)
-cge_s_df.to_json(os.path.join(absolute_path, folder, file_name +  " - Conventional Sim"), double_precision=15)
-ege_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced Ref"), double_precision=15)
-ege_s_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced Sim"), double_precision=15)
+cge_ref_df.to_json(os.path.join(absolute_path, folder_OUT, file_name + " - Conventional Ref"), double_precision=15)
+cge_s_df.to_json(os.path.join(absolute_path, folder_OUT, file_name +  " - Conventional Sim"), double_precision=15)
+ege_ref_df.to_json(os.path.join(absolute_path, folder_OUT, file_name + " - Enhanced Ref"), double_precision=15)
+ege_s_df.to_json(os.path.join(absolute_path, folder_OUT, file_name + " - Enhanced Sim"), double_precision=15)
 
            
         

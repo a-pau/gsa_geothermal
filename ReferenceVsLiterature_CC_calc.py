@@ -62,9 +62,9 @@ ege_ref_df["carbon footprint"] = ege_ref_df["carbon footprint"] *1000
 
 #%% Save data 
 file_name = "ReferenceVsLiterature CC N" + str(n_iter)
-folder = "generated_files/validation_ecoinvent_3.6"
+folder = os.path.join("generated_files", ecoinvent_version, "validation")
 
-print("Saving ", file_name, "in", folder)
+print("Saving ", file_name, "in", folder_OUT)
 
 cge_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Conventional"))
 ege_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced"))

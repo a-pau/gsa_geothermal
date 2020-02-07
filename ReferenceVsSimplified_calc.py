@@ -34,9 +34,14 @@ _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh
 # Number of iterations
 n_iter=10000
 
+# ecoinvent version
+ecoinvent_version = "ecoinvent_3.6"
+
 # Load simplified models coefficients
 absolute_path = os.path.abspath(path)
-coeffs_=pd.read_excel(os.path.join(absolute_path, "generated_files/Simplified models coefficients - analytical.xlsx"), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
+folder_IN = os.path.join("generated_files", ecoinvent_version)
+
+coeffs_=pd.read_excel(os.path.join(absolute_path, folder_IN, "Simplified models coefficients - analytical.xlsx"), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
 alpha = coeffs_["alpha"].to_dict()
 beta = coeffs_["beta"].to_dict()
 chi = coeffs_["chi"].to_dict()
@@ -82,10 +87,10 @@ ege_df = pd.merge(ref_ege_df, s_ege_df["Simplified"], how="left", left_index=Tru
     
 #%% Save data
 file_name = "ReferenceVsSimplified N" + str(n_iter)
-folder = "generated_files/validation_ecoinvent_3.6"
+folder_OUT = os.path.join("generated_files", ecoinvent_version, "validation")
 
-print("Saving ", file_name, "in", folder)
+print("Saving ", file_name, "in", folder_OUT)
 
-cge_df.to_json(os.path.join(absolute_path, folder, file_name + " - Conventional"), double_precision=15)
-ege_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced"), double_precision=15)
+cge_df.to_json(os.path.join(absolute_path, folder_OUT, file_name + " - Conventional"), double_precision=15)
+ege_df.to_json(os.path.join(absolute_path, folder_OUT, file_name + " - Enhanced"), double_precision=15)
        

@@ -23,9 +23,10 @@ ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 n_iter=10000
 file_name= "ReferenceVsSimplified N" + str(n_iter)
 ecoinvent_version = "ecoinvent_3.6"
+folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
 
-cge_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional"))
-ege_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Enhanced"))
+cge_df = pd.read_json(os.path.join(folder_IN, file_name + " - Conventional"))
+ege_df = pd.read_json(os.path.join(folder_IN, file_name + " - Enhanced"))
 
 #%% Box plot
 
@@ -50,8 +51,10 @@ ege_boxplot.fig.subplots_adjust(hspace = 0.3, wspace= 0.25, top=0.95)
 
 #%% Save boxlot
 file_name_box = file_name + " Boxplot"
-cge_boxplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_box + " - Conventional.png"))
-ege_boxplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_box + " - Enhanced.png"))
+folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
+
+cge_boxplot.savefig(os.path.join(folder_OUT, file_name_box + " - Conventional.png"))
+ege_boxplot.savefig(os.path.join(folder_OUT, file_name_box + " - Enhanced.png"))
 
 #%% Coefficient of determination
 
@@ -138,8 +141,8 @@ ege_parityplot.tight_layout()
 #%% Save figures
 
 file_name_par = file_name + " Parity_Plot"
-cge_parityplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_par + " - Conventional.png"))
-ege_parityplot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name_par + " - Enhanced.png"))
+cge_parityplot.savefig(os.path.join(folder_OUT, file_name_par + " - Conventional.png"))
+ege_parityplot.savefig(os.path.join(folder_OUT, file_name_par + " - Enhanced.png"))
 
 #%%   
 # TODO Seabon categorical plot doesn't work for unknown reasons.
