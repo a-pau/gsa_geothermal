@@ -32,6 +32,9 @@ _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh
 # Number of iterations
 n_iter=10000
 
+# ecoinvent version
+ecoinvent_version = "ecoinvent_3.6"
+
 #%% CHOOSE OPTION
 
 exploration = False
@@ -39,8 +42,9 @@ success_rate = False
 
 #%% Load simplified models coefficients data
 file_name = get_file_name("Simplified models coefficients - analytical.xlsx", exploration=exploration, success_rate=success_rate) 
+folder_IN = os.path.join("generated_files", ecoinvent_version)
 
-coeffs_=pd.read_excel(os.path.join(absolute_path, "generated_files", file_name), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
+coeffs_=pd.read_excel(os.path.join(folder_IN, file_name), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
 alpha = coeffs_["alpha"].to_dict()
 beta = coeffs_["beta"].to_dict()
 chi = coeffs_["chi"].to_dict()
@@ -113,14 +117,14 @@ ege_s_df = pd.DataFrame.from_dict(ege_s, orient="columns")
 #%% Write to rxcel
 file_name_2 = get_file_name("ReferenceVsSimplified_test_cases CC", exploration=exploration, success_rate=success_rate) 
 file_name_2 = file_name_2 + " N" + str(n_iter)
-folder = "generated_files/validation_ecoinvent_3.6"
+folder_OUT = os.path.join("generated_files", ecoinvent_version, "validation")
 
-print("Saving ", file_name_2, "in", folder)
+print("Saving ", file_name_2, "in", folder_OUT)
 
-cge_ref_df.to_json(os.path.join(absolute_path, folder, file_name_2 + " - Conventional Ref"))
-cge_s_df.to_json(os.path.join(absolute_path, folder, file_name_2 +  " - Conventional Sim"))
-ege_ref_df.to_json(os.path.join(absolute_path, folder, file_name_2 + " - Enhanced Ref"))
-ege_s_df.to_json(os.path.join(absolute_path, folder, file_name_2 + " - Enhanced Sim"))
+cge_ref_df.to_json(os.path.join(absolute_path, folder_OUT, file_name_2 + " - Conventional Ref"))
+cge_s_df.to_json(os.path.join(absolute_path, folder_OUT, file_name_2 +  " - Conventional Sim"))
+ege_ref_df.to_json(os.path.join(absolute_path, folder_OUT, file_name_2 + " - Enhanced Ref"))
+ege_s_df.to_json(os.path.join(absolute_path, folder_OUT, file_name_2 + " - Enhanced Sim"))
 
         
         

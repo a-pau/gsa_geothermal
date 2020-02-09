@@ -21,8 +21,9 @@ n_iter = 10000
 file_name =get_file_name("ReferenceVsSimplified_test_cases CC", exploration=exploration, success_rate=success_rate) 
 file_name = file_name + " N" + str(n_iter)
 ecoinvent_version = "ecoinvent_3.6"
+folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
 
-cge_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional Ref")) \
+cge_ref_df = pd.read_json(os.path.join(, file_name + " - Conventional Ref")) \
             .melt(var_name="study", value_name="carbon footprint")
 cge_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional Sim")) \
             .melt(var_name="study", value_name="carbon footprint")
@@ -118,5 +119,7 @@ ege_plot.legend(handles, labels, loc='upper center', ncol=2)
 
 file_name = get_file_name("ReferenceVsSmplified_test_cases", exploration=exploration, success_rate=success_rate)
 file_name = file_name + " N" + str(n_iter)
-cge_plot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name + " - Conventional.png"), dpi=600, format="png")
-ege_plot.savefig(os.path.join(absolute_path, "generated_plots", "validation_" + ecoinvent_version, file_name + " - Enhanced.png"), dpi=600, format="png")
+folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
+
+cge_plot.savefig(os.path.join(folder_OUT, file_name + " - Conventional.png"), dpi=600, format="png")
+ege_plot.savefig(os.path.join(folder_OUT, file_name + " - Enhanced.png"), dpi=600, format="png")
