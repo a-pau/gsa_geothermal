@@ -116,7 +116,6 @@ generated_files/ecoinvent_3.6
 generated_plots/write_images
 generated_plots/validation_ecoinvent_3.6
 generated_plots/validation_ecoinvent_3.5
-generated_plots/
 
 # IDE PyCharm 
 .idea/
