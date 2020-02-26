@@ -35,29 +35,39 @@ file_name="ReferenceVsLiterature CC N" + str(n_iter)
 cge_ref_df = pd.read_json(os.path.join(absolute_path, folder_IN, file_name + " - Conventional"))
 ege_ref_df = pd.read_json(os.path.join(absolute_path, folder_IN, file_name + " - Enhanced"))
 
-#%% Reference model plot
+# Seaborn palette
+Sb_colorblind_pal= sb.color_palette(palette="colorblind", n_colors=10)
+Color_brewer_Set2 = sb.color_palette(palette="Set2")
+Sb_colorblind_pal.append(Color_brewer_Set2[0])
+
+#%% Conventional model plot
 
 f1=plt.figure()
-g1=sb.boxplot(data=cge_ref_df, y="carbon footprint", whis=[5,95], showfliers=True, width=0.3)
-g1=sb.scatterplot(data=cge_cfs, x=0.5, y="carbon footprint", hue="study")
+g1=sb.boxplot(data=cge_ref_df, y="carbon footprint", whis=[1,99], showfliers=False, width=0.02)
+g1=sb.scatterplot(data=cge_cfs, x=0.03, y="carbon footprint", palette=Sb_colorblind_pal, hue="study", s=65)
 
 handles, labels = g1.get_legend_handles_labels()
-g1.legend(handles=handles[1:], labels=labels[1:])
+g1.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
 
-g1.set(xlabel='', ylabel='$gCO_2-eq./kWh$')
+g1.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1))
 g1.set_xticks([])
+
 
 #%%  Enhanced model Plot
 
 f2=plt.figure()
-sb.boxplot(data=ege_ref_df, y="carbon footprint",whis=[5,95], showfliers=True, width=0.3)
-g2=sb.scatterplot(data=ege_cfs, x=0.5, y="carbon footprint", hue="study")
+sb.boxplot(data=ege_ref_df, y="carbon footprint",whis=[1,99], showfliers=False, width=0.02)
+g2=sb.scatterplot(data=ege_cfs, x=0.03, y="carbon footprint", palette=Sb_colorblind_pal, hue="study", s=65)
 
 handles, labels = g2.get_legend_handles_labels()
-g2.legend(handles=handles[1:], labels=labels[1:])
+g2.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
 
-g2.set(xlabel='', ylabel='$gCO_2-eq./kWh$')
+g2.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1))
 g2.set_xticks([])
+
+#%% Tight layout
+f1.tight_layout()
+f2.tight_layout()
 
 #%% Save plots
 
