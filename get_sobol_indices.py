@@ -40,7 +40,7 @@ for k in sa_dict.keys():
     if k != 'parameters':
         total_dict[k] = sa_dict[k]['ST']
         first_dict[k] = sa_dict[k]['S1']#[abs(a) for a in all_vals_first[n_all-n_parameters:]]
-
+        
 ege_total_df = pd.DataFrame(total_dict)
 ege_first_df = pd.DataFrame(first_dict)
 
