@@ -41,8 +41,9 @@ Color_brewer_Set2 = sb.color_palette(palette="Set2")
 Sb_colorblind_pal.append(Color_brewer_Set2[0])
 
 #%% Conventional model plot
+fig = plt.figure()
+fig.add_subplot(121)
 
-f1=plt.figure()
 g1=sb.boxplot(data=cge_ref_df, y="carbon footprint", whis=[1,99], showfliers=False, width=0.02)
 g1=sb.scatterplot(data=cge_cfs, x=0.03, y="carbon footprint", palette=Sb_colorblind_pal, hue="study", s=65)
 
@@ -50,25 +51,23 @@ handles, labels = g1.get_legend_handles_labels()
 g1.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
 
 # For "original" plot remove yscale
-g1.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), yscale="log")
+g1.set(title="CONVENTIONAL", xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), yscale="log")
 g1.set_xticks([])
 
 #%%  Enhanced model Plot
-
-f2=plt.figure()
-sb.boxplot(data=ege_ref_df, y="carbon footprint",whis=[1,99], showfliers=False, width=0.02)
+fig.add_subplot(122)
+g2=sb.boxplot(data=ege_ref_df, y="carbon footprint",whis=[1,99], showfliers=False, width=0.02)
 g2=sb.scatterplot(data=ege_cfs, x=0.03, y="carbon footprint", palette=Sb_colorblind_pal, hue="study", s=65)
 
 handles, labels = g2.get_legend_handles_labels()
 g2.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
 
 # For "original" plot remove ylim and yscale
-g2.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), ylim=(5), yscale="log")
+g2.set(title="", xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), ylim=(5), yscale="log")
 g2.set_xticks([])
 
 #%% Tight layout
-f1.tight_layout()
-f2.tight_layout()
+fig.tight_layout()
 
 #%% Save plots
 
@@ -78,10 +77,9 @@ f2.tight_layout()
 
 folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
 
-f1.savefig(os.path.join(folder_OUT, file_name + " - Conventional_2.png"), dpi=600, format="png")
-f2.savefig(os.path.join(folder_OUT, file_name + " - Enhanced_2.png"), dpi=600, format="png")
+fig.savefig(os.path.join(folder_OUT, file_name + ".png"), dpi=600)
 
-#%% Conventional plot - iolin
+#%% Conventional plot - Violin
 
 cge_1 = pd.DataFrame(cge_ref_df["carbon footprint"])
 cge_1["type"] = "model"
