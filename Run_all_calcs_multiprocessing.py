@@ -8,8 +8,7 @@ import time
 #                  "ReferenceVsSimplified_UDDGP_and_HSD_calc.py")  
 
                                                                             
-processes = ("ReferenceVsSimplified_calc.py", \
-             "ReferenceVsSimplified_test_cases_calc.py", \
+processes = ("ReferenceVsSimplified_test_cases_calc.py", \
              "ReferenceVsSimplified_UDDGP_and_HSD_calc.py")
                                     
                                                                                                                               

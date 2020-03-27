@@ -49,9 +49,9 @@ g1=sb.scatterplot(data=cge_cfs, x=0.03, y="carbon footprint", palette=Sb_colorbl
 handles, labels = g1.get_legend_handles_labels()
 g1.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
 
-g1.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1))
+# For "original" plot remove yscale
+g1.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), yscale="log")
 g1.set_xticks([])
-
 
 #%%  Enhanced model Plot
 
@@ -62,7 +62,8 @@ g2=sb.scatterplot(data=ege_cfs, x=0.03, y="carbon footprint", palette=Sb_colorbl
 handles, labels = g2.get_legend_handles_labels()
 g2.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
 
-g2.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1))
+# For "original" plot remove ylim and yscale
+g2.set(xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), ylim=(5), yscale="log")
 g2.set_xticks([])
 
 #%% Tight layout
@@ -77,5 +78,47 @@ f2.tight_layout()
 
 folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
 
-f1.savefig(os.path.join(folder_OUT, file_name + " - Conventional.png"), dpi=600, format="png")
-f2.savefig(os.path.join(folder_OUT, file_name + " - Enhanced.png"), dpi=600, format="png")
+f1.savefig(os.path.join(folder_OUT, file_name + " - Conventional_2.png"), dpi=600, format="png")
+f2.savefig(os.path.join(folder_OUT, file_name + " - Enhanced_2.png"), dpi=600, format="png")
+
+#%% Conventional plot - iolin
+
+cge_1 = pd.DataFrame(cge_ref_df["carbon footprint"])
+cge_1["type"] = "model"
+cge_2 = pd.DataFrame(cge_cfs["carbon footprint"])
+cge_2["type"] = "literature"
+cge=pd.concat([cge_1, cge_2], ignore_index=True)
+cge["x"]="x"
+
+f3=plt.figure()
+g3=sb.violinplot(data=cge,x="x", y="carbon footprint", hue="type", split=True, inner="quartile", cut=0)
+
+handles, labels = g3.get_legend_handles_labels()
+g3.legend(handles=handles[0:], labels=labels[0:], loc='upper right', fontsize=9)
+
+g3.set(xlabel='', ylabel='$g CO_2 eq./kWh$', ylim=(0))
+g3.set_xticks([])
+
+#%% Enhanced plot - Violin
+
+ege_1 = pd.DataFrame(ege_ref_df["carbon footprint"])
+ege_1["type"] = "model"
+ege_2 = pd.DataFrame(ege_cfs["carbon footprint"])
+ege_2["type"] = "literature"
+ege=pd.concat([ege_1, ege_2], ignore_index=True)
+ege["x"]="x"
+
+f4=plt.figure()
+g4=sb.violinplot(data=ege,x="x", y="carbon footprint", hue="type", split=True, inner="quartile", cut=0)
+
+handles, labels = g4.get_legend_handles_labels()
+g4.legend(handles=handles[0:], labels=labels[0:], loc='upper right', fontsize=9)
+
+g4.set(xlabel='', ylabel='$g CO_2 eq./kWh$', ylim=(0))
+g4.set_xticks([])
+
+#%% Save Violin
+folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
+
+f3.savefig(os.path.join(folder_OUT, file_name + " - Conventional VIOLIN.png"), dpi=600, format="png")
+f4.savefig(os.path.join(folder_OUT, file_name + " - Enhanced VIOLIN.png"), dpi=600, format="png")

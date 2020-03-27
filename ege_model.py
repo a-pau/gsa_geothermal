@@ -60,7 +60,8 @@ class GeothermalEnhancedModel:
         
         success_rate_exploration_wells = (params["success_rate_exploration_wells"] / 100) / self.success_rate_opt[0]
         success_rate_primary_wells     = (params["success_rate_primary_wells"] / 100) / self.success_rate_opt[1]
-                 
+        
+	#NOTE THAT THIS IS MISSING THE COOLING TOWERS          
         lifetime_electricity_generated = (params["installed_capacity"] *
                                           params["capacity_factor"] *
                                           (1 - params["auxiliary_power"]) *

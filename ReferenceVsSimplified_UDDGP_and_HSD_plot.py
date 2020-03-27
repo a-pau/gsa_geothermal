@@ -23,20 +23,20 @@ ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 
 #%% Choose option
-exploration = True
-success_rate = True
+exploration = False
+success_rate = False
 
 #%% Load data
 
 ecoinvent_version = "ecoinvent_3.6"
 
 #Hellisheidi/UDDGP impacts
-folder_IN = os.path.joinabsolute_path, ecoinvent_version, "generated_files")
+folder_IN = os.path.join(absolute_path,"generated_files", ecoinvent_version)
 HSD_scores = pd.read_excel(os.path.join(folder_IN, "Hellisheidi impacts.xlsx"), sheet_name="Sheet1", index_col=0)
 UDDGP_scores = pd.read_excel(os.path.join(folder_IN, "UDDGP impacts.xlsx"), sheet_name="Sheet1", index_col=0)
 
 # Reference and conventional model
-n_iter = 1000
+n_iter = 10000
 file_name =get_file_name("ReferenceVsSmplified_UDDGP_and_HSD", exploration=exploration, success_rate=success_rate) 
 file_name = file_name + " N" + str(n_iter)
 folder_IN_2 = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")

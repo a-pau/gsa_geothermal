@@ -10,6 +10,9 @@ path = "."
 os.chdir(path)
 absolute_path = os.path.abspath(path)
 
+# To ignore warnings from MC (Sparse Efficiency Warning)
+warnings.filterwarnings("ignore")
+
 # Import local
 from cge_model import GeothermalConventionalModel
 from ege_model import GeothermalEnhancedModel
@@ -33,14 +36,14 @@ ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
 # Number of iterations
-n_iter=10000
+n_iter=1000
 
-# To ignore warnings from MC (Sparse Efficiency Warning)
-warnings.filterwarnings("ignore")
+# ecoinvent version
+ecoinvent_version = "ecoinvent_3.6"
 
 #%% CHOOSE OPTION
 
-exploration = True
+exploration = False
 success_rate = True
 
 #%% Load simplified models coefficients.

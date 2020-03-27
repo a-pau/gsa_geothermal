@@ -37,8 +37,8 @@ ecoinvent_version = "ecoinvent_3.6"
 
 #%% CHOOSE OPTION
 
-exploration = False
-success_rate = False
+exploration = True
+success_rate = True
 
 #%% Load simplified models coefficients data
 file_name = get_file_name("Simplified models coefficients - analytical.xlsx", exploration=exploration, success_rate=success_rate) 

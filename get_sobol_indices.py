@@ -44,6 +44,7 @@ for k in sa_dict.keys():
 ege_total_df = pd.DataFrame(total_dict)
 ege_first_df = pd.DataFrame(first_dict)
 
+#%%
 with pd.ExcelWriter('generated_files//gsa_results//Sobol_indices.xlsx') as writer:  
     cge_first_df.to_excel(writer, sheet_name='CGE FIRST')
     cge_total_df.to_excel(writer, sheet_name='CGE TOTAL')

@@ -65,7 +65,8 @@ class GeothermalConventionalModel:
         success_rate_exploration_wells = (params["success_rate_exploration_wells"] / 100) / self.success_rate_opt[0]
         success_rate_primary_wells     = (params["success_rate_primary_wells"] / 100) / self.success_rate_opt[1] 
         success_rate_makeup_wells      = (params["success_rate_makeup_wells"] / 100) / self.success_rate_opt[2]
-             
+        
+	#NOTE THAT 30 SHOULD BE REPLACED BY LIFETIME!     
         lifetime_electricity_generated   = (params["installed_capacity"] *
                                            (params["capacity_factor"] *
                                            (1 - params["auxiliary_power"]) *
