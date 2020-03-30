@@ -32,9 +32,12 @@ class GSAinLCA:
 
         self.lca = lca
         self.options = options
+        # self.gsa_distr = gsa_distr
 
         # 1. Generate parameters dictionary
         if parameters != None and ParametersModel != None:
+            # if self.gsa_distr == True:
+            #     self.parameters = self.add_distr_parameters()
             if type(parameters) is not NamedParameters:
                 #Initiate NamedParameters object
                 self.parameters = NamedParameters(parameters)
@@ -53,6 +56,25 @@ class GSAinLCA:
             
         #Generate pandas dataframe
         self.sa_pandas_init()
+
+
+
+    # def add_distr_parameters(self):
+    #     '''
+    #     include lognormal, normal, uniform and triangular
+    #     '''
+    #     self.start_distr_params = len(self.parameters)
+    #     for key, val in self.parameters.items():
+    #         if val['uncertainty_type'] != sa.DiscreteUniform.id:
+    #             distr_param = {
+    #                 name + '_distr': {
+    #                     'minimum': 2,
+    #                     'maximum': 6,
+    #                     'uncertainty_type': sa.DiscreteUniform.id # min included, max excluded
+    #                 }
+    #             }
+    #             self.parameters.update(distr_param)
+    #     self.end_distr_params = len(self.parameters)
 
 
 
@@ -280,6 +302,9 @@ class GSAinLCA:
         return tech_params_amounts, bio_params_amounts
 
 
+    # def change_distributions_types(self):
+
+
 
     def replace_parameterized_exchanges(self, sample):
         """
@@ -298,6 +323,13 @@ class GSAinLCA:
         """
 
         n_parameters  = len(self.parameters_array)
+
+        # if self.gsa_distr == True:
+        #     distr_subsample = sample[self.i_sample + self.start_distr_params : self.i_sample + self.end_distr_params]
+        #     sample = np.hstack([sample[self.i_sample : self.i_sample + self.start_distr_params],
+        #                         sample[self.i_sample + self.end_distr_params : ]])
+        #     self.change_distributions_types(distr_subsample)
+
         parameters_subsample = sample[self.i_sample : self.i_sample+n_parameters]
         self.i_sample += n_parameters
 
