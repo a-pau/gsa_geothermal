@@ -164,3 +164,35 @@ f3.tight_layout()
 folder_OUT = os.path.join(absolute_path, "generated_plots","ecoinvent_3.6")
 f2.savefig(os.path.join(folder_OUT, "lollipop chart - First.png"), dpi=600)
 f3.savefig(os.path.join(folder_OUT, "lollipop chart - Total.png"), dpi=600)
+
+#%% THis is to find parameters for simplified models
+def find_params(df,threshold):
+    df_2 = df[df.columns[1:]]
+    df_2=df_2[df_2>threshold].dropna(how="all", axis=0)
+    df_3 = pd.merge(df[df.columns[0]], df_2, left_index=True, right_index=True)
+    return df_3
+
+cge_params_5 = find_params(cge_T, 0.05)
+ege_params_5 = find_params(ege_T, 0.05)
+
+cge_params_10 = find_params(cge_T, 0.10)
+ege_params_10 = find_params(ege_T, 0.10)
+
+cge_params_15 = find_params(cge_T, 0.15)
+ege_params_15 = find_params(ege_T, 0.15)
+
+cge_params_20 = find_params(cge_T, 0.20)
+ege_params_20 = find_params(ege_T, 0.20)
+
+#%% Save
+folder_OUT_2 = os.path.join(absolute_path, "generated_files","gsa_results")
+
+with pd.ExcelWriter(os.path.join(folder_OUT_2, 'simplified_models_parameters.xlsx')) as writer:  
+    cge_params_5.to_excel(writer, sheet_name='cge_params_5')
+    cge_params_10.to_excel(writer, sheet_name='cge_params_10')
+    cge_params_15.to_excel(writer, sheet_name='cge_params_15')
+    cge_params_20.to_excel(writer, sheet_name='cge_params_20')
+    ege_params_5.to_excel(writer, sheet_name='ege_params_5')
+    ege_params_10.to_excel(writer, sheet_name='ege_params_10')
+    ege_params_15.to_excel(writer, sheet_name='ege_params_15')
+    ege_params_20.to_excel(writer, sheet_name='ege_params_20')

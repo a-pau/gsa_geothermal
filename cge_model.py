@@ -65,13 +65,12 @@ class GeothermalConventionalModel:
         success_rate_exploration_wells = (params["success_rate_exploration_wells"] / 100) / self.success_rate_opt[0]
         success_rate_primary_wells     = (params["success_rate_primary_wells"] / 100) / self.success_rate_opt[1] 
         success_rate_makeup_wells      = (params["success_rate_makeup_wells"] / 100) / self.success_rate_opt[2]
-        
-	#NOTE THAT 30 SHOULD BE REPLACED BY LIFETIME!     
+         
         lifetime_electricity_generated   = (params["installed_capacity"] *
                                            (params["capacity_factor"] *
                                            (1 - params["auxiliary_power"]) *
                                             params["lifetime"] * 8760000) -
-                                           (self.cooling_tower_electricity * 1000 * self.cooling_tower_number * 30))  # kilowatt hour
+                                           (self.cooling_tower_electricity * 1000 * self.cooling_tower_number * params["lifetime"]))  # kilowatt hour
 
         number_of_production_wells = (np.ceil(params["installed_capacity"] / 
                                        params["gross_power_per_well"])) # Total number of wells is rounded up
@@ -128,7 +127,7 @@ class GeothermalConventionalModel:
         self.model(params)
 
         # Amounts per kwh generated
-        amounts = np.array([ self.number_of_wells, 
+        amounts = np.array([ self.number_of_wells_wo_expl, 
                              self.diesel_consumption, 
                              self.steel_consumption, 
                              self.cement_consumption,
@@ -153,7 +152,7 @@ class GeothermalConventionalModel:
               
         #TODO Need to find a way to include array in column "amount" in the structured array "array_io"
         return [
-            (self.wellhead, self.electricity_prod, np.array(self.number_of_wells/self.lifetime_electricity_generated)),
+            (self.wellhead, self.electricity_prod, np.array(self.number_of_wells_wo_expl/self.lifetime_electricity_generated)),
             (self.diesel, self.electricity_prod, np.array(self.diesel_consumption/self.lifetime_electricity_generated)),
             (self.steel, self.electricity_prod, np.array(self.steel_consumption/self.lifetime_electricity_generated)),
             (self.cement, self.electricity_prod, np.array(self.cement_consumption/self.lifetime_electricity_generated)),
