@@ -16,6 +16,8 @@ cge_T=pd.read_excel(os.path.join(absolute_path,"generated_files/gsa_results/cge_
 ege_F=pd.read_excel(os.path.join(absolute_path,"generated_files/gsa_results/ege_N500/sobol_first.xlsx"), usecols=col)
 ege_T=pd.read_excel(os.path.join(absolute_path,"generated_files/gsa_results/ege_N500/sobol_total.xlsx"), usecols=col)
 
+#Color palette
+col_pal = sb.color_palette()
 #%% First order
  
 def find_least_number(df,threshold):
@@ -33,12 +35,12 @@ def find_least_number(df,threshold):
             i+=1
     return counter
 
-threshold = [0.5,0.6,0.7,0.8]
+threshold_f = [0.50,0.60,0.70,0.80]
 
 cge_F_n_dict={}
 ege_F_n_dict={}
 
-for t in threshold:
+for t in threshold_f:
     cge_F_n_dict[t] = [find_least_number(cge_F, t)]
     ege_F_n_dict[t] = [find_least_number(ege_F, t)]
        
@@ -55,7 +57,7 @@ def find_least_number_for_total(df,threshold):
     return len(df_2)
   
 
-threshold_t = [0.01, 0.05,0.1,0.2,0.3]
+threshold_t = [0.01, 0.05,0.10,0.15,0.20]
 
 cge_T_n_dict={}
 ege_T_n_dict={}
@@ -81,7 +83,7 @@ f3, ax_total = plt.subplots()
 
 #%% First order - Manual lollipop categorical chart with matplotlib
 
-col_pal = sb.color_palette()
+sb.set_style("darkgrid")
 
 # set width of bars
 barWidth = 0.02
@@ -99,7 +101,7 @@ ax_first.bar(r2, first_n["Enhanced"]-0.3, color='black', width=barWidth, edgecol
 # Add xticks on the middle of the group bars
 ax_first.set_xlabel("Sum of first order indices", fontsize=12)
 ax_first.set_xticks([r + 10*barWidth/2 for r in range(len(first_n["Conventional"]))])
-ax_first.set_xticklabels(["0.50", "0.60", "0.70", "0.80"])
+ax_first.set_xticklabels([str(t) for t in threshold_f])
 ax_first.set_ylabel("Least number of parameters below threshold", fontsize=12)
 ax_first.set_yticks (np.arange(1,18))
 min_, max_ = ax_first.get_xlim()
@@ -115,6 +117,8 @@ ax_first.grid(b=None, which='major', axis='x')
 
 
 #%% Total order - Manual lollipop categorical chart with matplotlib
+
+sb.set_style("darkgrid")
 
 # set width of bars
 barWidth = 0.02
@@ -132,7 +136,7 @@ ax_total.bar(r2, total_n["Enhanced"]-0.35, color='black', width=barWidth, edgeco
 # Add xticks on the middle of the group bars
 ax_total.set_xlabel("Total order index", fontsize=12)
 ax_total.set_xticks([r + 10*barWidth/2 for r in range(len(total_n["Conventional"]))])
-ax_total.set_xticklabels(["0.01", "0.05", "0.10","0.20", "0.30"])
+ax_total.set_xticklabels([str(t) for t in threshold_t])
 ax_total.set_ylabel("Number of parameters below threshold", fontsize=12)
 ax_total.set_yticks (np.arange(1,18))
 min_, max_ = ax_total.get_xlim()

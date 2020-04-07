@@ -23,16 +23,19 @@ file_name = file_name + " N" + str(n_iter)
 ecoinvent_version = "ecoinvent_3.6"
 folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
 
-cge_ref_df = pd.read_json(os.path.join(, file_name + " - Conventional Ref")) \
+cge_ref_df = pd.read_json(os.path.join(folder_IN, file_name + " - Conventional Ref")) \
             .melt(var_name="study", value_name="carbon footprint")
-cge_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Conventional Sim")) \
+cge_s_df = pd.read_json(os.path.join(folder_IN, file_name + " - Conventional Sim")) \
             .melt(var_name="study", value_name="carbon footprint")
-ege_ref_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Enhanced Ref")) \
+ege_ref_df = pd.read_json(os.path.join(folder_IN, file_name + " - Enhanced Ref")) \
             .melt(var_name="study", value_name="carbon footprint")
-ege_s_df = pd.read_json(os.path.join(absolute_path, "generated_files", "validation_" + ecoinvent_version, file_name + " - Enhanced Sim")) \
+ege_s_df = pd.read_json(os.path.join(folder_IN, file_name + " - Enhanced Sim")) \
             .melt(var_name="study", value_name="carbon footprint")
 
 #%% Conventional 
+
+# This is to plot the legend for the boxplot too
+cge_ref_df["model"] = "general model"
 
 # Load literature carbon footprints and operational co2 emissions
 cge_cfs=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Conventional", index_col=None, skiprows=1)
@@ -59,22 +62,28 @@ for counter, study_ in enumerate(cge_study_list):
     elif counter >3:
         i= counter-4
         j=1
-    sb.boxplot(data=cge_ref_df[cge_ref_df.study==study_], x="study", y="carbon footprint", color="white", showfliers=False, whis=[5,95], ax=cge_ax[j][i])
-    sb.stripplot(data=cge_s_and_lit_df[cge_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True, ax=cge_ax[j][i])
+    sb.boxplot(data=cge_ref_df[cge_ref_df.study==study_], x="study", y="carbon footprint", hue="model", color="white", showfliers=False, whis=[1,99], ax=cge_ax[j][i])
+    sb.stripplot(data=cge_s_and_lit_df[cge_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True,s=7, ax=cge_ax[j][i])
     cge_ax[j][i].set_xlabel("")
     cge_ax[j][i].set_xticks([],[])
     cge_ax[j][i].set_title(textwrap.fill(study_,30) + "\n")
     cge_ax[j][i].get_legend().remove() 
-            
+              
     if i != 0:
         cge_ax[j][i].set_ylabel("")
     elif i == 0:
         cge_ax[j][i].set_ylabel(r"$g CO{2} eq./ kWh$")
-        
+      
 handles, labels = cge_ax[0][0].get_legend_handles_labels()
-cge_plot.legend(handles, labels, loc='upper center', ncol=2)
+cge_plot.legend(handles, labels, loc='upper left', ncol=3)
 
+cge_plot.subplots_adjust(wspace=0.25, hspace=0.4)
+cge_plot.set_size_inches([14,  8])
+cge_plot.tight_layout(rect=[0,0,1,0.95])
 #%% Enhanced
+
+# This is to plot the legend for the boxplot too
+ege_ref_df["model"] = "general model"
 
 # Load literature carbon footprints and operational co2 emissions
 ege_cfs=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Enhanced", index_col=None, skiprows=1, nrows=10)
@@ -100,8 +109,8 @@ for counter, study_ in enumerate(ege_study_list):
     elif counter >4:
         i= counter-5
         j=1
-    sb.boxplot(data=ege_ref_df[ege_ref_df.study==study_], x="study", y="carbon footprint", color="white", showfliers=False, whis=[5,95], ax=ege_ax[j][i])
-    sb.stripplot(data=ege_s_and_lit_df[ege_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True, ax=ege_ax[j][i])
+    sb.boxplot(data=ege_ref_df[ege_ref_df.study==study_], x="study", y="carbon footprint", hue="model", color="white", showfliers=False, whis=[1,99], ax=ege_ax[j][i])
+    sb.stripplot(data=ege_s_and_lit_df[ege_s_and_lit_df.study==study_], x="study", y= "carbon footprint", hue="type", jitter=False, dodge=True, s=7, ax=ege_ax[j][i])
     ege_ax[j][i].set_xlabel("")
     ege_ax[j][i].set_xticks([],[])
     ege_ax[j][i].set_title(textwrap.fill(study_,30) + "\n")
@@ -113,7 +122,11 @@ for counter, study_ in enumerate(ege_study_list):
         ege_ax[j][i].set_ylabel(r"$g CO{2} eq./ kWh$")
         
 handles, labels = ege_ax[0][0].get_legend_handles_labels()
-ege_plot.legend(handles, labels, loc='upper center', ncol=2)
+ege_plot.legend(handles, labels, loc='upper center', ncol=3)
+
+ege_plot.subplots_adjust(wspace=0.25, hspace=0.4)
+ege_plot.set_size_inches([14,  8])
+ege_plot.tight_layout(rect=[0,0,1,0.95])
 
 #%% Save plots
 
