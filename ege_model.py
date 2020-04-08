@@ -67,8 +67,7 @@ class GeothermalEnhancedModel:
                                           params["lifetime"] * 8760000) -
                                           (self.cooling_tower_electricity * 1000 * self.cooling_tower_number * params["lifetime"]))  # kilowatt hour# kilowatt hour
         
-        #Not used anymore
-        #number_of_wells = params["number_of_wells"] + (self.number_of_expl_wells * self.equivalency_expl_to_normal_wells)
+        number_of_wells = params["number_of_wells"] + (self.number_of_expl_wells * self.equivalency_expl_to_normal_wells)
         
         number_of_wells_drilled = (np.ceil(params["number_of_wells"] / success_rate_primary_wells) +
                                    np.ceil(self.number_of_expl_wells / success_rate_exploration_wells) * self.equivalency_expl_to_normal_wells)
@@ -114,7 +113,7 @@ class GeothermalEnhancedModel:
         self.cement_consumption, self.total_water_consumption, self.drilling_mud_consumption,\
         self.drilling_waste, self.total_metres_drilled, self.total_collection_pipelines,\
         self.ORC_fluid_consumption, self.diesel_for_stim, self.lifetime_electricity_generated =\
-        params["number_of_wells"], diesel_consumption, steel_consumption, cement_consumption,\
+        number_of_wells, diesel_consumption, steel_consumption, cement_consumption,\
         total_water_consumption, drilling_mud_consumption, drilling_waste, total_metres_drilled,\
         total_collection_pipelines, ORC_fluid_consumption, diesel_for_stim, lifetime_electricity_generated
                

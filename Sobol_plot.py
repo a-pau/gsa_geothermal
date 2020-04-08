@@ -9,7 +9,7 @@ path = "."
 os.chdir(path)
 absolute_path = os.path.abspath(path)
 
-col=range(1,17)
+col=range(1,18)
 
 cge_F=pd.read_excel(os.path.join(absolute_path,"generated_files/gsa_results/cge_N500/sobol_first.xlsx"), usecols=col)
 cge_T=pd.read_excel(os.path.join(absolute_path,"generated_files/gsa_results/cge_N500/sobol_total.xlsx"), usecols=col)

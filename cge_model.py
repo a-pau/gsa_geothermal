@@ -127,7 +127,7 @@ class GeothermalConventionalModel:
         self.model(params)
 
         # Amounts per kwh generated
-        amounts = np.array([ self.number_of_wells_wo_expl, 
+        amounts = np.array([ self.number_of_wells, 
                              self.diesel_consumption, 
                              self.steel_consumption, 
                              self.cement_consumption,
@@ -152,7 +152,7 @@ class GeothermalConventionalModel:
               
         #TODO Need to find a way to include array in column "amount" in the structured array "array_io"
         return [
-            (self.wellhead, self.electricity_prod, np.array(self.number_of_wells_wo_expl/self.lifetime_electricity_generated)),
+            (self.wellhead, self.electricity_prod, np.array(self.number_of_wells/self.lifetime_electricity_generated)),
             (self.diesel, self.electricity_prod, np.array(self.diesel_consumption/self.lifetime_electricity_generated)),
             (self.steel, self.electricity_prod, np.array(self.steel_consumption/self.lifetime_electricity_generated)),
             (self.cement, self.electricity_prod, np.array(self.cement_consumption/self.lifetime_electricity_generated)),
