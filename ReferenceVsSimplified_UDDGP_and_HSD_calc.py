@@ -43,7 +43,7 @@ ecoinvent_version = "ecoinvent_3.6"
 
 #%% CHOOSE OPTION
 
-exploration = False
+exploration = False # TODO set to true
 success_rate = True
 
 #%% Load simplified models coefficients.
