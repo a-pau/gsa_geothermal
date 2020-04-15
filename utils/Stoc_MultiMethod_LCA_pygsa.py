@@ -44,7 +44,7 @@ def run_mc(parameters, demand , methods, n_iter):
     
     # Parameters has the format presamples, and is the output from cge or ege model.
     
-    lca = bw.LCA({demand:1}, )
+    lca = bw.LCA(demand)
     lca.lci()
     lca.build_demand_array()
     demand_array = lca.demand_array
@@ -80,6 +80,6 @@ def run_mc(parameters, demand , methods, n_iter):
                      spsolve(lca.technosphere_matrix, demand_array)
             scores_m[i] = score
             
-        scores[method] = scores_m
+        scores[method[-1]] = scores_m
         
     return scores

@@ -172,9 +172,8 @@ class GeothermalSimplifiedModel:
         ### Impacts of each component from Equation 1
         wells = (W_n + W_E_en) * \
                 (i1 + W_d * (D * i2_1 + Cs * i2_2 + Cc * i2_3 + DM * i2_4 + DW * i2_5 + i2_6))
-        # TODO DW missing in the previous symbolic
         collection_pipelines = W_n * CP * i3
-        power_plant = P_ne * i4_1 + CT_n * i4_2 + OF * i4_3
+        power_plant = P_ne * (i4_1 + CT_n * i4_2 + OF * i4_3)
         stimulation = SW_n * W_n * S_w * (i5_1 + S_el * i5_2)  # TODO Wn missing the previous symbolic
         operational_emissions = E_co2 * i6
         lifetime = P_ne * CF * (1 - AP) * LT * 8760 * 1000 - CT_el * CT_n * 1000 * LT
@@ -210,7 +209,7 @@ class GeothermalSimplifiedModel:
             SR_p=parameters["success_rate_primary_wells"] / 100,
             # Constants
             W_en=3,
-            CT_n=7 / 303.3,  # TODO constant from the table 2?
+            CT_n=7 / 303.3,
             DW=450
         )
         return par_dict
