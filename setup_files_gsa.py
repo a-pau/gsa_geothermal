@@ -13,27 +13,16 @@ def setup_gsa(n_dimensions):
     }
     return problem, calc_second_order
 
-def setup_gt_project(project, option, CC_only=False):
+def setup_gt_project(project, option):
     
     bw.projects.set_current(project)
     
     #Local files
     from utils.lookup_func import lookup_geothermal
 
-    #Choose demand/
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conv, electricity_prod_enha = lookup_geothermal()
-
-     #Choose LCIA methods
-    ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "climate change total" in str(method)]
-    ILCD_HH = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "human health" in str(method)]
-    ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "ecosystem quality" in str(method)]
-    ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
-    
-    if CC_only:
-        methods = ILCD_CC
-    else:
-        methods = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
-
+    # Demand/
+    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conv, electricity_prod_enha = lookup_geothermal()   
+       
     if option == 'cge':
         demand = {electricity_prod_conv: 1}
         from cge_klausen import parameters
@@ -45,8 +34,26 @@ def setup_gt_project(project, option, CC_only=False):
         
     gt_model = GTModel(parameters)
 
-    return demand, methods, gt_model, parameters
+    return demand, gt_model, parameters
 
+def get_ILCD_methods(CC_only=False, units=False):
+    
+    # ILCD-EF2.0 methods
+    ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "climate change total" in str(method)]
+    ILCD_HH = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "human health" in str(method)]
+    ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "ecosystem quality" in str(method)]
+    ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
+    
+    if CC_only:
+        methods = ILCD_CC
+    else:
+        methods = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
+     
+    if units:
+        ILCD_units=[bw.methods[method]["unit"] for method in methods]
+        return methods, ILCD_units
+    else:
+        return methods 
 
 def gen_cf_matrices(lca, methods):
     method_matrices = []
@@ -74,7 +81,8 @@ def get_lcia_results(path):
 def setup_all(option):
     project = 'Geothermal'
 
-    demand, methods, gt_model, parameters = setup_gt_project(project, option)
+    demand, gt_model, parameters = setup_gt_project(project, option)
+    methods = get_ILCD_methods()
 
     lca = bw.LCA(demand, methods[0])
     lca.lci()
