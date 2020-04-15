@@ -21,7 +21,7 @@ bw.projects.set_current("Geothermal")
 ILCD, ILCD_units = get_ILCD_methods(units=True)
 
 # Upload
-n_iter=500
+n_iter=1000
 file_name= "ReferenceVsSimplified_N" + str(n_iter)
 ecoinvent_version = "ecoinvent_3.6"
 folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
@@ -30,8 +30,9 @@ cge_ref_df = pd.read_json(os.path.join(folder_IN, file_name + "_Conventional_Ref
 cge_s_df = pd.read_json(os.path.join(folder_IN, file_name + "_Conventional_Simplified")).melt(var_name="method", value_name="Simplified")
 cge_df = pd.concat([cge_ref_df, cge_s_df["Simplified"]], axis=1)
 
-# Enhanced to be added
-
+ege_ref_df = pd.read_json(os.path.join(folder_IN, file_name + "_Enhanced_Reference")).melt(var_name="method", value_name="Reference")
+ege_s_df = pd.read_json(os.path.join(folder_IN, file_name + "_Enhanced_Simplified")).melt(var_name="method", value_name="Simplified")
+ege_df = pd.concat([ege_ref_df, ege_s_df["Simplified"]], axis=1)
 
 folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
 
@@ -40,19 +41,19 @@ folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
 # Re-arrange dataframe
 cge_df_2=cge_df.melt(id_vars="method", var_name="model", value_name="score")
 
-cge_boxplot = sb.catplot(data=cge_df_2, x="model", y="score", col="method", kind="box", whis=[5,95], col_wrap=4, sharex=True, sharey=False, showfliers=False, height=4)
+cge_boxplot = sb.catplot(data=cge_df_2, x="model", y="score", col="method", kind="box", whis=[0,100], col_wrap=4, sharex=True, sharey=False, showfliers=False, height=4)
 for counter, ax in enumerate(cge_boxplot.axes.flatten()):
     ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     ax.set(xlabel="", title=ILCD[counter][2])
 #cge_boxplot.fig.tight_layout()
 cge_boxplot.fig.subplots_adjust(hspace = 0.3, wspace= 0.25, top=0.95)
 
-# ege_df2=ege_df.melt(id_vars="method", var_name="model", value_name="score")
-# ege_boxplot = sb.catplot(data=ege_df2, x="model", y="score", col="method", kind="box", whis=[5,95], col_wrap=4, sharex=True, sharey=False, showfliers=False)
-# for counter, ax in enumerate(ege_boxplot.axes.flatten()):
-#     ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-#     ax.set(xlabel="", title=ILCD[counter][2])
-# ege_boxplot.fig.subplots_adjust(hspace = 0.3, wspace= 0.25, top=0.95)
+ege_df2=ege_df.melt(id_vars="method", var_name="model", value_name="score")
+ege_boxplot = sb.catplot(data=ege_df2, x="model", y="score", col="method", kind="box", whis=[5,95], col_wrap=4, sharex=True, sharey=False, showfliers=False)
+for counter, ax in enumerate(ege_boxplot.axes.flatten()):
+    ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    ax.set(xlabel="", title=ILCD[counter][2])
+ege_boxplot.fig.subplots_adjust(hspace = 0.3, wspace= 0.25, top=0.95)
 
 #%% Save boxplot
 file_name_box = file_name + " Boxplot"

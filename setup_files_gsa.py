@@ -20,7 +20,7 @@ def setup_gt_project(project, option):
     #Local files
     from utils.lookup_func import lookup_geothermal
 
-    # Demand/
+    # Demand
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conv, electricity_prod_enha = lookup_geothermal()   
        
     if option == 'cge':
