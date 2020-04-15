@@ -1,71 +1,66 @@
-#%% Set-up
+#%% SETUP
 
 import brightway2 as bw
 import pandas as pd
 import os
 import warnings
+from setup_files_gsa import setup_gt_project, run_mc
+from simplified_gt_models import ConventionalSimplifiedModel as cge_model_s_
 
 # Set working directry
 path = "."
 os.chdir(path)
 
-# Import local
-from cge_klausen import parameters as cge_parameters
-from ege_klausen import parameters as ege_parameters
-from cge_model import GeothermalConventionalModel
-from ege_model import GeothermalEnhancedModel
-from s_models import simplified_cge_model, simplified_ege_model
-from utils.lookup_func import lookup_geothermal
-from utils.Stoc_MultiMethod_LCA_pygsa import run_mc
-
-# Set project
-bw.projects.set_current("Geothermal")
-
-# Retrieve methods 
-ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "climate change total" in str(method)]
-ILCD_HH = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "human health" in str(method)]
-ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "ecosystem quality" in str(method)]
-ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
-ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
-
-# Find demand
-_, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
+# 
+project = 'Geothermal'
+option = 'cge'
+electricity_conv_prod, ILCD_CC , cge_model, cge_parameters = setup_gt_project(project, option, CC_only=True)
 
 # Number of iterations
-n_iter=10000
+n_iter = 10
 
-# ecoinvent version
+# Seed for stochastic parameters
+seed = 13413203
+
+# Folder and file name for saving
 ecoinvent_version = "ecoinvent_3.6"
-
-# Load simplified models coefficients
 absolute_path = os.path.abspath(path)
-folder_IN = os.path.join("generated_files", ecoinvent_version)
+folder_OUT = os.path.join(absolute_path,"generated_files", ecoinvent_version, "validation")
+file_name = "ReferenceVsSimplified N" + str(n_iter)
 
-coeffs_=pd.read_excel(os.path.join(absolute_path, folder_IN, "Simplified models coefficients - analytical.xlsx"), sheet_name=["alpha", "beta", "chi", "delta"], index_col=0, dtype=object)
-alpha = coeffs_["alpha"].to_dict()
-beta = coeffs_["beta"].to_dict()
-chi = coeffs_["chi"].to_dict()
-delta = coeffs_["delta"].to_dict()
 
 # To ignore warnings from MC (Sparse Efficiency Warning)
 warnings.filterwarnings("ignore")
 
-#%% Conventional model calculations
+#%% Conventional model calculations - reference
 
 # Generate stochastic values
-cge_parameters.stochastic(iterations=n_iter)
+cge_parameters.stochastic(iterations=n_iter, seed=seed)
 
 # Reference model
-cge_model = GeothermalConventionalModel(cge_parameters)
 cge_parameters_sto = cge_model.run_ps(cge_parameters)
-ref_cge = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD, n_iter)
+ref_cge = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD_CC, n_iter)
 
-# Simplified model
-s_cge = simplified_cge_model(cge_parameters, ILCD, alpha, beta)
+# Save
+ref_cge_df = pd.DataFrame.from_dict(ref_cge)
+path_and_full_name = os.path.join(folder_OUT, file_name + "-Reference" + "-Conventional.txt")
+ref_cge_df.to_json(path_and_full_name, double_precision=15)
 
-ref_cge_df=pd.DataFrame.from_dict(ref_cge, orient="columns").melt(var_name=["method_1", "method_2", "method_3"],value_name="Reference")
-s_cge_df=pd.DataFrame.from_dict(s_cge, orient="columns").melt(var_name=["method_1", "method_2", "method_3"], value_name="Simplified")
-cge_df = pd.merge(ref_cge_df, s_cge_df["Simplified"], how="left", left_index=True, right_index=True)
+#%%Conventional model calculations - simplified
+threshold = 0.2     # 20%
+cge_model_s = cge_model_s_(threshold)
+
+cge_parameters.stochastic(iterations=n_iter, seed=seed)
+s_cge = cge_model_s.run(cge_parameters, lcia_methods=ILCD_CC)
+
+# Save
+s_cge_df = pd.DataFrame.from_dict(s_cge)
+path_and_full_name = os.path.join(folder_OUT, file_name + "-Simplified" + "-Conventional.txt")
+s_cge_df.to_json(path_and_full_name, double_precision=15)
+
+
+
+
 
 #%% Enhanced model calculations
 

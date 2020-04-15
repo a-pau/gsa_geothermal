@@ -13,8 +13,7 @@ def setup_gsa(n_dimensions):
     }
     return problem, calc_second_order
 
-
-def setup_gt_project(project, option):
+def setup_gt_project(project, option, CC_only=False):
     
     bw.projects.set_current(project)
     
@@ -29,7 +28,11 @@ def setup_gt_project(project, option):
     ILCD_HH = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "human health" in str(method)]
     ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "ecosystem quality" in str(method)]
     ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
-    methods = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
+    
+    if CC_only:
+        methods = ILCD_CC
+    else:
+        methods = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 
     if option == 'cge':
         demand = {electricity_prod_conv: 1}

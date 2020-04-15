@@ -190,10 +190,10 @@ class GeothermalSimplifiedModel:
         :param parameters:
         :return:
         '''
-        # Fixed values of the parameters (same in enhanced and conventional)
+        # Fixed values of the parameters that are common to enhanced and conventional
         par_dict = dict(
             # Power plant
-            P_ne=parameters["installed_capacity"],
+            P_ne=parameters["installed_capacity"], 
             AP=parameters["auxiliary_power"],
             CF=parameters["capacity_factor"],
             LT=parameters["lifetime"],
@@ -210,7 +210,9 @@ class GeothermalSimplifiedModel:
             # Constants
             W_en=3,
             CT_n=7 / 303.3,
-            DW=450
+            DW=450,
+            CT_el=864,
+            OF=0
         )
         return par_dict
 
@@ -226,7 +228,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         self.i_coeff_matrix['i5_1'] = 0
         self.i_coeff_matrix['i5_2'] = 0
         from cge_klausen import parameters
-        parameters.static()
+        parameters.static() # TODO This is the problem
         self.par_subs_dict = self.get_par_dict(parameters)
         self.complete_par_dict(parameters)
         self.simplified_model_dict = self.get_simplified_model()
@@ -245,10 +247,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
             # Success rate
             SR_m=parameters["success_rate_makeup_wells"] / 100,
             # Operational CO2 emissions
-            E_co2=parameters["co2_emissions"],
-            # Constants
-            CT_el=864,
-            OF=0,
+            E_co2=parameters["co2_emissions"]
         ))
 
     def get_simplified_model(self):
@@ -376,8 +375,12 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         for method in lcia_methods:
             s_const = self.simplified_model_dict[method[-1]]['s_const']
             s_model = self.simplified_model_dict[method[-1]]['s_model']
+            
             res = s_model(s_const, parameters)
-            print(res)
+            
+            if len(res)>1:
+                res=res.astype("float")
+            
             results[method[-1]] = res
 
         return results
@@ -416,12 +419,12 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
 ### How to use it ###
 #####################
 
-threshold = 0.2     # 20%
-s_cge = ConventionalSimplifiedModel(threshold)
-from cge_klausen import parameters
-n_iter = 10
-parameters.stochastic(n_iter)
-results = s_cge.run(parameters)
+# threshold = 0.2     # 20%
+# s_cge = ConventionalSimplifiedModel(threshold)
+# from cge_klausen import parameters
+# n_iter = 10
+# parameters.stochastic(n_iter)
+# results = s_cge.run(parameters)
 
 # # this will create a `results` dictionary where keys are methods and values are array of simplified model outputs:
 # {'climate change total': array([0.149314647656919, 0.0679825835704374, 0.106377147352442,
