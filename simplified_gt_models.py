@@ -129,7 +129,7 @@ class GeothermalSimplifiedModel:
         # Re-arrange matrix
         i_coeff_matrix["concrete"] = i_coeff_matrix["cement"] + i_coeff_matrix["water"] * 1 / 0.65
         i_coeff_matrix["ORC_fluid_tot"] = i_coeff_matrix["ORC_fluid"] - i_coeff_matrix["ORC_fluid_wst"]
-        i_coeff_matrix["electricity_stim"] = i_coeff_matrix["diesel_stim"] * 3.6 / 0.3
+        i_coeff_matrix["electricity_stim"] = i_coeff_matrix["diesel_stim"] * 3.6
         i_coeff_matrix["drill_wst"] = i_coeff_matrix["drill_wst"] * -1
         i_coeff_matrix = i_coeff_matrix.drop(columns=["cement", "ORC_fluid", "ORC_fluid_wst", "diesel_stim"])
 
@@ -165,19 +165,19 @@ class GeothermalSimplifiedModel:
         ### Total number of wells with success rate
         if self.option == 'cge':
             W_Pn = P_ne / CW_ne  # production wells
-            W_n = W_Pn * ((1 + 1 / PIratio) / SR_p + D_i * LT / SR_m)
+            W_n = W_Pn * ((1 + 1 / PIratio) / (SR_p/100) + D_i * LT / (SR_m/100))
         elif self.option == 'ege':
             W_Pn = symbols('W_Pn')
-            W_n = W_Pn / SR_p
+            W_n = W_Pn / (SR_p/100)
 
-        W_E_en = W_en * 0.3 / SR_e
+        W_E_en = W_en * 0.3 / (SR_e/100)
 
         ### Impacts of each component from Equation 1
         wells = (W_n + W_E_en) * \
                 (i1 + W_d * (D * i2_1 + Cs * i2_2 + Cc * i2_3 + DM * i2_4 + DW * i2_5 + i2_6))
         collection_pipelines = W_n * CP * i3
         power_plant = P_ne * (i4_1 + CT_n * i4_2 + OF * i4_3)
-        stimulation = SW_n * W_n * S_w * (i5_1 + S_el * i5_2)
+        stimulation = SW_n * S_w * (i5_1 + S_el * i5_2) # NO W_n here, because it is included in SW_n
         operational_emissions = E_co2 * i6
         lifetime = P_ne * CF * (1 - AP) * LT * 8760 * 1000 - CT_el * CT_n * 1000 * LT
 
@@ -208,8 +208,8 @@ class GeothermalSimplifiedModel:
             Cc=parameters["specific_cement_consumption"],
             DM=parameters["specific_drilling_mud_consumption"],
             # Success rate
-            SR_e=parameters["success_rate_exploration_wells"] / 100,
-            SR_p=parameters["success_rate_primary_wells"] / 100,
+            SR_e=parameters["success_rate_exploration_wells"],
+            SR_p=parameters["success_rate_primary_wells"],
             # Constants
             W_en=3,
             CT_n=7 / 303.3,
@@ -248,7 +248,7 @@ class GeothermalSimplifiedModel:
 
         coeff = {}
         for method in lcia_methods:
-            coeff[method] = simplified_model_dict[method[-1]]['s_const']
+            coeff[method[-1]] = simplified_model_dict[method[-1]]['s_const']
 
         return coeff
 
@@ -282,7 +282,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
             D_i=parameters["initial_harmonic_decline_rate"],
             PIratio=parameters["production_to_injection_ratio"],
             # Success rate
-            SR_m=parameters["success_rate_makeup_wells"] / 100,
+            SR_m=parameters["success_rate_makeup_wells"],
             # Operational CO2 emissions
             E_co2=parameters["co2_emissions"],
             # Constants
@@ -428,11 +428,11 @@ class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
     def complete_par_dict(self, parameters):
         self.par_subs_dict.update(dict(
             # Wells
-            W_Pn=parameters['number_of_wells'],
+            W_Pn=2.5, # This needs to be set manually.
             # Stimulation
             S_w=parameters["water_stimulation"],
             S_el=parameters["specific_electricity_stimulation"] / 1000,
-            SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * parameters["number_of_wells"]),
+            SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * 2.5), # 2.5 here, because we don't need to include success_rate
             # Constants
             CT_el = 864,
             OF = 300

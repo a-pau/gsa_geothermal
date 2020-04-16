@@ -31,7 +31,6 @@ cge_parameters = [parameters_BandB_BG3, parameters_BandB_PC3, parameters_BandB_P
 path = "."
 os.chdir(path)
 
-
 # To ignore warnings from MC (Sparse Efficiency Warning)
 warnings.filterwarnings("ignore")
 

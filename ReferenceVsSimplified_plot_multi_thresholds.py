@@ -30,7 +30,7 @@ folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "v
 folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
 
 # Thresholds
-threshold = [0.2, 0.15, 0.1]
+threshold = [0.2, 0.15, 0.1, 0.05]
 
 # Reference
 cge_ref_df = pd.read_json(os.path.join(folder_IN, file_name + "_Conventional_Reference")).melt(var_name="method", value_name="Reference")
@@ -63,7 +63,7 @@ for method in ILCD:
         temp[t] = 1 - (float(SS_Residual))/SS_Total 
         #temp2[t] = 1 - (1 - temp[t]) * (17-1)/(17-1-n_par[t])
     cge_r_squared[method[2]] = temp
-    cge_r_squared_adj[method[2]] = temp2
+    #cge_r_squared_adj[method[2]] = temp2
 
 cge_r_squared_df = pd.DataFrame.from_dict(cge_r_squared, orient="index")
 cge_r_squared_df.columns = ["{:.0%}".format(t) for t in cge_r_squared_df.columns]
@@ -96,7 +96,7 @@ cge_r_squared_df_m = cge_r_squared_df_m.melt(id_vars="method",var_name="threshol
 
 cge_fig = plt.figure()
 cge_plot = sb.stripplot(data=cge_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=8)
-cge_plot.set(xlim=(0.65,1.02), xlabel="\mathregular$R^2$", ylabel="")
+cge_plot.set(xlim=(0,1.02), xlabel="\mathregular$R^2$", ylabel="")
 plt.grid(which='major', axis='y')
 handles, labels = cge_plot.get_legend_handles_labels()
 cge_plot.legend(handles, labels, loc='center right', ncol=1)
@@ -112,7 +112,7 @@ ege_r_squared_df_m = ege_r_squared_df_m.melt(id_vars="method",var_name="threshol
 
 ege_fig = plt.figure()
 ege_plot = sb.stripplot(data=ege_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=8)
-ege_plot.set(xlim=(0.65,1.02), xlabel="$\mathregularR^2$", ylabel="")
+ege_plot.set(xlim=(0,1.02), xlabel="\mathregular$R^2$", ylabel="")
 plt.grid(which='major', axis='y')
 handles, labels = ege_plot.get_legend_handles_labels()
 ege_plot.legend(handles, labels, loc='center right', ncol=1)
