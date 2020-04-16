@@ -50,32 +50,14 @@ cge_parameters.stochastic(iterations=n_iter, seed=seed)
 # Compute
 cge_model = GeothermalConventionalModel(cge_parameters)
 cge_parameters_sto = cge_model.run_ps(cge_parameters)
-ref_cge = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD, n_iter)
+cge_ref = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD, n_iter)
 
 # Save
-ref_cge_df = pd.DataFrame.from_dict(ref_cge)
+cge_ref_df = pd.DataFrame.from_dict(cge_ref)
 
 file_name_cge_ref = file_name + "_Conventional" + "_Reference"
 print("Saving ", file_name_cge_ref, " to ", folder_OUT)
 ref_cge_df.to_json(os.path.join(folder_OUT, file_name_cge_ref), double_precision=15)
-
-#%%CONVENTIONAL model calculations - SIMPLIFIED
-threshold = 0.2
-
-# Initialize class
-cge_model_s = cge_model_s_(threshold)
-
-# TODO once "static" is fixed in simplified_models, this can be removed.
-cge_parameters.stochastic(iterations=n_iter, seed=seed)
-
-# Compute 
-s_cge = cge_model_s.run(cge_parameters)
-
-# Save
-s_cge_df = pd.DataFrame.from_dict(s_cge)
-file_name_cge_s = file_name + "_Conventional" + "_Simplified"
-print("Saving ", file_name_cge_s, " to ", folder_OUT)
-s_cge_df.to_json(os.path.join(folder_OUT, file_name_cge_s), double_precision=15)
 
 #%% ENHANCED model calculations - REFERENCE
 # Generate stochastic values
@@ -84,30 +66,53 @@ ege_parameters.stochastic(iterations=n_iter, seed=seed)
 # Compute
 ege_model = GeothermalEnhancedModel(ege_parameters)
 ege_parameters_sto = ege_model.run_ps(ege_parameters)
-ref_ege = run_mc(ege_parameters_sto, {electricity_enh_prod:1}, ILCD, n_iter)
+ege_ref = run_mc(ege_parameters_sto, {electricity_enh_prod:1}, ILCD, n_iter)
 
 # Save
-ref_ege_df = pd.DataFrame.from_dict(ref_ege)
+ege_ref_df = pd.DataFrame.from_dict(ege_ref)
 
 file_name_ege_ref = file_name + "_Enhanced" + "_Reference"
 print("Saving ", file_name_ege_ref, " to ", folder_OUT)
-ref_ege_df.to_json(os.path.join(folder_OUT, file_name_ege_ref), double_precision=15)
+ege_ref_df.to_json(os.path.join(folder_OUT, file_name_ege_ref), double_precision=15)
+
+#%%CONVENTIONAL model calculations - SIMPLIFIED
+threshold = [0.2, 0.15, 0.1, 0.05]
+
+for t in threshold:
+    
+    # Initialize class
+    cge_model_s = cge_model_s_(t)
+    
+    # TODO once "static" is fixed in simplified_models, this can be removed.
+    cge_parameters.stochastic(iterations=n_iter, seed=seed)
+    
+    # Compute 
+    cge_s = cge_model_s.run(cge_parameters)
+    
+    # Save
+    s_cge_df = pd.DataFrame.from_dict(cge_s)
+    file_name_cge_s = file_name + "_Conventional" + "_Simplified" + "_t" + str(t)
+    print("Saving ", file_name_cge_s, " to ", folder_OUT)
+    cge_s_df.to_json(os.path.join(folder_OUT, file_name_cge_s), double_precision=15)
 
 #%%ENHANCED model calculations - SIMPLIFIED
-threshold = 0.15
+threshold = [0.2,0.15, 0.1, 0.05]
 
-# Initialize class
-ege_model_s = ege_model_s_(threshold)
+for t in threshold:
+    
+    # Initialize class
+    ege_model_s = ege_model_s_(t)
+    
+    # TODO once "static" is fixed in simplified_models, this can be removed.
+    ege_parameters.stochastic(iterations=n_iter, seed=seed)
+    
+    # Compute 
+    ege_s = ege_model_s.run(ege_parameters)
+    
+    # Save
+    ege_s_df = pd.DataFrame.from_dict(ege_s)
+    file_name_ege_s = file_name + "_Enhanced" + "_Simplified" + "_t" + str(t)
+    print("Saving ", file_name_ege_s, " to ", folder_OUT)
+    ege_s_df.to_json(os.path.join(folder_OUT, file_name_ege_s), double_precision=15)
 
-# TODO once "static" is fixed in simplified_models, this can be removed.
-ege_parameters.stochastic(iterations=n_iter, seed=seed)
-
-# Compute 
-s_ege = ege_model_s.run(ege_parameters)
-
-# Save
-s_ege_df = pd.DataFrame.from_dict(s_ege)
-file_name_ege_s = file_name + "_Enhanced" + "_Simplified"
-print("Saving ", file_name_ege_s, " to ", folder_OUT)
-s_ege_df.to_json(os.path.join(folder_OUT, file_name_ege_s), double_precision=15)
-
+    
