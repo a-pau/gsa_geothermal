@@ -3,7 +3,7 @@
 # import os, json
 
 from copy import deepcopy
-from sympy import symbols, collect, ratsimp
+from sympy import symbols, collect, ratsimp, fraction
 
 # Local
 from setup_files_gsa import *
@@ -33,6 +33,9 @@ class GeothermalSimplifiedModel:
             'average_depth_of_wells': 'W_d',
             'initial_harmonic_decline_rate': 'D_i',
             'success_rate_primary_wells': 'SR_p',
+            'installed_capacity': 'P_ne',
+            'specific_diesel_consumption': 'D',
+            'average_depth_of_wells': 'W_d'
         }
 
     def get_total_indices(self, path):
@@ -128,6 +131,7 @@ class GeothermalSimplifiedModel:
         i_coeff_matrix["concrete"] = i_coeff_matrix["cement"] + i_coeff_matrix["water"] * 1 / 0.65
         i_coeff_matrix["ORC_fluid_tot"] = i_coeff_matrix["ORC_fluid"] - i_coeff_matrix["ORC_fluid_wst"]
         i_coeff_matrix["electricity_stim"] = i_coeff_matrix["diesel_stim"] * 3.6 / 0.3
+        i_coeff_matrix["drill_wst"] = i_coeff_matrix["drill_wst"] * -1
         i_coeff_matrix = i_coeff_matrix.drop(columns=["cement", "ORC_fluid", "ORC_fluid_wst", "diesel_stim"])
 
         col_ord = ["wellhead", "diesel", "steel", "concrete", \
@@ -190,10 +194,10 @@ class GeothermalSimplifiedModel:
         :param parameters:
         :return:
         '''
-        # Fixed values of the parameters (same in enhanced and conventional)
+        # Fixed values of the parameters that are common to enhanced and conventional
         par_dict = dict(
             # Power plant
-            P_ne=parameters["installed_capacity"],
+            P_ne=parameters["installed_capacity"], 
             AP=parameters["auxiliary_power"],
             CF=parameters["capacity_factor"],
             LT=parameters["lifetime"],
@@ -210,7 +214,9 @@ class GeothermalSimplifiedModel:
             # Constants
             W_en=3,
             CT_n=7 / 303.3,
-            DW=450
+            DW=450,
+            CT_el=864,
+            OF=0
         )
         return par_dict
 
@@ -226,7 +232,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         self.i_coeff_matrix['i5_1'] = 0
         self.i_coeff_matrix['i5_2'] = 0
         from cge_klausen import parameters
-        parameters.static()
+        parameters.static() # TODO This is the problem
         self.par_subs_dict = self.get_par_dict(parameters)
         self.complete_par_dict(parameters)
         self.simplified_model_dict = self.get_simplified_model()
@@ -245,10 +251,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
             # Success rate
             SR_m=parameters["success_rate_makeup_wells"] / 100,
             # Operational CO2 emissions
-            E_co2=parameters["co2_emissions"],
-            # Constants
-            CT_el=864,
-            OF=0,
+            E_co2=parameters["co2_emissions"]
         ))
 
     def get_simplified_model(self):
@@ -376,52 +379,232 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         for method in lcia_methods:
             s_const = self.simplified_model_dict[method[-1]]['s_const']
             s_model = self.simplified_model_dict[method[-1]]['s_model']
+            
             res = s_model(s_const, parameters)
-            print(res)
+            
+            if len(res)>1:
+                res=res.astype("float")
+            
             results[method[-1]] = res
 
         return results
 
-
+    def get_coeff(self, lcia_methods=None):
+        
+        if lcia_methods == None:
+            lcia_methods = self.methods
+        
+        coeff ={}
+        for method in lcia_methods:
+            coeff[method] = self.simplified_model_dict[method[-1]]['s_const']
+        
+        return coeff
 
 #############################################
 ### Enhanced simplified model CHILD class ###
 #############################################
 
-# class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
-#
-#     def __init__(self, threshold):
-#         super(EnhancedSimplifiedModel, self).__init__(option='ege', threshold=threshold)
-#         from ege_klausen import parameters
-#         parameters.static()
-#         self.par_subs_dict = self.get_par_dict(parameters)
-#         self.complete_par_dict(parameters)
-#
-#     def complete_par_dict(self, parameters):
-#         self.par_subs_dict.update(dict(
-#             # Wells
-#             WPn=parameters['number_of_wells'],
-#             # Stimulation
-#             S_w=parameters["water_stimulation"],
-#             S_el=parameters["specific_electricity_stimulation"] / 1000,
-#             SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * parameters["number_of_wells"]),
-#             # Constants
-#             OF=300,
-#         ))
+class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
 
+    def __init__(self, threshold):
+        super(EnhancedSimplifiedModel, self).__init__(option='ege', threshold=threshold)
+        self.i_coeff_matrix['i6'] = 0
+        from ege_klausen import parameters
+        parameters.static() #TODO Remember to fix this
+        self.par_subs_dict = self.get_par_dict(parameters)
+        self.complete_par_dict(parameters)
+        self.simplified_model_dict = self.get_simplified_model()
+        
 
+    def complete_par_dict(self, parameters):
+        self.par_subs_dict.update(dict(
+            # Wells
+            W_Pn=parameters['number_of_wells'],
+            # Stimulation
+            S_w=parameters["water_stimulation"],
+            S_el=parameters["specific_electricity_stimulation"] / 1000,
+            SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * parameters["number_of_wells"])
+        ))
+    
+    
+    def get_simplified_model(self):
+        '''
+        Compute constants (chi, gamma) and an expression for the simplified model
+        :return:
+        '''
+        simplified_model_dict = {}
+
+        for group in self.methods_groups:
+            inf_params = group['parameters']
+            par_dict_copy = deepcopy(self.par_subs_dict)
+            [par_dict_copy.pop(self.correspondence_dict[p]) for p in inf_params]
+
+            # chis, 20, 15, 10%
+            if set(inf_params) == {'installed_capacity'}:
+                for method in group['methods']:
+                    P_ne = symbols('P_ne')
+                    is_dict = dict(self.i_coeff_matrix.T[method])
+                    impact_copy = deepcopy(self.impact.subs(par_dict_copy))
+                    impact_copy = impact_copy.subs(is_dict)
+                    impact_copy = ratsimp(impact_copy)
+                    
+                    den = fraction(impact_copy.args[1])[1]
+                    chi1 = fraction(impact_copy.args[1])[0]
+                    chi2 = collect(den, P_ne, evaluate=False)[P_ne]
+                    chi3 = collect(den, P_ne, evaluate=False)[1]
+                    chi4 = impact_copy.args[0] 
+                    simplified_model_dict[method] = {
+                        's_const': {1: chi1, 2: chi2, 3: chi3, 4: chi4},
+                        's_model': lambda chi, parameters:
+                                            chi[1]/ (parameters['installed_capacity']*chi[2] + chi[3]) \
+                                            + chi[4]    
+                    }
+             
+            # chis, 5%
+            if set(inf_params) == {'installed_capacity',
+                                   'success_rate_primary_wells',
+                                   'average_depth_of_wells'}:
+                P_ne, SR_p, W_d = symbols('P_ne, SR_p, W_d')
+                for method in group['methods']:
+                    is_dict = dict(self.i_coeff_matrix.T[method])
+                    impact_copy = deepcopy(self.impact.subs(par_dict_copy))
+                    impact_copy = impact_copy.subs(is_dict)
+                    impact_copy = ratsimp(impact_copy)                   
+                                       
+                    num =fraction(impact_copy.args[1])[0]
+                    den = fraction(impact_copy.args[1])[1]                   
+                    chi1 = collect(num, [SR_p*W_d, SR_p, W_d], evaluate=False)[SR_p*W_d]
+                    chi2 = collect(num, [SR_p*W_d, SR_p, W_d], evaluate=False)[SR_p]
+                    chi3 = collect(num, [SR_p*W_d, SR_p, W_d], evaluate=False)[W_d]
+                    chi4 = collect(num, [SR_p*W_d, SR_p, W_d], evaluate=False)[1]        
+                    chi5 = collect(den, [P_ne*SR_p, SR_p], evaluate=False)[P_ne*SR_p]
+                    chi6 = collect(den, [P_ne*SR_p, SR_p], evaluate=False)[SR_p]
+                    chi7 = impact_copy.args[0] 
+                    
+                    simplified_model_dict[method] = {
+                        's_const': {1: chi1, 2: chi2, 3: chi3, 4: chi4, 5: chi5, 6: chi6, 7: chi7},
+                        's_model': lambda chi, parameters:
+                                            (parameters['succerss_rate_primary_wells']*parameters['average_depth_of_wells']*chi[1]\
+                                             + parameters['succerss_rate_primary_wells']*chi[2] \
+                                             + parameters['average_depth_of_wells']*chi[3] + chi[4]) \
+                                             / (parameters['installed_capacity']*parameters['succerss_rate_primary_wells']*chi[5]\
+                                             + chi[6]) + chi[7]    
+                    }
+                        
+                
+            # deltas 15/10%
+            if set(inf_params) == {'installed_capacity',
+                                   'specific_diesel_consumption'}:
+                P_ne, D = symbols('P_ne, D')
+                for method in group['methods']:
+                    is_dict = dict(self.i_coeff_matrix.T[method])
+                    impact_copy = deepcopy(self.impact.subs(par_dict_copy))
+                    impact_copy = impact_copy.subs(is_dict)
+                    impact_copy = ratsimp(impact_copy)  
+                    
+                    num  = fraction(impact_copy.args[1])[0]
+                    den  = fraction(impact_copy.args[1])[1]
+                    delta1 = collect(num, [D], evaluate=False)[D]
+                    delta2 = collect(num, [D], evaluate=False)[1]                
+                    delta3 = collect(den, [P_ne], evaluate=False)[P_ne]
+                    delta4 = collect(den, [P_ne], evaluate=False)[1]
+                    delta5 = impact_copy.args[0] 
+                
+                    simplified_model_dict[method] = {
+                        's_const': {1: delta1, 2: delta2, 3: delta3, 4: delta4, 5: delta5},
+                        's_model': lambda delta, parameters:
+                                            (parameters['specific_diesel_consumption']*delta[1] + delta[2])\
+                                             / (parameters['installed_capacity']*delta[3] + delta[4])\
+                                             + delta[5]    
+                    }
+                
+            # deltas 5%
+            if set(inf_params) == {'installed_capacity',
+                                   'success_rate_primary_wells',
+                                   'average_depth_of_wells'
+                                   'specific_diesel_consumption',
+                                   }:
+                P_ne, SR_p, W_d = symbols('P_ne, SR_p, W_d, D')
+                for method in group['methods']:
+                    is_dict = dict(self.i_coeff_matrix.T[method])
+                    impact_copy = deepcopy(self.impact.subs(par_dict_copy))
+                    impact_copy = impact_copy.subs(is_dict)
+                    impact_copy = ratsimp(impact_copy)  
+                    
+                    num = fraction(impact_copy.args[1])[0]
+                    den = fraction(impact_copy.args[1])[1]
+                    delta1 = collect(num, [D*SR_p*W_d, D*W_d, SR_p*W_d, SR_p, W_d], evaluate=False)[D*SR_p*W_d]
+                    delta2 = collect(num, [D*SR_p*W_d, D*W_d, SR_p*W_d, SR_p, W_d], evaluate=False)[D*W_d]
+                    delta3 = collect(num, [D*SR_p*W_d, D*W_d, SR_p*W_d, SR_p, W_d], evaluate=False)[SR_p*W_d]
+                    delta3 = collect(num, [D*SR_p*W_d, D*W_d, SR_p*W_d, SR_p, W_d], evaluate=False)[SR_p]
+                    delta5 = collect(num, [D*SR_p*W_d, D*W_d, SR_p*W_d, SR_p, W_d], evaluate=False)[W_d]
+                    delta6 = collect(num, [D*SR_p*W_d, D*W_d, SR_p*W_d, SR_p, W_d], evaluate=False)[1]            
+                    delta7 = collect(den, [P_ne*SR_p, SR_p], evaluate=False)[P_ne*SR_p]
+                    delta8 = collect(den, [P_ne*SR_p, SR_p], evaluate=False)[SR_p]
+                    delta9 = impact_copy.args[0] 
+                                    
+                    simplified_model_dict[method] = {
+                        's_const': {1: delta1, 2: delta2, 3: delta3, 4: delta4, 5: delta5,\
+                                    6: delta6, 7: delta7, 8: delta8, 9: delta9},
+                        's_model': lambda delta, parameters:
+                                            (parameters['specific_diesel_consumption']*parameters['success_rate_primary_wells']\
+                                             * parameters['average_depth_of_wells']*delta[1]\
+                                             + parameters['specific_diesel_consumption']*parameters['average_depth_of_wells']*delta[2]\
+                                             + parameters['success_rate_primary_wells']*parameters['average_depth_of_wells']*delta[3]\
+                                             + parameters['success_rate_primary_wells']*delta[4]\
+                                             + parameters['average_depth_of_wells']*delta[5] + delta[6])\
+                                             / (parameters['installed_capacity']*parameters['success_rate_primary_wells']*delta[7]\
+                                             -  parameters['success_rate_primary_wells']*delta[8]) + delta[9]  
+                    }
+         
+        return simplified_model_dict               
+        
+    def run(self, parameters, lcia_methods=None):
+        '''
+        Run simplified model
+        :param parameters: can be static or stochastic
+        :param lcia_methods: in case you're only interested in a subset of methods
+        :return: results of the simplified model
+        '''
+        if lcia_methods == None:
+            lcia_methods = self.methods
+
+        results = {}
+        for method in lcia_methods:
+            s_const = self.simplified_model_dict[method[-1]]['s_const']
+            s_model = self.simplified_model_dict[method[-1]]['s_model']
+            
+            res = s_model(s_const, parameters)
+            
+            if len(res)>1:
+                res=res.astype("float")
+            
+            results[method[-1]] = res
+
+        return results
+    
+    def get_coeff(self, lcia_methods=None):
+        
+        if lcia_methods == None:
+            lcia_methods = self.methods
+        
+        coeff ={}
+        for method in lcia_methods:
+            coeff[method] = self.simplified_model_dict[method[-1]]['s_const']
+        
+        return coeff
 
 
 #####################
 ### How to use it ###
 #####################
 
-threshold = 0.2     # 20%
-s_cge = ConventionalSimplifiedModel(threshold)
-from cge_klausen import parameters
-n_iter = 10
-parameters.stochastic(n_iter)
-results = s_cge.run(parameters)
+# threshold = 0.2     # 20%
+# s_cge = ConventionalSimplifiedModel(threshold)
+# from cge_klausen import parameters
+# n_iter = 10
+# parameters.stochastic(n_iter)
+# results = s_cge.run(parameters)
 
 # # this will create a `results` dictionary where keys are methods and values are array of simplified model outputs:
 # {'climate change total': array([0.149314647656919, 0.0679825835704374, 0.106377147352442,
