@@ -25,11 +25,13 @@ def setup_gt_project(project, option):
        
     if option == 'cge':
         demand = {electricity_prod_conv: 1}
-        from cge_klausen import parameters
+        from cge_klausen import get_parameters
+        parameters = get_parameters()
         from cge_model import GeothermalConventionalModel as GTModel
     elif option == 'ege':
         demand = {electricity_prod_enha: 1}
-        from ege_klausen import parameters
+        from ege_klausen import get_parameters
+        parameters = get_parameters()
         from ege_model import GeothermalEnhancedModel as GTModel
         
     gt_model = GTModel(parameters)
