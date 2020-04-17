@@ -165,19 +165,19 @@ class GeothermalSimplifiedModel:
         ### Total number of wells with success rate
         if self.option == 'cge':
             W_Pn = P_ne / CW_ne  # production wells
-            W_n = W_Pn * ((1 + 1 / PIratio) / (SR_p / 100) + D_i * LT / (SR_m / 100))
+            W_n = W_Pn * ((1 + 1 / PIratio) / (SR_p/100) + D_i * LT / (SR_m/100))
         elif self.option == 'ege':
             W_Pn = symbols('W_Pn')
-            W_n = W_Pn / (SR_p / 100)
+            W_n = W_Pn / (SR_p/100)
 
-        W_E_en = W_en * 0.3 / (SR_e / 100)
+        W_E_en = W_en * 0.3 / (SR_e/100)
 
         ### Impacts of each component from Equation 1
         wells = (W_n + W_E_en) * \
                 (i1 + W_d * (D * i2_1 + Cs * i2_2 + Cc * i2_3 + DM * i2_4 + DW * i2_5 + i2_6))
         collection_pipelines = W_n * CP * i3
         power_plant = P_ne * (i4_1 + CT_n * i4_2 + OF * i4_3)
-        stimulation = SW_n * S_w * (i5_1 + S_el * i5_2)  # NO W_n here, because it is included in SW_n
+        stimulation = SW_n * S_w * (i5_1 + S_el * i5_2) # NO W_n here, because it is included in SW_n
         operational_emissions = E_co2 * i6
         lifetime = P_ne * CF * (1 - AP) * LT * 8760 * 1000 - CT_el * CT_n * 1000 * LT
 
@@ -427,12 +427,11 @@ class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
     def complete_par_dict(self, parameters):
         self.par_subs_dict.update(dict(
             # Wells
-            W_Pn=2.5,  # This needs to be set manually.
+            W_Pn=2.5, # This needs to be set manually.
             # Stimulation
             S_w=parameters["water_stimulation"],
             S_el=parameters["specific_electricity_stimulation"] / 1000,
-            SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * 2.5),
-            # 2.5 here, because we don't need to include success_rate
+            SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * 2.5), # 2.5 here, because we don't need to include success_rate
             # Constants
             CT_el=864,
             OF=300
