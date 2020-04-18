@@ -1,9 +1,10 @@
-# import numpy as np
 # import pandas as pd
 # import os, json
 
+import numpy as np
 from copy import deepcopy
 from sympy import symbols, collect, ratsimp, fraction
+
 
 # Local
 from setup_files_gsa import *
@@ -234,9 +235,11 @@ class GeothermalSimplifiedModel:
 
             res = s_model(s_const, parameters_sto)
 
-            if len(res) > 1:
+            if isinstance(res, np.ndarray):
                 res = res.astype("float")
-
+            else:
+                res = float(res)
+            
             results[method[-1]] = res
 
         return results
@@ -428,11 +431,11 @@ class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
     def complete_par_dict(self, parameters):
         self.par_subs_dict.update(dict(
             # Wells
-            W_Pn=2.5, # This needs to be set manually.
+            W_Pn=parameters["number_of_wells"],
             # Stimulation
             S_w=parameters["water_stimulation"],
             S_el=parameters["specific_electricity_stimulation"] / 1000,
-            SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * 2.5), # 2.5 here, because we don't need to include success_rate
+            SW_n=np.round(0.5 + parameters["number_of_wells_stimulated_0to1"] * parameters["number_of_wells"]), 
             # Constants
             CT_el = 864,
             OF = 300

@@ -46,7 +46,7 @@ cge_df = cge_ref_df
 ege_df = ege_ref_df
 for t in threshold:
     cge_df = pd.concat([cge_df, cge_s_df[t]["Simplified_"+str(t)]], axis=1)
-    ege_df = pd.concat([ege_df, cge_s_df[t]["Simplified_"+str(t)]], axis=1)
+    ege_df = pd.concat([ege_df, ege_s_df[t]["Simplified_"+str(t)]], axis=1)
 
 #%%  Calculate coefficient of determination
     
@@ -96,7 +96,7 @@ cge_r_squared_df_m = cge_r_squared_df_m.melt(id_vars="method",var_name="threshol
 
 cge_fig = plt.figure()
 cge_plot = sb.stripplot(data=cge_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=8)
-cge_plot.set(xlim=(0,1.02), xlabel="\mathregular$R^2$", ylabel="")
+cge_plot.set(xlim=(0.55,1.02), xlabel="\mathregular$R^2$", ylabel="")
 plt.grid(which='major', axis='y')
 handles, labels = cge_plot.get_legend_handles_labels()
 cge_plot.legend(handles, labels, loc='center right', ncol=1)
@@ -112,7 +112,7 @@ ege_r_squared_df_m = ege_r_squared_df_m.melt(id_vars="method",var_name="threshol
 
 ege_fig = plt.figure()
 ege_plot = sb.stripplot(data=ege_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=8)
-ege_plot.set(xlim=(0,1.02), xlabel="\mathregular$R^2$", ylabel="")
+ege_plot.set(xlim=(0.55,1.02), xlabel="\mathregular$R^2$", ylabel="")
 plt.grid(which='major', axis='y')
 handles, labels = ege_plot.get_legend_handles_labels()
 ege_plot.legend(handles, labels, loc='center right', ncol=1)
@@ -122,8 +122,8 @@ ege_fig.tight_layout()
 
 #%% Save
 plot_file_name = file_name + "_r2" 
-cge_plot.savefig(os.path.join(folder_OUT, plot_file_name + "_Conventional.png"), dpi=600)
-ege_plot.savefig(os.path.join(folder_OUT, plot_file_name + "_Enhanced.png"), dpi=600)
+cge_fig.savefig(os.path.join(folder_OUT, plot_file_name + "_Conventional.png"), dpi=600)
+ege_fig.savefig(os.path.join(folder_OUT, plot_file_name + "_Enhanced.png"), dpi=600)
 
 
 

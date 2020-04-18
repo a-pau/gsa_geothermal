@@ -23,11 +23,11 @@ ILCD, ILCD_units = get_ILCD_methods(units=True)
 # Upload
 n_iter=1000
 threshold_cge = 0.2
-threshold_ege = 0.05
+threshold_ege = 0.2
 
-file_name= "ReferenceVsSimplified_N" + str(n_iter)
 ecoinvent_version = "ecoinvent_3.6"
 folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
+file_name= "ReferenceVsSimplified_N" + str(n_iter)
 
 cge_ref_df = pd.read_json(os.path.join(folder_IN, file_name + "_Conventional_Reference")).melt(var_name="method", value_name="Reference")
 cge_s_df = pd.read_json(os.path.join(folder_IN, file_name + "_Conventional_Simplified_t"+str(threshold_cge))).melt(var_name="method", value_name="Simplified")
