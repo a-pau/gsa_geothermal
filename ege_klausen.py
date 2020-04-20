@@ -10,7 +10,8 @@ def get_parameters():
                 "number_of_wells": {
                         "minimum": 2,
                         "maximum": 4,  # DiscreteUniform does not include maximum
-                        "uncertainty_type": sa.DiscreteUniform.id
+                        "uncertainty_type": sa.DiscreteUniform.id,
+                        "amount": 2.5 # Set static value
                 },
                 "average_depth_of_wells": {
                         "minimum": 2500,
