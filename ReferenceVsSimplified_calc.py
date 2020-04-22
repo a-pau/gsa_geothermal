@@ -28,7 +28,7 @@ _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh
 ILCD = get_ILCD_methods()
 
 # Number of iterations
-n_iter = 1000
+n_iter = 10000
 
 # Seed for stochastic parameters
 seed = 13413203

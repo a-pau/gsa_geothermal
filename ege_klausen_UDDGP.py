@@ -48,7 +48,7 @@ parameters = {
                 "amount": 19.4,
         },
         "success_rate_exploration_wells": {
-                "amount":100
+                "amount":67
         },
         "success_rate_primary_wells": {
                 "amount":100

@@ -17,7 +17,7 @@ from utils.lookup_func import lookup_geothermal
 
 class GeothermalSimplifiedModel:
 
-    def __init__(self, option, threshold, path=None):
+    def __init__(self, option, threshold, exploration, path=None):
         self.option = option
         self.threshold = threshold
         if path == None:
@@ -27,6 +27,7 @@ class GeothermalSimplifiedModel:
         self.methods_groups = self.get_methods_groups(total_df, self.threshold)
         self.i_coeff_matrix = self.compute_i_coeff()
         self.impact = self.define_symbolic_eq()
+        self.exploration = exploration
 
         self.correspondence_dict = {
             'co2_emissions': 'E_co2',
@@ -212,10 +213,17 @@ class GeothermalSimplifiedModel:
             SR_e=parameters["success_rate_exploration_wells"],
             SR_p=parameters["success_rate_primary_wells"],
             # Constants
-            W_en=3,
             CT_n=7 / 303.3,
             DW=450,
         )
+        
+        if self.exploration == True:
+            par_dict.update(dict(W_en=3)) 
+        elif self.exploration == False:
+            # Note, W_en can't be zero because chi 5% equations won't work.
+            par_dict.update(dict(W_en=0.00001)) 
+            
+            
         return par_dict
 
     def run(self, parameters_sto, simplified_model_dict, lcia_methods=None):
@@ -262,8 +270,8 @@ class GeothermalSimplifiedModel:
 
 class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
 
-    def __init__(self, threshold):
-        super(ConventionalSimplifiedModel, self).__init__(option='cge', threshold=threshold)
+    def __init__(self, threshold, exploration=True):
+        super(ConventionalSimplifiedModel, self).__init__(option='cge', threshold=threshold, exploration=exploration)
         self.i_coeff_matrix['i5_1'] = 0
         self.i_coeff_matrix['i5_2'] = 0
         from cge_klausen import get_parameters
@@ -417,8 +425,8 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
 
 class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
 
-    def __init__(self, threshold):
-        super(EnhancedSimplifiedModel, self).__init__(option='ege', threshold=threshold)
+    def __init__(self, threshold, exploration=True):
+        super(EnhancedSimplifiedModel, self).__init__(option='ege', threshold=threshold, exploration=exploration)
         self.i_coeff_matrix['i6'] = 0
         from ege_klausen import get_parameters
         parameters = get_parameters()

@@ -30,8 +30,8 @@ ILCD = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
 # Find demand
 _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod = lookup_geothermal()
 
-#Options
-exploration=True
+#%%Options
+exploration= False
 success_rate = True
 
 #%% Set-up LCA
@@ -53,33 +53,33 @@ for method in ILCD:
 sta_result_df = pd.DataFrame(sta_results).melt(var_name=["method_1", "method_2", "method_3"], value_name="impact")
 
 #%% Write excel
-file_name = os.path.join(absolute_path, "generated_files", "UDDGP impacts.xlsx")
+file_name = os.path.join(absolute_path, "generated_files", "ecoinvent_3.6", "UDDGP impacts.xlsx")
 sta_result_df.to_excel(file_name)
 
 #%% Other
-# Contribution analysis
-electricity_prod_act = bw.Database("geothermal energy").get(electricity_prod[1])
+# # Contribution analysis
+# electricity_prod_act = bw.Database("geothermal energy").get(electricity_prod[1])
 
-contributions_extr = []
-contributions = []
-sta_results={}
-for method in ILCD:
-    lca.switch_method(method)
-    lca.lcia()
-    sta_results[method]=lca.score
-    dict_1 = {k:v for k,v in recursive_calculator(lca, electricity_prod_act, 1, sta_results[method], max_depth=2).items()}
-    dict_1["method"]= str(method)
-    contributions.append(dict_1)
-    dict_1_extr = {k:v for k,v in  extract_act(dict_1, 2, direct=True).items()}
-    dict_1_extr["method"]= str(method)
-    contributions_extr.append(dict_1_extr)
+# contributions_extr = []
+# contributions = []
+# sta_results={}
+# for method in ILCD:
+#     lca.switch_method(method)
+#     lca.lcia()
+#     sta_results[method]=lca.score
+#     dict_1 = {k:v for k,v in recursive_calculator(lca, electricity_prod_act, 1, sta_results[method], max_depth=2).items()}
+#     dict_1["method"]= str(method)
+#     contributions.append(dict_1)
+#     dict_1_extr = {k:v for k,v in  extract_act(dict_1, 2, direct=True).items()}
+#     dict_1_extr["method"]= str(method)
+#     contributions_extr.append(dict_1_extr)
 
-data_frame = json_normalize(data=contributions_extr, record_path="chain", meta=["method", "activity", "score", "depth"], record_prefix="chain.")
+# data_frame = json_normalize(data=contributions_extr, record_path="chain", meta=["method", "activity", "score", "depth"], record_prefix="chain.")
 
-#Normalisation
-sta_results_norm = {}
-for method in sta_results:
-    print(method[2], sta_results[method], "/", NormalisationFactors_dict[method]["per Person"], "=", sta_results[method]/NormalisationFactors_dict[method]["per Person"])
-    sta_results_norm[method[2]] = sta_results[method]/NormalisationFactors_dict[method]["per Person"]
-#plot
-sb.barplot(y = list(sta_results_norm.keys()), x = list(sta_results_norm.values()))
+# #Normalisation
+# sta_results_norm = {}
+# for method in sta_results:
+#     print(method[2], sta_results[method], "/", NormalisationFactors_dict[method]["per Person"], "=", sta_results[method]/NormalisationFactors_dict[method]["per Person"])
+#     sta_results_norm[method[2]] = sta_results[method]/NormalisationFactors_dict[method]["per Person"]
+# #plot
+# sb.barplot(y = list(sta_results_norm.keys()), x = list(sta_results_norm.values()))
