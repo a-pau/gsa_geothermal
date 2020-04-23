@@ -28,7 +28,7 @@ _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh
 ILCD = get_ILCD_methods()
 
 # Number of iterations
-n_iter = 10000
+n_iter = 1000
 
 # Seed for stochastic parameters
 seed = 13413203
@@ -54,7 +54,7 @@ cge_parameters.stochastic(iterations=n_iter, seed=seed)
 # Compute
 cge_model = GeothermalConventionalModel(cge_parameters)
 cge_parameters_sto = cge_model.run_ps(cge_parameters)
-cge_ref = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD, n_iter)
+cge_ref = run_mc(cge_parameters_sto, {electricity_conv_prod:1}, ILCD, n_iter)
 
 # Save
 cge_ref_df = pd.DataFrame.from_dict(cge_ref)

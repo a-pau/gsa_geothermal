@@ -72,7 +72,7 @@ sb.set_style("darkgrid")
 threshold =  [0.2, 0.15, 0.1, 0.05]
 
 #Exploration is only for ege
-exploration=False
+exploration=True
 
 cge_model_s = {}
 ege_model_s = {}
@@ -96,7 +96,7 @@ ege_s_df = pd.DataFrame.from_dict(ege_s)
 ege_s_df.columns = ["{:.0%}".format(t) for t in ege_s_df.columns]
 ege_s_df = ege_s_df.reset_index().rename(columns={"index":"method"})
    
-#%% Convetional plot
+#%% Conventional plot
 
 # Re-arrange dataframes
 cge_s_df_20 = cge_s_df[["method","20%"]].rename(columns={"20%":"impact"})

@@ -13,6 +13,8 @@ class GeothermalConventionalModel:
         self.plant, _, _, _, self.co2, self.electricity_prod, _ = lookup_geothermal(ecoinvent = ecoinvent)
 
         # Init constants
+        self.cooling_tower_electricity = 864  # megawatt hour that we assume is the yearly electricity consumption
+        self.cooling_tower_number = 7/303.3
         self.drilling_waste_per_metre = 450 # kilogram (for open hole diameter of 8.5 in and assume factor 3 production liner to total volume drilled)
 
         if exploration:
@@ -64,11 +66,12 @@ class GeothermalConventionalModel:
         success_rate_primary_wells     = (params["success_rate_primary_wells"] / 100) / self.success_rate_opt[1] 
         success_rate_makeup_wells      = (params["success_rate_makeup_wells"] / 100) / self.success_rate_opt[2]
          
-        lifetime_electricity_generated   =  params["installed_capacity"] * \
-                                            params["capacity_factor"] * \
-                                           (1 - params["auxiliary_power"]) * \
-                                            params["lifetime"] * 8760 * 1000
-                                           
+        lifetime_electricity_generated   = (params["installed_capacity"] *
+                                           (params["capacity_factor"] *
+                                           (1 - params["auxiliary_power"]) *
+                                            params["lifetime"] * 8760000) -
+                                           (self.cooling_tower_electricity * 1000 * self.cooling_tower_number * params["lifetime"]))  # kilowatt hour
+
         number_of_production_wells = (np.ceil(params["installed_capacity"] / 
                                        params["gross_power_per_well"])) # Total number of wells is rounded up
         

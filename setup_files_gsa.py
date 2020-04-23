@@ -46,13 +46,22 @@ def get_ILCD_methods(CC_only=False, units=False):
     ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "ecosystem quality" in str(method)]
     ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
     
+    # Adjust units
+    adjust_units_dict = {
+        'kg NMVOC-.': 'kg NMVOC-Eq',
+        'm3 water-.' : 'm3 water world-Eq',
+        'CTU' : 'CTUe',
+        'kg CFC-11.' : 'kg CFC-11-Eq',
+        'megajoule': 'MJ'}
+    
     if CC_only:
         methods = ILCD_CC
     else:
         methods = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
      
     if units:
-        ILCD_units=[bw.methods[method]["unit"] for method in methods]
+        temp=[bw.methods[method]["unit"] for method in methods]
+        ILCD_units=[adjust_units_dict[elem] if elem in adjust_units_dict else elem for elem in temp]        
         return methods, ILCD_units
     else:
         return methods 

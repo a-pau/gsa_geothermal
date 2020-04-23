@@ -107,7 +107,7 @@ sb.set(font_scale = 0.6)
 sb.set_style("dark")
 
 # Subplots
-fig, ((cge_ax_up, ege_ax_up), (cge_ax_low, ege_ax_low)) = plt.subplots(nrows=2, ncols=2, sharex="col")
+fig, (cge_ax_up, cge_ax_low) = plt.subplots(nrows=2, sharex="col")
 
 # Distance between points
 dist = 0.3
@@ -153,62 +153,17 @@ cge_ax_up.set_title("CONVENTIONAL", fontsize=10)
 
 # Legend
 handles, labels = cge_ax.get_legend_handles_labels()
-cge_ax_up.legend(handles=handles[1:], labels=labels[1:], loc='upper right')
-
-#Enhanced
-# Re-arrange dataframe
-ege_s_df_2 = ege_s_df.rename(columns = {"10%": "10,15,20%"})
-ege_s_df_2 = ege_s_df_2.melt(id_vars = "study", var_name="simplified", value_name="carbon footprint")
-ege_lit = ege_data
-ege_lit["type"] = "literature"
-
-# Set positions
-pos_ege_lit = np.arange(len(ege_data))
-pos_ege_s = np.hstack([pos_ege_lit+dist, pos_ege_lit+dist])
-pos_ege_ticks = pos_ege_lit + dist/2
-pos_ege_ref = pos_ege_lit[-1]+2
-pos_ege_ticks = np.append(pos_ege_ticks, pos_ege_ref)
-ege_ticklabels = ege_lit["study"].to_list()
-ege_ticklabels.append("general model")
-
-# Plot
-for ege_ax in [ege_ax_up, ege_ax_low]:
-    ege_ax.boxplot(x=ege_ref_df, positions=[pos_ege_ref], vert=True, whis=[0,100], showfliers=False, 
-                   widths=1, medianprops={"color":"black"})
-    sb.scatterplot(data=ege_data, y="carbon footprint", x=pos_ege_lit, style="type", markers=["s"], color="black", ax=ege_ax)
-    if ege_ax == ege_ax_low:
-        sb.scatterplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax)
-    elif ege_ax == ege_ax_up:
-        sb.stripplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax,
-                     jitter=True)    
-    ege_ax.set(ylabel="", xlabel = "", xticks=pos_ege_ticks, xticklabels=ege_ticklabels,#yscale="log",
-               xlim=(pos_ege_ticks[0]-0.5, pos_ege_ticks[-1]+1))
-    ege_ax.grid(b=True, which='both', axis="y")
-    ege_ax.yaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
-    ege_ax.yaxis.set_major_formatter(FormatStrFormatter("%.0f"))
-    ege_ax.tick_params(axis="x", labelrotation=90, labelsize=9)
-    ege_ax.get_legend().remove()
-    
-# Limits
-ege_ax_up.set(ylim=(280,820))
-ege_ax_low.set(ylim=(0,175)) 
-ege_ax_low.set(ylabel="$\mathregular{g CO_2 eq./kWh}$") 
-   
-# Title
-ege_ax_up.set_title("ENHANCED", fontsize=10)
-
-handles, labels = ege_ax.get_legend_handles_labels()
-#handles = [handles[1],handles[3], handles[4]]
-#labels = [labels[1],labels[3], labels[4]]
-ege_ax_up.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
+handles = [handles[1],handles[3]]
+labels = [labels[1],labels[2]]
+cge_ax_up.legend(handles=handles, labels=labels, loc='upper right')
 
 fig.subplots_adjust(hspace=0.015)
-fig.set_size_inches([10, 6.5])
+fig.set_size_inches([5, 6.5])
 fig.tight_layout()
 
 # Change label position at the end in order not to change the format
-ege_ax_low.yaxis.set_label_coords(-0.08, 1)
+#ege_ax_low.yaxis.set_label_coords(-0.08, 1)
 cge_ax_low.yaxis.set_label_coords(-0.08, 1)
 
 #%% Save
-fig.savefig(os.path.join(folder_OUT, file_name + ".tiff"), dpi=300)
+fig.savefig(os.path.join(folder_OUT, file_name +"_FOR_SETAC.png"), dpi=300)

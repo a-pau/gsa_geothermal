@@ -14,6 +14,8 @@ class GeothermalEnhancedModel:
         _, self.electricity_prod = lookup_geothermal(ecoinvent = ecoinvent)
         
         #Init constants
+        self.cooling_tower_electricity = 864  # megawatt hour that we assume is the yearly electricity consumption
+        self.cooling_tower_number = 7/303.3
         self.drilling_waste_per_metre = 450 # kilogram (for open hole diameter of 8.5 in and assume factor 3 production line to total volume drilled)
         
         if exploration:
@@ -64,8 +66,9 @@ class GeothermalEnhancedModel:
         lifetime_electricity_generated =  params["installed_capacity"] * \
                                           params["capacity_factor"] * \
                                           (1 - params["auxiliary_power"]) * \
-                                          params["lifetime"] * 8760 * 1000
-                                          
+                                          params["lifetime"] * 8760 * 1000 - \
+                                          self.cooling_tower_electricity * 1000 * self.cooling_tower_number * params["lifetime"] # kilowatt hour# kilowatt hour
+        
         number_of_wells = params["number_of_wells"] + (self.number_of_expl_wells * self.equivalency_expl_to_normal_wells)
         
         number_of_wells_drilled = (np.ceil(params["number_of_wells"] / success_rate_primary_wells) +
