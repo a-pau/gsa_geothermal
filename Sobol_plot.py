@@ -18,6 +18,10 @@ ege_T=pd.read_excel(os.path.join(absolute_path,"generated_files/gsa_results/ege_
 
 #Color palette
 col_pal = sb.color_palette()
+
+#Seaborn style
+sb.set_style("darkgrid")
+
 #%% First order
  
 def find_least_number(df,threshold):
@@ -73,18 +77,10 @@ total_n.columns=["Conventional", "Enhanced"]
 
 #%% Subplots
 
-# f1, (ax_first, ax_total) = plt.subplots(nrows=1,ncols=2)
-# sb.set_style("darkgrid")
-
-#%% Individual plots
-
-f2, ax_first = plt.subplots()
-f3, ax_total = plt.subplots()
-
-#%% First order - Manual lollipop categorical chart with matplotlib
-
+f1, (ax_first, ax_total) = plt.subplots(nrows=1,ncols=2)
 sb.set_style("darkgrid")
 
+#%% First order - Manual lollipop categorical chart with matplotlib
 # set width of bars
 barWidth = 0.02
  
@@ -109,9 +105,6 @@ ax_first.set_xlim(left=min_, right=max_)
 ax_first.hlines(17, xmin=min_, xmax=max_, linestyles='dashed', linewidth=1, colors=col_pal[0])
 ax_first.hlines(16, xmin=min_, xmax=max_, linestyles='dashed', linewidth=1, colors=col_pal[1])
 
-#legend
-ax_first.legend(frameon=False, loc="upper left", fontsize="medium", markerscale=0.8, bbox_to_anchor= (0.0, 1.08), ncol=2, borderaxespad=0)
-
 #grid
 ax_first.grid(b=None, which='major', axis='x') 
 
@@ -125,7 +118,7 @@ barWidth = 0.02
  
 # Set position of bars on X axis
 r1 = np.arange(len(total_n["Conventional"]))
-r2 = [x + 10*barWidth for x in r1]
+r2 = [x + 15*barWidth for x in r1]
 
 # Make the plot
 ax_total.scatter(r1, total_n["Conventional"],s=100,label='Conventional') 
@@ -144,28 +137,24 @@ ax_total.set_xlim(left=min_, right=max_)
 ax_total.hlines(17, xmin=min_, xmax=max_, linestyles='dashed', linewidth=1, colors=col_pal[0])
 ax_total.hlines(16, xmin=min_, xmax=max_, linestyles='dashed', linewidth=1, colors=col_pal[1])
 
-#legend
-ax_total.legend(frameon=False, loc="upper left", fontsize="medium", markerscale=0.8,bbox_to_anchor= (0.0, 1.08), ncol=2, borderaxespad=0)
-
 #grid
 ax_total.grid(b=None, which='major', axis='x') 
 
 
-#%% Save Combined
-# f1.tight_layout()
-# folder_OUT = os.path.join(absolute_path, "generated_plots","ecoinvent_3.6")
-# f1.savefig(os.path.join(folder_OUT, "lollipop chart - combined.png"))
+#%% Layout combined
 
+handles, labels = ax_total.get_legend_handles_labels()
+f1.legend(handles=handles, labels=labels, loc="upper center", ncol=2, frameon=False,
+          markerscale=0.8, fontsize="medium")
+f1.set_size_inches([8,4.5])
+f1.tight_layout(rect=[0,0,1,0.95])
 
-#%% Save individual
-
-f2.tight_layout()
-f3.tight_layout()
+#%% Save
 folder_OUT = os.path.join(absolute_path, "generated_plots","ecoinvent_3.6")
-f2.savefig(os.path.join(folder_OUT, "lollipop chart - First.png"), dpi=600)
-f3.savefig(os.path.join(folder_OUT, "lollipop chart - Total.png"), dpi=600)
+f1.savefig(os.path.join(folder_OUT, "lollipop chart - combined.tiff"), dpi=300)
 
 #%% THis is to find parameters for simplified models
+
 def find_params(df,threshold):
     df_2 = df[df.columns[1:]]
     df_2=df_2[df_2>threshold].dropna(how="all", axis=0)

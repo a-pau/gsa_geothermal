@@ -28,7 +28,7 @@ _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh
 ILCD = get_ILCD_methods()
 
 # Number of iterations
-n_iter = 1000
+n_iter = 10000
 
 # Seed for stochastic parameters
 seed = 13413203
@@ -60,7 +60,7 @@ cge_ref = run_mc(cge_parameters_sto, {electricity_conv_prod:1}, ILCD, n_iter)
 cge_ref_df = pd.DataFrame.from_dict(cge_ref)
 
 file_name_cge_ref = file_name + "_Conventional" + "_Reference"
-print("Saving ", file_name_cge_ref, " to ", folder_OUT)
+print("Saving ", file_name_cge_ref, "\nto\n", folder_OUT)
 cge_ref_df.to_json(os.path.join(folder_OUT, file_name_cge_ref), double_precision=15)
 
 #%% ENHANCED model calculations - REFERENCE
@@ -76,7 +76,7 @@ ege_ref = run_mc(ege_parameters_sto, {electricity_enh_prod:1}, ILCD, n_iter)
 ege_ref_df = pd.DataFrame.from_dict(ege_ref)
 
 file_name_ege_ref = file_name + "_Enhanced" + "_Reference"
-print("Saving ", file_name_ege_ref, " to ", folder_OUT)
+print("Saving ", file_name_ege_ref, "\nto\n", folder_OUT)
 ege_ref_df.to_json(os.path.join(folder_OUT, file_name_ege_ref), double_precision=15)
 
 #%%CONVENTIONAL model calculations - SIMPLIFIED
@@ -96,7 +96,7 @@ for t in threshold:
     # Save
     cge_s_df = pd.DataFrame.from_dict(cge_s)
     file_name_cge_s = file_name + "_Conventional" + "_Simplified" + "_t" + str(t)
-    print("Saving ", file_name_cge_s, " to ", folder_OUT)
+    print("Saving ", file_name_cge_s, "\nto\n", folder_OUT)
     cge_s_df.to_json(os.path.join(folder_OUT, file_name_cge_s), double_precision=15)
     
 #%%ENHANCED model calculations - SIMPLIFIED
@@ -116,5 +116,5 @@ for t in threshold:
     # Save
     ege_s_df = pd.DataFrame.from_dict(ege_s)
     file_name_ege_s = file_name + "_Enhanced" + "_Simplified" + "_t" + str(t)
-    print("Saving ", file_name_ege_s, " to ", folder_OUT)
+    print("Saving ", file_name_ege_s, "\nto\n", folder_OUT)
     ege_s_df.to_json(os.path.join(folder_OUT, file_name_ege_s), double_precision=15)

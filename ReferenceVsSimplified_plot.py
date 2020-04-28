@@ -21,9 +21,9 @@ bw.projects.set_current("Geothermal")
 ILCD, ILCD_units = get_ILCD_methods(units=True)
 
 # Upload
-n_iter=1000
-threshold_cge = 0.2
-threshold_ege = 0.2
+n_iter=10000
+threshold_cge = 0.05
+threshold_ege = 0.05
 
 ecoinvent_version = "ecoinvent_3.6"
 folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
@@ -82,7 +82,7 @@ for counter, ax in enumerate(cge_violinplot.axes.flatten()):
 handles = cge_violinplot._legend_data.values()
 labels = cge_violinplot._legend_data.keys()
 cge_violinplot.fig.subplots_adjust(hspace = 0.4, wspace= 0.25, bottom=0.1, top=0.9)
-lg_1 = cge_violinplot.fig.legend(handles=handles, labels=labels, loc='center', bbox_to_anchor=(0.1,0.97), ncol=2, borderaxespad=0.)
+lg_1 = cge_violinplot.fig.legend(handles=handles, labels=labels, loc='center', bbox_to_anchor=(0.5,0.97), ncol=2, borderaxespad=0.)
 
 ege_df_3=ege_df.melt(id_vars="method", var_name="model", value_name="score")
 ege_df_3["temp"] = "temp"
@@ -96,7 +96,7 @@ for counter, ax in enumerate(ege_violinplot.axes.flatten()):
 handles = ege_violinplot._legend_data.values()
 labels = ege_violinplot._legend_data.keys()
 ege_violinplot.fig.subplots_adjust(hspace = 0.4, wspace= 0.25, bottom=0.1, top=0.9)
-lg_2=ege_violinplot.fig.legend(handles=handles, labels=labels, loc='center', bbox_to_anchor=(0.1,0.97), ncol=2, borderaxespad=0.)
+lg_2=ege_violinplot.fig.legend(handles=handles, labels=labels, loc='center', bbox_to_anchor=(0.5,0.97), ncol=2, borderaxespad=0.)
 
 #%% 
 cge_violinplot.fig.tight_layout(rect=[0,0,1,0.95])
@@ -108,52 +108,7 @@ file_name_box = file_name + " Violinplot"
 cge_violinplot.savefig(os.path.join(folder_OUT, file_name_box + "_Conventional_t"+str(threshold_cge)".png"), dpi=600)
 ege_violinplot.savefig(os.path.join(folder_OUT, file_name_box + "_Enhanced_t"+str(threshold_ege)".png"), dpi=600)
 
-#%% Coefficient of determination
-
-cge_r_squared = {}
-cge_RMSE = {}
-cge_mean = {}
-for method in ILCD:
-    df = cge_df[cge_df.method == method[2]] 
-    SS_Residual = sum(( df.Reference - df.Simplified ) **2 )
-    SS_Total = sum(( df.Reference - df.Reference.mean() ) **2 )
-    cge_r_squared[method] = [1 - (float(SS_Residual))/SS_Total]
-    cge_RMSE[method] = [np.sqrt( SS_Residual/len(df.Reference) )]
-    cge_mean[method] = df.Reference.mean()
-    
-ege_r_squared = {}
-ege_RMSE = {}
-ege_mean = {}
-for method in ILCD:
-    df = ege_df[ege_df.method == method[2]] 
-    SS_Residual = sum(( df.Reference - df.Simplified ) **2 )
-    SS_Total = sum(( df.Reference - df.Reference.mean() ) **2 )
-    ege_r_squared[method] = [1 - (float(SS_Residual))/SS_Total]
-    ege_RMSE[method] = [np.sqrt( SS_Residual/len(df.Reference) )]
-    ege_mean[method] = df.Reference.mean()
-    
-#%% Save statisical measures
-
-cge_r_squared_df = pd.DataFrame.from_dict(cge_r_squared, orient="index").reset_index()
-ege_r_squared_df = pd.DataFrame.from_dict(ege_r_squared, orient="index").reset_index()
-cge_RMSE_df = pd.DataFrame.from_dict(cge_RMSE, orient="index").reset_index()
-ege_RMSE_df = pd.DataFrame.from_dict(ege_RMSE, orient="index").reset_index()
-cge_mean_df = pd.DataFrame.from_dict(cge_mean, orient="index").reset_index()
-ege_mean_df = pd.DataFrame.from_dict(ege_mean, orient="index").reset_index()
-
-ILCD_df=pd.DataFrame(ILCD)
-cge_stats_df=pd.concat([ILCD_df, cge_r_squared_df, cge_RMSE_df, cge_mean_df], axis=1).drop(columns="index")
-ege_stats_df=pd.concat([ILCD_df, ege_r_squared_df, ege_RMSE_df, ege_mean_df], axis=1).drop(columns="index")
-cge_stats_df.columns=["method", "R2", "RMSE", "mean_ref"]
-ege_stats_df.columns=["method", "R2", "RMSE", "mean_ref"]
-
-folder_OUT_2 = os.path.join(absolute_path, "generated_files", ecoinvent_version)
-with pd.ExcelWriter(os.path.join(folder_OUT_2,'ReferenceVsSimplified statistics.xlsx')) as writer:  
-    cge_stats_df.to_excel(writer, sheet_name='cge')
-    ege_stats_df.to_excel(writer, sheet_name='ege')
-
-
-#%% Parity plot ooloured according to density
+#%% Parity plot coloured according to density
 
 from scipy.stats import gaussian_kde as kde
 from matplotlib.colors import Normalize
@@ -194,14 +149,11 @@ for i, method in enumerate(ILCD):
     plt.ylim(lim)
     ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
     title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
-    ax_.set(xlabel="", ylabel="", title=title_)
-    tx = "$R^2$"+ ": " + str(round(cge_r_squared[method][0],2))
-    ax_.text(0.05, 0.8, tx, transform=ax_.transAxes, fontsize=8)
-    tx_2 = "RMSE: " + "{:.2e}".format(ege_RMSE[method][0])
-    ax_.text(0.05, 0.7, tx_2, transform=ax_.transAxes, fontsize=8)   
+    ax_.set_title(label=title_, fontsize=9)
+    ax_.set(xlabel="", ylabel="")  
 cge_parityplot_col.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
 cge_parityplot_col.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
-  
+
        
 ege_parityplot_col=plt.figure()
 for i, method in enumerate(ILCD):
@@ -224,7 +176,7 @@ for i, method in enumerate(ILCD):
     
     #Parity plot
     sb.lineplot(x=[0, 1e10], y=[0, 1e10], color="black", ax=ax_, linewidth=1)
-    plt.scatter(x=df_sort.Reference, y=df_sort.Simplified, s=7, c=kde_v_sort, cmap="copper_r", linewidth=0)
+    plt.scatter(x=df_sort.Reference, y=df_sort.Simplified, s=7, c=kde_v_sort, cmap="cool", linewidth=0)
     plt.locator_params(axis='both', nbins=4)
     
     #Add color bar
@@ -238,85 +190,85 @@ for i, method in enumerate(ILCD):
     plt.ylim(lim)
     ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
     title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
-    ax_.set(xlabel="", ylabel="", title=title_)
-    tx = "$R^2$"+ ": " +str(round(ege_r_squared[method][0],2))
-    ax_.text(0.05, 0.8, tx, transform=ax_.transAxes, fontsize=8)
-    tx_2 = "RMSE: " + "{:.2e}".format(ege_RMSE[method][0])
-    ax_.text(0.05, 0.7, tx_2, transform=ax_.transAxes, fontsize=8)
+    ax_.set_title(label=title_, fontsize=9)
+    ax_.set(xlabel="", ylabel="")
 ege_parityplot_col.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
 ege_parityplot_col.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
- 
-cge_parityplot_col.subplots_adjust(wspace=0.1)
-ege_parityplot_col.subplots_adjust(wspace=0.1)
 
-cge_parityplot_col.set_size_inches([14,  8])
-ege_parityplot_col.set_size_inches([14,  8])
-cge_parityplot_col.tight_layout(rect=[0.02,0.02,1,1])
-ege_parityplot_col.tight_layout(rect=[0.02,0.02,1,1])
+cge_parityplot_col.suptitle("CONVENTIONAL, THRESHOLD="+"{:.0%}".format(threshold_cge))
+ege_parityplot_col.suptitle("ENHANCED, THRESHOLD="+"{:.0%}".format(threshold_ege))
+
+cge_parityplot_col.set_size_inches([13,  13])
+ege_parityplot_col.set_size_inches([13,  13])
+cge_parityplot_col.tight_layout(rect=[0.02,0.02,1,0.95])
+ege_parityplot_col.tight_layout(rect=[0.02,0.02,1,0.95])
+
+#cge_parityplot_col.subplots_adjust(wspace=0.1, hspace=0.6)
+#ege_parityplot_col.subplots_adjust(wspace=0.1, hspace=0.6)
 
 #%% Save figures
 file_name_par_col = file_name + " Parity_Plot_COL"
-cge_parityplot_col.savefig(os.path.join(folder_OUT, file_name_par_col + "_Conventional_t"+str(threshold_cge)".png"), dpi=600)
-ege_parityplot_col.savefig(os.path.join(folder_OUT, file_name_par_col + "_Enhanced_t"+str(threshold_cge)".png"), dpi=600)
+cge_parityplot_col.savefig(os.path.join(folder_OUT, file_name_par_col + "_Conventional_t"+str(threshold_cge)+".tiff"), dpi=300)
+ege_parityplot_col.savefig(os.path.join(folder_OUT, file_name_par_col + "_Enhanced_t"+str(threshold_cge)+".tiff"), dpi=300)
 
 #%% Parity plot not coloured according to density
 
-from utils.plot_funcs import set_axlims
+# from utils.plot_funcs import set_axlims
 
-# Plotting with with Matplotlib and seaborn
+# # Plotting with with Matplotlib and seaborn
   
-cge_parityplot=plt.figure()
-for i, method in enumerate(ILCD):
-    ax_=cge_parityplot.add_subplot(4,4,i+1)
-    df = cge_df[cge_df.method == method[2]]
-    x_lim = set_axlims (df.Reference, 0.15)
-    y_lim = set_axlims (df.Simplified, 0.15)
-    lim = ( 0 , max(x_lim[1], y_lim[1]) )
-    sb.scatterplot(data=df, x="Reference", y="Simplified", s=5, alpha=0.3, linewidth=0)
-    sb.lineplot(x=[0, 1e10], y=[0, 1e10], color="black", ax=ax_, linewidth=1)
-    plt.xlim(lim)   
-    plt.ylim(lim)
-    ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
-    title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
-    ax_.set(xlabel="", ylabel="", title=title_)
-    tx = "$R^2$"+ ": " + str(round(cge_r_squared[method][0],2))
-    ax_.text(0.05, 0.8, tx, transform=ax_.transAxes, fontsize=8)
-    tx_2 = "RMSE: " + "{:.2e}".format(cge_RMSE[method][0])
-    ax_.text(0.05, 0.7, tx_2, transform=ax_.transAxes, fontsize=8)
-cge_parityplot.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
-cge_parityplot.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
+# cge_parityplot=plt.figure()
+# for i, method in enumerate(ILCD):
+#     ax_=cge_parityplot.add_subplot(4,4,i+1)
+#     df = cge_df[cge_df.method == method[2]]
+#     x_lim = set_axlims (df.Reference, 0.15)
+#     y_lim = set_axlims (df.Simplified, 0.15)
+#     lim = ( 0 , max(x_lim[1], y_lim[1]) )
+#     sb.scatterplot(data=df, x="Reference", y="Simplified", s=5, alpha=0.3, linewidth=0)
+#     sb.lineplot(x=[0, 1e10], y=[0, 1e10], color="black", ax=ax_, linewidth=1)
+#     plt.xlim(lim)   
+#     plt.ylim(lim)
+#     ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
+#     title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
+#     ax_.set(xlabel="", ylabel="", title=title_)
+#     tx = "$R^2$"+ ": " + str(round(cge_r_squared[method][0],2))
+#     ax_.text(0.05, 0.8, tx, transform=ax_.transAxes, fontsize=8)
+#     tx_2 = "RMSE: " + "{:.2e}".format(cge_RMSE[method][0])
+#     ax_.text(0.05, 0.7, tx_2, transform=ax_.transAxes, fontsize=8)
+# cge_parityplot.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
+# cge_parityplot.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
   
        
-ege_parityplot=plt.figure()
-for i, method in enumerate(ILCD):
-    ax_=ege_parityplot.add_subplot(4,4,i+1)
-    df = ege_df[ege_df.method == method[2]]
-    x_lim = set_axlims (df.Reference, 0.15)
-    y_lim = set_axlims (df.Simplified, 0.15)
-    lim = ( 0 , max(x_lim[1], y_lim[1]) )
-    sb.scatterplot(data=df, x="Reference", y="Simplified", s=5, alpha=0.5, linewidth=0)
-    sb.lineplot(x=[0, 1e10], y=[0, 1e10], color="black", ax=ax_, linewidth=1)
-    plt.xlim(lim)   
-    plt.ylim(lim)
-    ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
-    title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
-    ax_.set(xlabel="", ylabel="", title=title_)
-    tx = "$R^2$"+ ": " +str(round(ege_r_squared[method][0],2))
-    ax_.text(0.05, 0.8, tx, transform=ax_.transAxes, fontsize=8)
-    tx_2 = "RMSE: " + "{:.2e}".format(ege_RMSE[method][0])
-    ax_.text(0.05, 0.7, tx_2, transform=ax_.transAxes, fontsize=8)
-ege_parityplot.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
-ege_parityplot.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
+# ege_parityplot=plt.figure()
+# for i, method in enumerate(ILCD):
+#     ax_=ege_parityplot.add_subplot(4,4,i+1)
+#     df = ege_df[ege_df.method == method[2]]
+#     x_lim = set_axlims (df.Reference, 0.15)
+#     y_lim = set_axlims (df.Simplified, 0.15)
+#     lim = ( 0 , max(x_lim[1], y_lim[1]) )
+#     sb.scatterplot(data=df, x="Reference", y="Simplified", s=5, alpha=0.5, linewidth=0)
+#     sb.lineplot(x=[0, 1e10], y=[0, 1e10], color="black", ax=ax_, linewidth=1)
+#     plt.xlim(lim)   
+#     plt.ylim(lim)
+#     ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
+#     title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
+#     ax_.set(xlabel="", ylabel="", title=title_)
+#     tx = "$R^2$"+ ": " +str(round(ege_r_squared[method][0],2))
+#     ax_.text(0.05, 0.8, tx, transform=ax_.transAxes, fontsize=8)
+#     tx_2 = "RMSE: " + "{:.2e}".format(ege_RMSE[method][0])
+#     ax_.text(0.05, 0.7, tx_2, transform=ax_.transAxes, fontsize=8)
+# ege_parityplot.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
+# ege_parityplot.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
  
-# Plots sizes and layout
-cge_parityplot.set_size_inches([14,  8])
-ege_parityplot.set_size_inches([14,  8])
-cge_parityplot.tight_layout(rect=[0.02,0.02,1,1])
-ege_parityplot.tight_layout(rect=[0.02,0.02,1,1])
+# # Plots sizes and layout
+# cge_parityplot.set_size_inches([14,  8])
+# ege_parityplot.set_size_inches([14,  8])
+# cge_parityplot.tight_layout(rect=[0.02,0.02,1,1])
+# ege_parityplot.tight_layout(rect=[0.02,0.02,1,1])
 
-#%% Save figures
+# #%% Save figures
 
-file_name_par = file_name + " Parity_Plot"
-cge_parityplot.savefig(os.path.join(folder_OUT, file_name_par + "_Conventional_t"+str(threshold_cge)".png"), dpi=600)
-ege_parityplot.savefig(os.path.join(folder_OUT, file_name_par + "_Enhanced_t"+str(threshold_ege)".png"), dpi=600)  
+# file_name_par = file_name + " Parity_Plot"
+# cge_parityplot.savefig(os.path.join(folder_OUT, file_name_par + "_Conventional_t"+str(threshold_cge)".png"), dpi=600)
+# ege_parityplot.savefig(os.path.join(folder_OUT, file_name_par + "_Enhanced_t"+str(threshold_ege)".png"), dpi=600)  
 

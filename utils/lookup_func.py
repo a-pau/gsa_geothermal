@@ -22,8 +22,8 @@ def lookup_geothermal(ecoinvent = "ecoinvent 3.6 cutoff"):
         wellhead      = db_geothe.search("geothermal wellhead")[0].key
         diesel        = db_ecoinv.search("market diesel, burned diesel-electric generating set 10MW")[0].key 
         steel         = [act for act in db_ecoinv if 'market for steel, low-alloyed, hot rolled' == act['name']][0].key
-        cement        = db_ecoinv.search("market cement portland", filter={"location": "ROW"}, mask={"name":"generic"})[0].key
-        water         = db_ecoinv.search("market tap water", filter={"location": "ROW"}, mask={"name":"deionised"})[0].key
+        cement        = db_ecoinv.search("market cement portland", filter={"location": "Europe"}, mask={"name":"generic"})[0].key
+        water         = db_ecoinv.search("market tap water", filter={"location": "Europe"}, mask={"name":"deionised"})[0].key
         drilling_mud  = db_geothe.search("drilling mud")[0].key
         drill_wst     = db_ecoinv.search("market drilling waste", mask={"name":"bromine"})[0].key
         wells_closr   = db_ecoinv.search("market deep well closure", mask={"name":"onshore"})[0].key

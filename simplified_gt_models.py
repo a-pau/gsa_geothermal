@@ -331,7 +331,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
                         parameters['co2_emissions'] * alpha[1] + alpha[2]
                     }
 
-            # Betas, 20%
+            # Betas, 20/15%
             elif set(inf_params) == {'gross_power_per_well',
                                      'average_depth_of_wells'}:
                 W_d, CW_ne = symbols('W_d, CW_ne')
@@ -351,7 +351,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
                         's_model': lambda beta, parameters:
                         (parameters['average_depth_of_wells'] * beta[1] + beta[2])
                         / parameters['gross_power_per_well']
-                        + parameters['gross_power_per_well'] * beta[3] + beta[4]
+                        + parameters['average_depth_of_wells'] * beta[3] + beta[4]
                     }
 
             # Betas, 10%

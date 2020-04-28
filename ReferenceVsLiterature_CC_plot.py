@@ -22,8 +22,9 @@ cge_cfs=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footpr
 cge_cfs=cge_cfs.drop(columns=["Technology", "Notes", "Operational CO2 emissions (g/kWh)"])
 cge_cfs.columns= ["study", "carbon footprint"]
 
-ege_cfs=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Enhanced", index_col=None, skiprows=1)
-ege_cfs=ege_cfs.drop(columns=["Technology", "Notes", "Diesel consumption (GJ/m)", "Installed capacity (MW)"])
+ege_cfs=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Enhanced", index_col=None, skiprows=1, nrows=13)
+ege_cfs=ege_cfs.drop(columns=["Technology", "Notes", "Diesel consumption (GJ/m)", "Installed capacity (MW)",
+                     'Depth of wells (m)', 'Success rate (%)'])
 ege_cfs.columns= ["study", "carbon footprint"]
 
 # Reference model carbon footprints
@@ -36,48 +37,58 @@ cge_ref_df = pd.read_json(os.path.join(absolute_path, folder_IN, file_name + " -
 ege_ref_df = pd.read_json(os.path.join(absolute_path, folder_IN, file_name + " - Enhanced"))
 
 # Seaborn palette
-Sb_colorblind_pal= sb.color_palette(palette="colorblind", n_colors=10)
+Sb_colorblind_pal= sb.color_palette(palette="colorblind")
 Color_brewer_Set2 = sb.color_palette(palette="Set2")
-Sb_colorblind_pal.append(Color_brewer_Set2[0])
+Color_brewer_Paired = sb.color_palette(palette="Paired")
+palette = Color_brewer_Paired
+palette.append(Color_brewer_Set2[-1])
+
+# Add columns for plotting with stripplot
+ege_cfs["position"]=1
+cge_cfs["position"]=1
 
 #%% Conventional model plot
 fig = plt.figure()
 fig.add_subplot(121)
 
-g1=sb.boxplot(data=cge_ref_df, y="carbon footprint", whis=[1,99], showfliers=False, width=0.02)
-g1=sb.scatterplot(data=cge_cfs, x=0.03, y="carbon footprint", palette=Sb_colorblind_pal, hue="study", s=65)
+g1=sb.boxplot(data=cge_ref_df, y="carbon footprint", whis=[1,99], showfliers=False, width=0.02, color="white")
+g1=sb.stripplot(data=cge_cfs, x="position", y="carbon footprint", palette=palette[:11], hue="study", s=6,
+                jitter=0.01)
 
 handles, labels = g1.get_legend_handles_labels()
-g1.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
+g1.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7, markerscale=0.5,
+          frameon=False)
 
 # For "original" plot remove yscale
-g1.set(title="CONVENTIONAL", xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), yscale="log")
+g1.set(title="CONVENTIONAL", xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.05), ylim=(5,1000), yscale="log")
 g1.set_xticks([])
+g1.get_yaxis().set_major_formatter(ticker.ScalarFormatter())
 
 #%%  Enhanced model Plot
 fig.add_subplot(122)
-g2=sb.boxplot(data=ege_ref_df, y="carbon footprint",whis=[1,99], showfliers=False, width=0.02)
-g2=sb.scatterplot(data=ege_cfs, x=0.03, y="carbon footprint", palette=Sb_colorblind_pal, hue="study", s=65)
+g2=sb.boxplot(data=ege_ref_df, y="carbon footprint",whis=[1,99], showfliers=False, width=0.02,
+              color="white")
+g2=sb.stripplot(data=ege_cfs, x="position", y="carbon footprint", palette=palette[:13], hue="study", s=6,
+                jitter=0.01)
 
 handles, labels = g2.get_legend_handles_labels()
-g2.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
+g2.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7, markerscale=0.5,
+          frameon=False)
 
 # For "original" plot remove ylim and yscale
-g2.set(title="", xlabel='', ylabel='$g CO_2 eq./kWh$', xlim=(-0.015,0.1), ylim=(5), yscale="log")
+g2.set(title="ENHANCED", xlabel='', ylabel='', xlim=(-0.015,0.05), ylim=(5,1000), yscale="log")
 g2.set_xticks([])
+g2.get_yaxis().set_major_formatter(ticker.ScalarFormatter())
 
-#%% Tight layout
+#%% Layout
+sb.despine(fig=fig, bottom=True)
+fig.set_size_inches([8, 4])
 fig.tight_layout()
 
 #%% Save plots
 
-#Options not enabled 
-#file_name = get_file_name("cge_ReferenceModel_validation.png", exploration=exploration, success_rate=success_rate)
-#file_name = get_file_name("ege_ReferenceModel_validation.png", exploration=exploration, success_rate=success_rate)
-
 folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
-
-fig.savefig(os.path.join(folder_OUT, file_name + ".png"), dpi=600)
+fig.savefig(os.path.join(folder_OUT, file_name + ".tiff"), dpi=300)
 
 #%% Conventional plot - Violin
 

@@ -21,7 +21,7 @@ bw.projects.set_current("Geothermal")
 ILCD, ILCD_units = get_ILCD_methods(units=True)
 
 # Iterations
-n_iter=1000
+n_iter=10000
 
 # Folders
 file_name= "ReferenceVsSimplified_N" + str(n_iter)
@@ -86,44 +86,45 @@ ege_r_squared_df.columns = ["{:.0%}".format(t) for t in ege_r_squared_df.columns
 
 #%% Plot
 
-sb.set_style("darkgrid", {'axes.grid': True})
+sb.set_style("darkgrid")
+
+fig, (cge_plot, ege_plot) = plt.subplots(nrows=1, ncols=2, sharey=True)
 
 # CONVENTIONAL
-
 # Rearrange dataframe
 cge_r_squared_df_m = cge_r_squared_df.reset_index().rename(columns={"index":"method"})
 cge_r_squared_df_m = cge_r_squared_df_m.melt(id_vars="method",var_name="threshold", value_name="r_squared")
 
-cge_fig = plt.figure()
-cge_plot = sb.stripplot(data=cge_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=8)
-cge_plot.set(xlim=(0.55,1.02), xlabel="$\mathregular{R^2}$", ylabel="")
-plt.grid(which='major', axis='y')
-handles, labels = cge_plot.get_legend_handles_labels()
-cge_plot.legend(handles, labels, loc='center right', ncol=1)
-
-cge_fig.set_size_inches([7, 5])
-cge_fig.tight_layout()
+#Plot
+sb.stripplot(data=cge_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=6,
+             ax=cge_plot)
+cge_plot.set(xlim=(0.55,1.02), xlabel="$\mathregular{R^2}$", ylabel="", title="CONVENTIONAL")
+cge_plot.grid(which='major', axis='y')
+cge_plot.get_legend().remove()
+#handles, labels = cge_plot.get_legend_handles_labels()
+#cge_plot.legend(handles, labels, loc='center right', ncol=1)
 
 # ENHANCED
-
 # Rearrange dataframe
 ege_r_squared_df_m = ege_r_squared_df.reset_index().rename(columns={"index":"method"})
 ege_r_squared_df_m = ege_r_squared_df_m.melt(id_vars="method",var_name="threshold", value_name="r_squared")
 
-ege_fig = plt.figure()
-ege_plot = sb.stripplot(data=ege_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=8)
-ege_plot.set(xlim=(0.55,1.02), xlabel="$\mathregular{R^2}$", ylabel="")
-plt.grid(which='major', axis='y')
-handles, labels = ege_plot.get_legend_handles_labels()
-ege_plot.legend(handles, labels, loc='center right', ncol=1)
+#Plot
+sb.stripplot(data=ege_r_squared_df_m, y="method", x="r_squared", hue="threshold", dodge=True, s=6,
+             ax=ege_plot)
+ege_plot.set(xlim=(0.55,1.02), xlabel="$\mathregular{R^2}$", ylabel="", title="ENHANCED")
+ege_plot.grid(which='major', axis='y')
+ege_plot.get_legend().remove()
 
-ege_fig.set_size_inches([7, 5])
-ege_fig.tight_layout()
+#Legend
+handles, labels = ege_plot.get_legend_handles_labels()
+fig.legend(handles, labels, loc=(0.45,0.02), ncol=4)
+fig.set_size_inches([11, 5])
+fig.tight_layout(rect=[0,0.05,1,1])
 
 #%% Save
 plot_file_name = file_name + "_r2" 
-cge_fig.savefig(os.path.join(folder_OUT, plot_file_name + "_Conventional.png"), dpi=600)
-ege_fig.savefig(os.path.join(folder_OUT, plot_file_name + "_Enhanced.png"), dpi=600)
+fig.savefig(os.path.join(folder_OUT, plot_file_name + ".tiff"), dpi=300)
 
 
 

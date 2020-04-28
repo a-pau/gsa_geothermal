@@ -2,11 +2,13 @@ import brightway2 as bw
 import os
 
 from utils.replace_functions import replace_ege, replace_cge
-from ege_klausen import parameters as parameters_ege
-from cge_klausen import parameters as parameters_cge
+from ege_klausen import get_parameters as get_ege_parameters
+from cge_klausen import get_parameters asget_cge_parameters
 from cge_model import GeothermalConventionalModel
 from ege_model import GeothermalEnhancedModel
 
+cge_parameters=get_cge_parameters()
+ege_parameters=get_ege_parameters()
 
 bw.projects.set_current("Geothermal")
 
@@ -39,8 +41,8 @@ def import_geothermal_database(working_directory=".", ecoinvent='ecoinvent 3.5 c
         print('Cannot write database, unlinked exchanges!')
 
 
-    replace_cge(parameters_cge, GeothermalConventionalModel)
-    replace_ege(parameters_ege, GeothermalEnhancedModel)
+    replace_cge(cge_parameters, GeothermalConventionalModel)
+    replace_ege(ege_parameters, GeothermalEnhancedModel)
 
 
 

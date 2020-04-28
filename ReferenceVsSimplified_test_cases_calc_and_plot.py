@@ -48,7 +48,7 @@ ege_data["specific_diesel_consumption"]=ege_data["specific_diesel_consumption"]*
 ege_data=ege_data.sort_values(by="study")
 
 # Load reference model
-n_iter=1000
+n_iter=10000
 folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
 file_name_IN= "ReferenceVsSimplified_N" + str(n_iter)
 cge_ref_df = pd.read_json(os.path.join(folder_IN, file_name_IN + "_Conventional_Reference"))["climate change total"] *1000
@@ -131,7 +131,7 @@ cge_ticklabels.append("general model")
 
 # Plot
 for cge_ax in [cge_ax_up, cge_ax_low]:
-    cge_ax.boxplot(x=cge_ref_df, positions=[pos_cge_ref], vert=True, whis=[0,100], showfliers=False,
+    cge_ax.boxplot(x=cge_ref_df, positions=[pos_cge_ref], vert=True, whis=[1,99], showfliers=False,
                    widths=1, medianprops={"color":"black"})
     sb.scatterplot(data=cge_data, y="carbon footprint", x=pos_cge_lit, style="type", markers=["s"], color="black", ax=cge_ax)
     sb.scatterplot(data=cge_s_df_2, y="carbon footprint", x=pos_cge_s, hue="simplified", ax=cge_ax) 
@@ -140,12 +140,12 @@ for cge_ax in [cge_ax_up, cge_ax_low]:
     cge_ax.grid(b=True, which='both', axis="y")
     cge_ax.yaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
     cge_ax.yaxis.set_major_formatter(FormatStrFormatter("%.0f"))
-    cge_ax.tick_params(axis="x", which="both", labelrotation=90, labelsize=9)
+    cge_ax.tick_params(axis="x", which="both", labelrotation=90, labelsize=8)
     cge_ax.get_legend().remove()
 
 # y-axis limits
 cge_ax_up.set(ylim=(280,820))
-cge_ax_low.set(ylim=(0,175))
+cge_ax_low.set(ylim=(0,165))
 cge_ax_low.set(ylabel="$\mathregular{g CO_2 eq./kWh}$")
 
 #Title
@@ -153,7 +153,7 @@ cge_ax_up.set_title("CONVENTIONAL", fontsize=10)
 
 # Legend
 handles, labels = cge_ax.get_legend_handles_labels()
-cge_ax_up.legend(handles=handles[1:], labels=labels[1:], loc='upper right')
+cge_ax_up.legend(handles=handles[1:], labels=labels[1:], loc=(0.6,0.75))
 
 #Enhanced
 # Re-arrange dataframe
@@ -173,25 +173,26 @@ ege_ticklabels.append("general model")
 
 # Plot
 for ege_ax in [ege_ax_up, ege_ax_low]:
-    ege_ax.boxplot(x=ege_ref_df, positions=[pos_ege_ref], vert=True, whis=[0,100], showfliers=False, 
+    ege_ax.boxplot(x=ege_ref_df, positions=[pos_ege_ref], vert=True, whis=[1,99], showfliers=False, 
                    widths=1, medianprops={"color":"black"})
     sb.scatterplot(data=ege_data, y="carbon footprint", x=pos_ege_lit, style="type", markers=["s"], color="black", ax=ege_ax)
-    if ege_ax == ege_ax_low:
-        sb.scatterplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax)
-    elif ege_ax == ege_ax_up:
-        sb.stripplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax,
-                     jitter=True)    
+    sb.scatterplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax)
+    #if ege_ax == ege_ax_low:
+    #    sb.scatterplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax)
+    #elif ege_ax == ege_ax_up:
+    #    sb.stripplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax,
+    #                 jitter=True)    
     ege_ax.set(ylabel="", xlabel = "", xticks=pos_ege_ticks, xticklabels=ege_ticklabels,#yscale="log",
                xlim=(pos_ege_ticks[0]-0.5, pos_ege_ticks[-1]+1))
     ege_ax.grid(b=True, which='both', axis="y")
     ege_ax.yaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
     ege_ax.yaxis.set_major_formatter(FormatStrFormatter("%.0f"))
-    ege_ax.tick_params(axis="x", labelrotation=90, labelsize=9)
+    ege_ax.tick_params(axis="x", labelrotation=90, labelsize=8)
     ege_ax.get_legend().remove()
     
 # Limits
 ege_ax_up.set(ylim=(280,820))
-ege_ax_low.set(ylim=(0,175)) 
+ege_ax_low.set(ylim=(0,165)) 
 ege_ax_low.set(ylabel="$\mathregular{g CO_2 eq./kWh}$") 
    
 # Title
@@ -200,10 +201,10 @@ ege_ax_up.set_title("ENHANCED", fontsize=10)
 handles, labels = ege_ax.get_legend_handles_labels()
 #handles = [handles[1],handles[3], handles[4]]
 #labels = [labels[1],labels[3], labels[4]]
-ege_ax_up.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7)
+ege_ax_up.legend(handles=handles[1:], labels=labels[1:], loc=(0.6,0.68), fontsize=7)
 
-fig.subplots_adjust(hspace=0.015)
-fig.set_size_inches([10, 6.5])
+fig.subplots_adjust(hspace=0.010)
+fig.set_size_inches([7, 6])
 fig.tight_layout()
 
 # Change label position at the end in order not to change the format

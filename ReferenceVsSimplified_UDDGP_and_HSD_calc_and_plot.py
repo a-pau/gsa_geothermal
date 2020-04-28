@@ -72,7 +72,7 @@ sb.set_style("darkgrid")
 threshold =  [0.2, 0.15, 0.1, 0.05]
 
 #Exploration is only for ege
-exploration=True
+exploration=False
 
 cge_model_s = {}
 ege_model_s = {}
@@ -130,16 +130,16 @@ for counter, method_ in enumerate(ILCD):
     # To set color, check Patch_artist
     cge_ax[j][i].boxplot(x=ref_temp.impact, positions=[1],showfliers=False, whis=[1,99], widths=0.9,
                 medianprops={"color":"black"})
-    cge_ax[j][i].scatter(x=temp_HSD_sco.pos, y=temp_HSD_sco.impact, c="black", marker="s", label="Hellisheidi")
+    cge_ax[j][i].scatter(x=temp_HSD_sco.pos, y=temp_HSD_sco.impact, c="black", marker="s", label="general model")
     cge_ax[j][i].scatter(x=temp_s_20.pos, y=temp_s_20.impact, c=sb_pal[0], label="20%")
     cge_ax[j][i].scatter(x=temp_s_15.pos, y=temp_s_15.impact, c=sb_pal[1], label="15%")
     cge_ax[j][i].scatter(x=temp_s_10 .pos, y=temp_s_10.impact, c=sb_pal[2], label="10%")
     cge_ax[j][i].scatter(x=temp_s_5.pos, y=temp_s_5.impact, c=sb_pal[3], label="5%")
     
     cge_ax[j][i].set_xlabel("")
-    cge_ax[j][i].set_ylabel(ILCD_units[counter])
+    cge_ax[j][i].set_ylabel(ILCD_units[counter], fontsize=11)
     cge_ax[j][i].set_xticks([],[])
-    cge_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n")
+    cge_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n", fontsize=12)
     cge_ax[j][i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     cge_ax[j][i].set_xlim(0.5,1.5)
 
@@ -150,12 +150,13 @@ box_han = patches.Rectangle((0,0), 1, 2, fill=False, edgecolor='black')
 handles.insert(0, box_han)
 labels.insert(0,"general model")
 handles.insert(2,emp_han)
-labels.insert(2,"simplified")
-cge_plot.legend(handles, labels, loc='upper left', ncol=7) 
+labels.insert(2,"simplified model")
+cge_plot.legend(handles, labels, loc='lower center', ncol=7) 
 
+cge_plot.suptitle("HELLISHEIDI GEOTHERMAL POWER PLANT")
 cge_plot.subplots_adjust(wspace=0, hspace=0.4)
 cge_plot.set_size_inches([14,  8])
-cge_plot.tight_layout(rect=[0,0,1,0.95])
+cge_plot.tight_layout(rect=[0,0.05,1,0.95])
 
 #%% Enhanced plot
 
@@ -193,16 +194,16 @@ for counter, method_ in enumerate(ILCD):
 
     ege_ax[j][i].boxplot(x=ref_temp.impact, positions=[1],showfliers=False, whis=[1,99], widths=0.9,
                 medianprops={"color":"black"})
-    ege_ax[j][i].scatter(x=temp_UDDGP_sco.pos, y=temp_UDDGP_sco.impact, c="black", marker="s", label="UDDGP")
+    ege_ax[j][i].scatter(x=temp_UDDGP_sco.pos, y=temp_UDDGP_sco.impact, c="black", marker="s", label="general model")
     ege_ax[j][i].scatter(x=temp_s_20.pos, y=temp_s_20.impact, c=sb_pal[0], label="20%")
     ege_ax[j][i].scatter(x=temp_s_15.pos, y=temp_s_15.impact, c=sb_pal[1], label="15%")
     ege_ax[j][i].scatter(x=temp_s_10 .pos, y=temp_s_10.impact, c=sb_pal[2], label="10%")
     ege_ax[j][i].scatter(x=temp_s_5.pos, y=temp_s_5.impact, c=sb_pal[3], label="5%")
     
     ege_ax[j][i].set_xlabel("")
-    ege_ax[j][i].set_ylabel(ILCD_units[counter])
+    ege_ax[j][i].set_ylabel(ILCD_units[counter], fontsize=11)
     ege_ax[j][i].set_xticks([],[])
-    ege_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n")
+    ege_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n", fontsize=12)
     ege_ax[j][i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     ege_ax[j][i].set_xlim(0.5,1.5)
 
@@ -216,15 +217,14 @@ handles.insert(2,emp_han)
 labels.insert(2,"simplified")
 
 if exploration:
-    ege_plot.legend(handles, labels, loc='upper left', ncol=7) 
-    ege_plot.subplots_adjust(wspace=0, hspace=0.4)
-    ege_plot.set_size_inches([14,  8])
-    ege_plot.tight_layout(rect=[0,0,1,0.95])
+    ege_plot.suptitle("UNITED DOWNS GEOTHERMAL POWER PLANT")
 elif not exploration:
-    ege_plot.suptitle("NO EXPLORATION")
-    ege_plot.legend(handles, labels, loc='upper left', ncol=7 ,bbox_to_anchor=(0, 0.95))
-    ege_plot.set_size_inches([14,  8])
-    ege_plot.tight_layout(rect=[0,0,1,0.91])
+    ege_plot.suptitle("UNITED DOWNS GEOTHERMAL POWER PLANT, NO EXPLORATION")
+       
+ege_plot.legend(handles, labels, loc='lower center', ncol=7) 
+ege_plot.subplots_adjust(wspace=0, hspace=0.4)
+ege_plot.set_size_inches([14,  8])
+ege_plot.tight_layout(rect=[0,0.05,1,0.95])
 
 #%% Save
 file_name_cge = file_name + "_HSD" 
