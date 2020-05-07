@@ -3,7 +3,7 @@ import os
 
 from utils.replace_functions import replace_ege, replace_cge
 from ege_klausen import get_parameters as get_ege_parameters
-from cge_klausen import get_parameters asget_cge_parameters
+from cge_klausen import get_parameters as get_cge_parameters
 from cge_model import GeothermalConventionalModel
 from ege_model import GeothermalEnhancedModel
 
