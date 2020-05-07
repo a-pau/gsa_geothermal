@@ -72,7 +72,7 @@ sb.set_style("darkgrid")
 threshold =  [0.2, 0.15, 0.1, 0.05]
 
 #Exploration is only for ege
-exploration=False
+exploration=True
 
 cge_model_s = {}
 ege_model_s = {}
@@ -130,7 +130,7 @@ for counter, method_ in enumerate(ILCD):
     # To set color, check Patch_artist
     cge_ax[j][i].boxplot(x=ref_temp.impact, positions=[1],showfliers=False, whis=[1,99], widths=0.9,
                 medianprops={"color":"black"})
-    cge_ax[j][i].scatter(x=temp_HSD_sco.pos, y=temp_HSD_sco.impact, c="black", marker="s", label="general model")
+    cge_ax[j][i].scatter(x=temp_HSD_sco.pos, y=temp_HSD_sco.impact, c="black", marker="s", label="literature")
     cge_ax[j][i].scatter(x=temp_s_20.pos, y=temp_s_20.impact, c=sb_pal[0], label="20%")
     cge_ax[j][i].scatter(x=temp_s_15.pos, y=temp_s_15.impact, c=sb_pal[1], label="15%")
     cge_ax[j][i].scatter(x=temp_s_10 .pos, y=temp_s_10.impact, c=sb_pal[2], label="10%")
@@ -194,7 +194,7 @@ for counter, method_ in enumerate(ILCD):
 
     ege_ax[j][i].boxplot(x=ref_temp.impact, positions=[1],showfliers=False, whis=[1,99], widths=0.9,
                 medianprops={"color":"black"})
-    ege_ax[j][i].scatter(x=temp_UDDGP_sco.pos, y=temp_UDDGP_sco.impact, c="black", marker="s", label="general model")
+    ege_ax[j][i].scatter(x=temp_UDDGP_sco.pos, y=temp_UDDGP_sco.impact, c="black", marker="s", label="literature")
     ege_ax[j][i].scatter(x=temp_s_20.pos, y=temp_s_20.impact, c=sb_pal[0], label="20%")
     ege_ax[j][i].scatter(x=temp_s_15.pos, y=temp_s_15.impact, c=sb_pal[1], label="15%")
     ege_ax[j][i].scatter(x=temp_s_10 .pos, y=temp_s_10.impact, c=sb_pal[2], label="10%")

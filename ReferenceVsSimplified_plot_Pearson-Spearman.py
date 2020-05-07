@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import numpy as np
 from scipy.stats import spearmanr, pearsonr
+from matplotlib import ticker
 
 # Import local
 from setup_files_gsa import get_ILCD_methods

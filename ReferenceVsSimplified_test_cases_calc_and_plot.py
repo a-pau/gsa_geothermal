@@ -31,7 +31,7 @@ file_name = "ReferenceVsSimplified_test_cases_CC"
 
 # Load parameters and carbon footprints
 cge_data=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Conventional", index_col=None, skiprows=1)
-ege_data=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Enhanced", index_col=None, skiprows=1, nrows=10)
+ege_data=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Enhanced", index_col=None, skiprows=1, nrows=13)
 
 # Re-arrange
 cge_data = cge_data.dropna(subset=["Operational CO2 emissions (g/kWh)"]).reset_index(drop=True)
@@ -70,9 +70,9 @@ ege_model_s = {}
 for t in threshold_ege:
     ege_model_s[t] = ege_model_s_(t)
 
-#%% Conventional - Simplified
-
-# Compute conventional
+#%% Compute simplified
+    
+# Conventional
 cge_s = {}
 for t in threshold_cge:
     temp_ = {}
@@ -86,7 +86,7 @@ cge_s_df = pd.DataFrame.from_dict(cge_s)
 cge_s_df.columns = ["{:.0%}".format(t) for t in cge_s_df.columns]
 cge_s_df=cge_s_df.reset_index().rename(columns={"index": "study"})
 
-# Compute enhanced
+# Enhanced
 ege_s = {}
 for t in threshold_ege:
     temp_ = {}
@@ -107,10 +107,11 @@ sb.set(font_scale = 0.6)
 sb.set_style("dark")
 
 # Subplots
-fig, ((cge_ax_up, ege_ax_up), (cge_ax_low, ege_ax_low)) = plt.subplots(nrows=2, ncols=2, sharex="col")
+fig, ((cge_ax_up, ege_ax_up), (cge_ax_low, ege_ax_low)) = plt.subplots(nrows=2, ncols=2, sharex="col",
+                                                                       gridspec_kw={'width_ratios': [2, 3], 'height_ratios': [2,3]})
 
 # Distance between points
-dist = 0.3
+dist = 0.4
 
 # Conventional
 
@@ -153,7 +154,7 @@ cge_ax_up.set_title("CONVENTIONAL", fontsize=10)
 
 # Legend
 handles, labels = cge_ax.get_legend_handles_labels()
-cge_ax_up.legend(handles=handles[1:], labels=labels[1:], loc=(0.6,0.75))
+cge_ax_up.legend(handles=handles[1:], labels=labels[1:], loc="upper right")
 
 #Enhanced
 # Re-arrange dataframe
@@ -201,7 +202,7 @@ ege_ax_up.set_title("ENHANCED", fontsize=10)
 handles, labels = ege_ax.get_legend_handles_labels()
 #handles = [handles[1],handles[3], handles[4]]
 #labels = [labels[1],labels[3], labels[4]]
-ege_ax_up.legend(handles=handles[1:], labels=labels[1:], loc=(0.6,0.68), fontsize=7)
+ege_ax_up.legend(handles=handles[1:], labels=labels[1:], loc="upper right", fontsize=7)
 
 fig.subplots_adjust(hspace=0.010)
 fig.set_size_inches([7, 6])
@@ -209,7 +210,7 @@ fig.tight_layout()
 
 # Change label position at the end in order not to change the format
 ege_ax_low.yaxis.set_label_coords(-0.08, 1)
-cge_ax_low.yaxis.set_label_coords(-0.08, 1)
+cge_ax_low.yaxis.set_label_coords(-0.12, 1)
 
 #%% Save
 fig.savefig(os.path.join(folder_OUT, file_name + ".tiff"), dpi=300)
