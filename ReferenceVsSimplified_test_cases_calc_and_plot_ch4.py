@@ -10,8 +10,8 @@ from matplotlib.ticker import FormatStrFormatter
 
 # Import local
 from setup_files_gsa import setup_gt_project, get_ILCD_methods, run_mc
-from simplified_gt_models import ConventionalSimplifiedModel as cge_model_s_
-from simplified_gt_models import EnhancedSimplifiedModel as ege_model_s_
+from simplified_gt_models_ch4 import ConventionalSimplifiedModel as cge_model_s_
+from simplified_gt_models_ch4 import EnhancedSimplifiedModel as ege_model_s_
 
 # Set working directory
 path = "."
@@ -36,9 +36,10 @@ ege_data=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footp
 # Re-arrange
 cge_data = cge_data.dropna(subset=["Operational CO2 emissions (g/kWh)"]).reset_index(drop=True)
 #cge_data = cge_data.iloc[[4,5,6,7]]
-cge_data = cge_data[cge_data.columns[[0,2,3]]]
-cge_data.columns= ["study", "carbon footprint", "co2_emissions"]
+cge_data = cge_data[cge_data.columns[[0,2,3,4]]]
+cge_data.columns= ["study", "carbon footprint", "co2_emissions", "ch4_emissions"]
 cge_data["co2_emissions"] = cge_data["co2_emissions"]/1000
+cge_data["ch4_emissions"] = cge_data["ch4_emissions"]/1000
 cge_data=cge_data.sort_values(by="study")
 
 ege_data = ege_data[ege_data.columns[[0,2,3,4,5,6]]]
@@ -65,7 +66,7 @@ cge_model_s = {}
 for t in threshold_cge:
     cge_model_s[t] = cge_model_s_(t)
     
-# Enhanced
+#Enhanced
 ege_model_s = {}
 for t in threshold_ege:
     ege_model_s[t] = ege_model_s_(t)
@@ -78,7 +79,7 @@ for t in threshold_cge:
     temp_ = {}
     for _, rows in cge_data.iterrows():
         #Values are multplied by 1000 to get gCO2 eq
-        temp_[rows["study"]] = cge_model_s[t].run(rows, lcia_methods=ILCD_CC)[ILCD_CC[0][-1]] * 1000
+        temp_[rows["study"]] = cge_model_s[t].run(rows, lcia_methods=ILCD_CC, ch4=True)[ILCD_CC[0][-1]] * 1000
     cge_s[t]=temp_
 
 # Re-arrange results
@@ -108,7 +109,7 @@ sb.set_style("dark")
 
 # Subplots
 fig, ((cge_ax_up, ege_ax_up), (cge_ax_low, ege_ax_low)) = plt.subplots(nrows=2, ncols=2, sharex="col",
-                                                                       gridspec_kw={'width_ratios': [2, 3], 'height_ratios': [2,3]})
+                                                                       gridspec_kw={'width_ratios': [12, 15], 'height_ratios': [1,2]})
 
 # Distance between points
 dist = 0.4
@@ -145,9 +146,9 @@ for cge_ax in [cge_ax_up, cge_ax_low]:
     cge_ax.get_legend().remove()
 
 # y-axis limits
-cge_ax_up.set(ylim=(390,820))
-cge_ax_low.set(ylim=(0,330))
-cge_ax_low.set(ylabel="$\mathregular{g CO_2 eq./kWh}$")
+cge_ax_up.set(ylim=(530,1005))
+cge_ax_low.set(ylim=(0,400))
+cge_ax_low.set_ylabel("$\mathregular{g CO_2 eq./kWh}$",fontsize=8)
 
 #Title
 cge_ax_up.set_title("CONVENTIONAL", fontsize=10)
@@ -192,9 +193,9 @@ for ege_ax in [ege_ax_up, ege_ax_low]:
     ege_ax.get_legend().remove()
     
 # Limits
-ege_ax_up.set(ylim=(390,820))
-ege_ax_low.set(ylim=(0,330)) 
-ege_ax_low.set(ylabel="$\mathregular{g CO_2 eq./kWh}$") 
+ege_ax_up.set(ylim=(530,1005))
+ege_ax_low.set(ylim=(0,400)) 
+ege_ax_low.set_ylabel("$\mathregular{g CO_2 eq./kWh}$", fontsize=8) 
    
 # Title
 ege_ax_up.set_title("ENHANCED", fontsize=10)
@@ -205,7 +206,7 @@ handles, labels = ege_ax.get_legend_handles_labels()
 ege_ax_up.legend(handles=handles[1:], labels=labels[1:], loc="upper right", fontsize=7)
 
 fig.subplots_adjust(hspace=0.010)
-fig.set_size_inches([7, 6])
+fig.set_size_inches([9, 6])
 fig.tight_layout()
 
 # Change label position at the end in order not to change the format
@@ -213,4 +214,4 @@ ege_ax_low.yaxis.set_label_coords(-0.08, 1)
 cge_ax_low.yaxis.set_label_coords(-0.12, 1)
 
 #%% Save
-fig.savefig(os.path.join(folder_OUT, file_name + ".tiff"), dpi=300)
+fig.savefig(os.path.join(folder_OUT, file_name + "_ch4.tiff"), dpi=300)

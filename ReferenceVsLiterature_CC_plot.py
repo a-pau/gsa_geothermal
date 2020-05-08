@@ -20,7 +20,7 @@ ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in 
 
 # Carbon footprints from literature
 cge_cfs=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Conventional", index_col=None, skiprows=1)
-cge_cfs=cge_cfs.drop(columns=["Technology", "Notes", "Operational CO2 emissions (g/kWh)"])
+cge_cfs=cge_cfs.drop(columns=["Technology", "Notes", "Operational CO2 emissions (g/kWh)", "Operational CH4 emissions (g/kWh)"])
 cge_cfs.columns= ["study", "carbon footprint"]
 
 ege_cfs=pd.read_excel(os.path.join(absolute_path, "data_and_models/Carbon footprints from literature.xlsx"), sheet_name="Enhanced", index_col=None, skiprows=1, nrows=13)
@@ -57,7 +57,7 @@ g1=sb.stripplot(data=cge_cfs, x="position", y="carbon footprint", palette=palett
                 jitter=0.01)
 
 handles, labels = g1.get_legend_handles_labels()
-g1.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7, markerscale=0.5,
+g1.legend(handles=handles, labels=labels, loc='upper right', fontsize=7, markerscale=0.5,
           frameon=False)
 
 # For "original" plot remove yscale
@@ -73,7 +73,7 @@ g2=sb.stripplot(data=ege_cfs, x="position", y="carbon footprint", palette=palett
                 jitter=0.01)
 
 handles, labels = g2.get_legend_handles_labels()
-g2.legend(handles=handles[1:], labels=labels[1:], loc='upper right', fontsize=7, markerscale=0.5,
+g2.legend(handles=handles, labels=labels, loc='upper right', fontsize=7, markerscale=0.5,
           frameon=False)
 
 # For "original" plot remove ylim and yscale

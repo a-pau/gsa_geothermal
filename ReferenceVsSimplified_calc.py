@@ -11,7 +11,7 @@ from cge_klausen import get_parameters as get_cge_parameters
 from ege_klausen import get_parameters as get_ege_parameters
 from cge_model import GeothermalConventionalModel
 from ege_model import GeothermalEnhancedModel
-from simplified_gt_models import ConventionalSimplifiedModel as cge_model_s_
+from simplified_gt_models_ch4 import ConventionalSimplifiedModel as cge_model_s_
 from simplified_gt_models import EnhancedSimplifiedModel as ege_model_s_
 
 # Set working directry
