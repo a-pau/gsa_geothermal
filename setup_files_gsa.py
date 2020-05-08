@@ -13,7 +13,7 @@ def setup_gsa(n_dimensions):
     }
     return problem, calc_second_order
 
-def setup_gt_project(project, option):
+def setup_gt_project(project, option, diff_distr=False):
     
     bw.projects.set_current(project)
     
@@ -25,13 +25,21 @@ def setup_gt_project(project, option):
        
     if option == 'cge':
         demand = {electricity_prod_conv: 1}
-        from cge_klausen import get_parameters
-        parameters = get_parameters()
+        if diff_distr == False:
+            from cge_klausen import get_parameters
+            parameters = get_parameters()
+        elif diff_distr == True:
+            from cge_klausen import get_parameters_diff_distr
+            parameters = get_parameters_diff_distr()
         from cge_model import GeothermalConventionalModel as GTModel
     elif option == 'ege':
         demand = {electricity_prod_enha: 1}
-        from ege_klausen import get_parameters
-        parameters = get_parameters()
+        if diff_distr == False:
+            from ege_klausen import get_parameters
+            parameters = get_parameters()
+        if diff_distr == True:
+            from ege_klausen import get_parameters_diff_distr
+            parameters = get_parameters_diff_distr()
         from ege_model import GeothermalEnhancedModel as GTModel
         
     gt_model = GTModel(parameters)
@@ -111,7 +119,7 @@ def setup_all(option):
 
 
 
-### Sobol indices computation ###
+# ## Sobol indices computation ###
 
 def separate_output_values(Y, D, N, calc_second_order):
     AB = np.zeros((N, D))
