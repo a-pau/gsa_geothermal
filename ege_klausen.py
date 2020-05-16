@@ -110,10 +110,17 @@ def get_parameters_diff_distr():
     '''
     
     parameters = {
+#         "number_of_wells": {
+#             "minimum": 2,
+#             "maximum": 3,  # DiscreteUniform does not include maximum
+#             "uncertainty_type": sa.TriangularUncertainty.id,
+#             "loc": 2.5,
+#             "amount": 2.5 # Set static value
+#         },
         "number_of_wells": {
             "minimum": 2,
-            "maximum": 3,  # DiscreteUniform does not include maximum
-            "uncertainty_type": sa.TriangularUncertainty.id,
+            "maximum": 4,  # DiscreteUniform does not include maximum
+            "uncertainty_type": sa.DiscreteUniform.id,
             "amount": 2.5 # Set static value
         },
         "average_depth_of_wells": {
@@ -140,9 +147,10 @@ def get_parameters_diff_distr():
         "lifetime": {
             "minimum": 20,
             "maximum": 40,
-            "uncertainty_type": sa.NormalUncertainty.id,
-            "loc": 30,
-            "scale": 5
+#             "uncertainty_type": sa.NormalUncertainty.id,
+            'uncertainty_type': sa.UniformUncertainty.id,
+#             "loc": 30,
+#             "scale": 5
         },
         "capacity_factor": {
             "minimum": 0.85,

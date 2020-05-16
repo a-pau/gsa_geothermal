@@ -158,9 +158,10 @@ def get_parameters_diff_distr():
         "lifetime": {
             "minimum": 20,
             "maximum": 40,
-            "uncertainty_type": sa.NormalUncertainty.id,
-            "loc": 30,
-            "scale": 5
+#             "uncertainty_type": sa.NormalUncertainty.id,
+            'uncertainty_type': sa.UniformUncertainty.id,
+#             "loc": 30,
+#             "scale": 5
         },
         "capacity_factor": {
             "minimum": 0.85,
