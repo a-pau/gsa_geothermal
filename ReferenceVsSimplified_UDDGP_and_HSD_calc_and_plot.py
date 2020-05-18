@@ -72,7 +72,7 @@ sb.set_style("darkgrid")
 threshold =  [0.2, 0.15, 0.1, 0.05]
 
 #Exploration is only for ege
-exploration=True
+exploration=False
 
 cge_model_s = {}
 ege_model_s = {}
@@ -150,7 +150,7 @@ box_han = patches.Rectangle((0,0), 1, 2, fill=False, edgecolor='black')
 handles.insert(0, box_han)
 labels.insert(0,"general model")
 handles.insert(2,emp_han)
-labels.insert(2,"simplified model")
+labels.insert(2,"simplified model:")
 cge_plot.legend(handles, labels, loc='lower center', ncol=7) 
 
 cge_plot.suptitle("HELLISHEIDI GEOTHERMAL POWER PLANT")
@@ -214,7 +214,7 @@ box_han = patches.Rectangle((0,0), 1, 2, fill=False, edgecolor='black')
 handles.insert(0, box_han)
 labels.insert(0,"general model")
 handles.insert(2,emp_han)
-labels.insert(2,"simplified")
+labels.insert(2,"simplified model:")
 
 if exploration:
     ege_plot.suptitle("UNITED DOWNS GEOTHERMAL POWER PLANT")
