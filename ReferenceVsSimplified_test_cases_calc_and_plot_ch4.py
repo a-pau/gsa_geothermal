@@ -161,9 +161,7 @@ fig.subplots_adjust(hspace=0.010)
 fig.set_size_inches([6, 6])
 fig.tight_layout()
 
-# Change label position at the end in order not to change the format
-cge_ax_low.yaxis.set_label_coords(-0.12, 1)
-
+cge_ax_low.yaxis.set_label_coords(-0.06, 1)
 #%% SAve conventional only
 fig.savefig(os.path.join(folder_OUT, file_name + "_ch4_conventional.tiff"), dpi=300)
 

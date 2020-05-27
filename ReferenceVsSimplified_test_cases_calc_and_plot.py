@@ -211,8 +211,8 @@ fig.set_size_inches([11, 6])
 fig.tight_layout()
 
 # Change label position at the end in order not to change the format
-ege_ax_low.yaxis.set_label_coords(-0.08, 1)
-cge_ax_low.yaxis.set_label_coords(-0.12, 1)
+ege_ax_low.yaxis.set_label_coords(-0.06, 1)
+cge_ax_low.yaxis.set_label_coords(-0.09, 1)
 
 #%% Save
 fig.savefig(os.path.join(folder_OUT, file_name + ".tiff"), dpi=300)
