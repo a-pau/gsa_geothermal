@@ -22,8 +22,8 @@ ILCD, ILCD_units = get_ILCD_methods(units=True)
 
 # Upload
 n_iter=10000
-threshold_cge = 0.05
-threshold_ege = 0.05
+threshold_cge = 0.1
+threshold_ege = 0.1
 
 ecoinvent_version = "ecoinvent_3.6"
 folder_IN = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
@@ -115,6 +115,10 @@ from matplotlib.colors import Normalize
 from matplotlib import cm
 from utils.plot_funcs import set_axlims       
 
+sb.set_style("darkgrid")
+sb.set_context(rc={"axes.titlesize":11,"axes.labelsize":11, 
+                   "xtick.labelsize":10, "ytick.labelsize":10, "legend.fontsize":10})
+
 cge_parityplot_col=plt.figure()
 for i, method in enumerate(ILCD):
     ax_=cge_parityplot_col.add_subplot(4,4,i+1)
@@ -149,7 +153,7 @@ for i, method in enumerate(ILCD):
     plt.ylim(lim)
     ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
     title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
-    ax_.set_title(label=title_, fontsize=9)
+    ax_.set_title(label=title_, pad=15)
     ax_.set(xlabel="", ylabel="")  
 cge_parityplot_col.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
 cge_parityplot_col.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
@@ -190,13 +194,13 @@ for i, method in enumerate(ILCD):
     plt.ylim(lim)
     ax_.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
     title_= ILCD[i][2] + "\n" + "[" + ILCD_units[i] + "]"
-    ax_.set_title(label=title_, fontsize=9)
+    ax_.set_title(label=title_, pad=15)
     ax_.set(xlabel="", ylabel="")
 ege_parityplot_col.text(0.5, 0.01, 'General model', ha='center', fontsize=12, fontweight="bold")
 ege_parityplot_col.text(0.01, 0.5, 'Simplified model', va='center', rotation='vertical', fontsize=12, fontweight="bold")  
 
-cge_parityplot_col.suptitle("CONVENTIONAL, THRESHOLD="+"{:.0%}".format(threshold_cge))
-ege_parityplot_col.suptitle("ENHANCED, THRESHOLD="+"{:.0%}".format(threshold_ege))
+cge_parityplot_col.suptitle("CONVENTIONAL, THRESHOLD="+"{:.0%}".format(threshold_cge), fontsize=13)
+ege_parityplot_col.suptitle("ENHANCED, THRESHOLD="+"{:.0%}".format(threshold_ege), fontsize=13)
 
 cge_parityplot_col.set_size_inches([13,  13])
 ege_parityplot_col.set_size_inches([13,  13])
@@ -209,7 +213,7 @@ ege_parityplot_col.tight_layout(rect=[0.02,0.02,1,0.95])
 #%% Save figures
 file_name_par_col = file_name + " Parity_Plot_COL"
 cge_parityplot_col.savefig(os.path.join(folder_OUT, file_name_par_col + "_Conventional_t"+str(threshold_cge)+".tiff"), dpi=300)
-ege_parityplot_col.savefig(os.path.join(folder_OUT, file_name_par_col + "_Enhanced_t"+str(threshold_cge)+".tiff"), dpi=300)
+ege_parityplot_col.savefig(os.path.join(folder_OUT, file_name_par_col + "_Enhanced_t"+str(threshold_ege)+".tiff"), dpi=300)
 
 #%% Parity plot not coloured according to density
 

@@ -98,6 +98,10 @@ ege_s_df = ege_s_df.reset_index().rename(columns={"index":"method"})
    
 #%% Conventional plot
 
+sb.set_context(rc={"axes.titlesize":13,"axes.labelsize":13, 
+                   "xtick.labelsize":12, "ytick.labelsize":12, "legend.fontsize":12})
+
+
 # Re-arrange dataframes
 cge_s_df_20 = cge_s_df[["method","20%"]].rename(columns={"20%":"impact"})
 cge_s_df_15 = cge_s_df[["method","15%"]].rename(columns={"15%":"impact"})
@@ -137,9 +141,9 @@ for counter, method_ in enumerate(ILCD):
     cge_ax[j][i].scatter(x=temp_s_5.pos, y=temp_s_5.impact, c=sb_pal[3], label="5%")
     
     cge_ax[j][i].set_xlabel("")
-    cge_ax[j][i].set_ylabel(ILCD_units[counter], fontsize=11)
+    cge_ax[j][i].set_ylabel(ILCD_units[counter])
     cge_ax[j][i].set_xticks([],[])
-    cge_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n", fontsize=12)
+    cge_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n")
     cge_ax[j][i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     cge_ax[j][i].set_xlim(0.5,1.5)
 
@@ -153,7 +157,7 @@ handles.insert(2,emp_han)
 labels.insert(2,"simplified model:")
 cge_plot.legend(handles, labels, loc='lower center', ncol=7) 
 
-cge_plot.suptitle("HELLISHEIDI GEOTHERMAL POWER PLANT")
+cge_plot.suptitle("HELLISHEIDI GEOTHERMAL POWER PLANT", fontsize=15)
 cge_plot.subplots_adjust(wspace=0, hspace=0.4)
 cge_plot.set_size_inches([14,  8])
 cge_plot.tight_layout(rect=[0,0.05,1,0.95])
@@ -201,9 +205,9 @@ for counter, method_ in enumerate(ILCD):
     ege_ax[j][i].scatter(x=temp_s_5.pos, y=temp_s_5.impact, c=sb_pal[3], label="5%")
     
     ege_ax[j][i].set_xlabel("")
-    ege_ax[j][i].set_ylabel(ILCD_units[counter], fontsize=11)
+    ege_ax[j][i].set_ylabel(ILCD_units[counter])
     ege_ax[j][i].set_xticks([],[])
-    ege_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n", fontsize=12)
+    ege_ax[j][i].set_title(textwrap.fill(method_[2],15) + "\n")
     ege_ax[j][i].ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     ege_ax[j][i].set_xlim(0.5,1.5)
 
@@ -217,9 +221,9 @@ handles.insert(2,emp_han)
 labels.insert(2,"simplified model:")
 
 if exploration:
-    ege_plot.suptitle("UNITED DOWNS GEOTHERMAL POWER PLANT")
+    ege_plot.suptitle("UNITED DOWNS GEOTHERMAL POWER PLANT", fontsize=15)
 elif not exploration:
-    ege_plot.suptitle("UNITED DOWNS GEOTHERMAL POWER PLANT, NO EXPLORATION")
+    ege_plot.suptitle("UNITED DOWNS GEOTHERMAL POWER PLANT, NO EXPLORATION", fontsize=15)
        
 ege_plot.legend(handles, labels, loc='lower center', ncol=7) 
 ege_plot.subplots_adjust(wspace=0, hspace=0.4)

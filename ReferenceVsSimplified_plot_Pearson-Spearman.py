@@ -98,6 +98,8 @@ ege_pearson_df_m = ege_pearson_df_m.melt(id_vars="method",var_name="threshold", 
 
 # Set seaborn style
 sb.set_style("darkgrid")
+sb.set_context(rc={"axes.titlesize":12,"axes.labelsize":11, 
+                   "xtick.labelsize":10, "ytick.labelsize":10, "legend.fontsize":10})
 
 # Subplots
 fig_pears, (cge_pears_ax, ege_pears_ax) = plt.subplots(nrows=1, ncols=2, sharey=True)
@@ -142,6 +144,9 @@ ege_spearman_df_m = ege_spearman_df_m.melt(id_vars="method",var_name="threshold"
 
 # Set seaborn style
 sb.set_style("darkgrid")
+sb.set_context(rc={"axes.titlesize":12,"axes.labelsize":11, 
+                   "xtick.labelsize":10, "ytick.labelsize":10, "legend.fontsize":10})
+
 
 # Subplots
 fig_spear, (cge_spear_ax, ege_spear_ax) = plt.subplots(nrows=1, ncols=2, sharey=True)
@@ -209,6 +214,9 @@ ege_pearson_all_df_m = ege_pearson_all_df_m.melt(id_vars="method",var_name="thre
 
 
 sb.set_style("darkgrid")
+sb.set_context(rc={"axes.titlesize":12,"axes.labelsize":11, 
+                   "xtick.labelsize":10, "ytick.labelsize":10, "legend.fontsize":10})
+
 fig_enh, (ege_pears_ax, ege_spear_ax) = plt.subplots(nrows=1, ncols=2, sharey=True)
 plt.minorticks_on()
 

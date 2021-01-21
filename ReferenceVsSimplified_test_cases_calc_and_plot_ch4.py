@@ -6,6 +6,7 @@ import warnings
 import seaborn as sb
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import ticker
 from matplotlib.ticker import FormatStrFormatter
 
 # Import local
@@ -103,8 +104,72 @@ ege_s_df=ege_s_df.reset_index().rename(columns={"index": "study"})
 
 #%% Plot only conventional
 
+sb.set_style("dark")
+sb.set_context(rc={"axes.titlesize":12,"axes.labelsize":11, 
+                   "xtick.labelsize":10, "ytick.labelsize":10, "legend.fontsize":10})
+
+
+# Subplots
+fig, cge_ax = plt.subplots(nrows=1, ncols=1, sharex="col")
+
+# Distance between points
+dist = 0.3
+
+# Conventional
+
+# Re-arrange dataframe
+cge_s_df_2 = cge_s_df.rename(columns = {"10%": "all thresholds"})
+cge_s_df_2 = cge_s_df_2.melt(id_vars = "study", var_name="simplified model", value_name="carbon footprint")
+cge_lit = cge_data
+cge_lit["type"] = "literature"
+
+# Set positions
+pos_cge_lit = np.arange(len(cge_data))
+pos_cge_s = pos_cge_lit + dist
+pos_cge_ticks = pos_cge_lit + dist/2
+pos_cge_ref = pos_cge_lit[-1]+2
+pos_cge_ticks = np.append(pos_cge_ticks, pos_cge_ref)
+cge_ticklabels = cge_lit["study"].to_list()
+cge_ticklabels.append("general model")
+
+# Plot
+cge_ax.boxplot(x=cge_ref_df, positions=[pos_cge_ref], vert=True, whis=[1,99], showfliers=False,
+               widths=1, medianprops={"color":"black"})
+sb.scatterplot(data=cge_data, y="carbon footprint", x=pos_cge_lit, style="type", markers=["s"], color="black", ax=cge_ax)
+sb.scatterplot(data=cge_s_df_2, y="carbon footprint", x=pos_cge_s, hue="simplified model", ax=cge_ax) 
+cge_ax.set(ylabel="", xlabel = "", xticks=pos_cge_ticks, xticklabels=cge_ticklabels,#yscale="log",
+           xlim=(pos_cge_ticks[0]-0.5, pos_cge_ticks[-1]+1))
+cge_ax.grid(b=True, which='both', axis="y")
+cge_ax.yaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
+cge_ax.yaxis.set_major_formatter(FormatStrFormatter("%.0f"))
+cge_ax.yaxis.set_major_locator(ticker.MultipleLocator(50))
+cge_ax.tick_params(axis="x", which="both", labelrotation=90)
+cge_ax.get_legend().remove()
+
+# y-axis limits
+cge_ax.set(ylim=(0,1005))
+cge_ax.set_ylabel("$\mathregular{g CO_2 eq./kWh}$")
+
+#Title
+cge_ax.set_title("CONVENTIONAL")
+
+# Legend
+handles, labels = cge_ax.get_legend_handles_labels()
+labels[2]= "simplified model:"
+cge_ax.legend(handles=handles[1:], labels=labels[1:], loc="upper right")
+
+fig.subplots_adjust(hspace=0.010)
+fig.set_size_inches([4.4, 8])
+fig.tight_layout()
+
+#%% Save conventional only
+fig.savefig(os.path.join(folder_OUT, file_name + "_ch4_conventional.tiff"), dpi=300)
+
+#%% Plot only conventional with break axis - SUBSIDED
+
 sb.set(font_scale = 0.6)
 sb.set_style("dark")
+
 
 # Subplots
 fig, (cge_ax_up, cge_ax_low) = plt.subplots(nrows=2, ncols=1, sharex="col",
@@ -162,119 +227,3 @@ fig.set_size_inches([6, 6])
 fig.tight_layout()
 
 cge_ax_low.yaxis.set_label_coords(-0.06, 1)
-#%% SAve conventional only
-fig.savefig(os.path.join(folder_OUT, file_name + "_ch4_conventional.tiff"), dpi=300)
-
-#%% Plot
-
-sb.set(font_scale = 0.6)
-sb.set_style("dark")
-
-# Subplots
-fig, ((cge_ax_up, ege_ax_up), (cge_ax_low, ege_ax_low)) = plt.subplots(nrows=2, ncols=2, sharex="col",
-                                                                       gridspec_kw={'width_ratios': [12, 15], 'height_ratios': [1,2]})
-
-# Distance between points
-dist = 0.4
-
-# Conventional
-
-# Re-arrange dataframe
-cge_s_df_2 = cge_s_df.rename(columns = {"10%": "all thresholds"})
-cge_s_df_2 = cge_s_df_2.melt(id_vars = "study", var_name="simplified", value_name="carbon footprint")
-cge_lit = cge_data
-cge_lit["type"] = "literature"
-
-# Set positions
-pos_cge_lit = np.arange(len(cge_data))
-pos_cge_s = pos_cge_lit + dist
-pos_cge_ticks = pos_cge_lit + dist/2
-pos_cge_ref = pos_cge_lit[-1]+2
-pos_cge_ticks = np.append(pos_cge_ticks, pos_cge_ref)
-cge_ticklabels = cge_lit["study"].to_list()
-cge_ticklabels.append("general model")
-
-# Plot
-for cge_ax in [cge_ax_up, cge_ax_low]:
-    cge_ax.boxplot(x=cge_ref_df, positions=[pos_cge_ref], vert=True, whis=[1,99], showfliers=False,
-                   widths=1, medianprops={"color":"black"})
-    sb.scatterplot(data=cge_data, y="carbon footprint", x=pos_cge_lit, style="type", markers=["s"], color="black", ax=cge_ax)
-    sb.scatterplot(data=cge_s_df_2, y="carbon footprint", x=pos_cge_s, hue="simplified", ax=cge_ax) 
-    cge_ax.set(ylabel="", xlabel = "", xticks=pos_cge_ticks, xticklabels=cge_ticklabels,#yscale="log",
-               xlim=(pos_cge_ticks[0]-0.5, pos_cge_ticks[-1]+1))
-    cge_ax.grid(b=True, which='both', axis="y")
-    cge_ax.yaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
-    cge_ax.yaxis.set_major_formatter(FormatStrFormatter("%.0f"))
-    cge_ax.tick_params(axis="x", which="both", labelrotation=90, labelsize=8)
-    cge_ax.get_legend().remove()
-
-# y-axis limits
-cge_ax_up.set(ylim=(530,1005))
-cge_ax_low.set(ylim=(0,400))
-cge_ax_low.set_ylabel("$\mathregular{g CO_2 eq./kWh}$",fontsize=8)
-
-#Title
-cge_ax_up.set_title("CONVENTIONAL", fontsize=10)
-
-# Legend
-handles, labels = cge_ax.get_legend_handles_labels()
-cge_ax_up.legend(handles=handles[1:], labels=labels[1:], loc="upper right")
-
-#Enhanced
-# Re-arrange dataframe
-ege_s_df_2 = ege_s_df.rename(columns = {"10%": "10,15,20%"})
-ege_s_df_2 = ege_s_df_2.melt(id_vars = "study", var_name="simplified", value_name="carbon footprint")
-ege_lit = ege_data
-ege_lit["type"] = "literature"
-
-# Set positions
-pos_ege_lit = np.arange(len(ege_data))
-pos_ege_s = np.hstack([pos_ege_lit+dist, pos_ege_lit+dist])
-pos_ege_ticks = pos_ege_lit + dist/2
-pos_ege_ref = pos_ege_lit[-1]+2
-pos_ege_ticks = np.append(pos_ege_ticks, pos_ege_ref)
-ege_ticklabels = ege_lit["study"].to_list()
-ege_ticklabels.append("general model")
-
-# Plot
-for ege_ax in [ege_ax_up, ege_ax_low]:
-    ege_ax.boxplot(x=ege_ref_df, positions=[pos_ege_ref], vert=True, whis=[1,99], showfliers=False, 
-                   widths=1, medianprops={"color":"black"})
-    sb.scatterplot(data=ege_data, y="carbon footprint", x=pos_ege_lit, style="type", markers=["s"], color="black", ax=ege_ax)
-    sb.scatterplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax)
-    #if ege_ax == ege_ax_low:
-    #    sb.scatterplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax)
-    #elif ege_ax == ege_ax_up:
-    #    sb.stripplot(data=ege_s_df_2, y="carbon footprint", x=pos_ege_s, hue="simplified", ax=ege_ax,
-    #                 jitter=True)    
-    ege_ax.set(ylabel="", xlabel = "", xticks=pos_ege_ticks, xticklabels=ege_ticklabels,#yscale="log",
-               xlim=(pos_ege_ticks[0]-0.5, pos_ege_ticks[-1]+1))
-    ege_ax.grid(b=True, which='both', axis="y")
-    ege_ax.yaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
-    ege_ax.yaxis.set_major_formatter(FormatStrFormatter("%.0f"))
-    ege_ax.tick_params(axis="x", labelrotation=90, labelsize=8)
-    ege_ax.get_legend().remove()
-    
-# Limits
-ege_ax_up.set(ylim=(530,1005))
-ege_ax_low.set(ylim=(0,400)) 
-ege_ax_low.set_ylabel("$\mathregular{g CO_2 eq./kWh}$", fontsize=8) 
-   
-# Title
-ege_ax_up.set_title("ENHANCED", fontsize=10)
-
-handles, labels = ege_ax.get_legend_handles_labels()
-#handles = [handles[1],handles[3], handles[4]]
-#labels = [labels[1],labels[3], labels[4]]
-ege_ax_up.legend(handles=handles[1:], labels=labels[1:], loc="upper right", fontsize=7)
-
-fig.subplots_adjust(hspace=0.010)
-fig.set_size_inches([9, 6])
-fig.tight_layout()
-
-# Change label position at the end in order not to change the format
-ege_ax_low.yaxis.set_label_coords(-0.08, 1)
-cge_ax_low.yaxis.set_label_coords(-0.12, 1)
-
-#%% Save
-fig.savefig(os.path.join(folder_OUT, file_name + "_ch4.tiff"), dpi=300)

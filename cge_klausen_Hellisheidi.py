@@ -48,7 +48,7 @@ parameters = {
                 "amount" : 0.03,
         },
         "success_rate_exploration_wells": {
-                "amount": 1,
+                "amount": 100,
         },
         "production_to_injection_ratio": {
                 "amount":2,
