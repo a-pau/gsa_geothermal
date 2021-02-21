@@ -107,17 +107,8 @@ venv.bak/
 .DS_Store
 
 # Local files
-data_and_models/Distributions
-data_and_models/Normalisation
-dask-worker-space
-generated_files/write_files
-generated_files/ecoinvent_3.5
-generated_files/ecoinvent_3.6/validation/old (no threshold)
-generated_files/ecoinvent_3.6/old (no threshold)
-generated_plots/write_images
-generated_plots/ecoinvent_3.6
-generated_plots/ecoinvent_3.5
-old
+gsa_geothermal/input_data
+gsa_geothermal/output_data
 
 # IDE PyCharm 
 .idea/
