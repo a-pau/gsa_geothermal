@@ -1,10 +1,9 @@
 import stats_arrays as sa
-import numpy as np
 import klausen
 
-# Insert parameters distribution and generate klausen instance
 
-def get_parameters():
+def get_parameters_enhanced():
+    """Parameters for enhanced geothermal."""
 
     parameters = {
         "number_of_wells": {
@@ -96,18 +95,14 @@ def get_parameters():
        }
 
     }
-
     parameters = klausen.NamedParameters(parameters)
-
-
+    parameters.static()
     return parameters
 
 
 
-def get_parameters_diff_distr():
-    '''
-    Parameters for checking robustness to distribution choice
-    '''
+def get_parameters_enhanced_diff_distr():
+    """Parameters for enhanced geothermal checking robustness to distribution choice"""
     
     parameters = {
 #         "number_of_wells": {
@@ -231,8 +226,6 @@ def get_parameters_diff_distr():
        }
 
     }
-
     parameters = klausen.NamedParameters(parameters)
-
-
+    parameters.static()
     return parameters

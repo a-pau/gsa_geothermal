@@ -39,7 +39,7 @@ success_rate = True
 # Run model with presamples
 cge_parameters.stochastic(iterations=n_iter)
 cge_model = GeothermalConventionalModel(cge_parameters, exploration = exploration, success_rate = success_rate)
-cge_parameters_sto=cge_model.run_ps(cge_parameters)
+cge_parameters_sto=cge_model.run_with_presamples(cge_parameters)
 cge_ref = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD_CC, n_iter)
 
 cge_ref_df=pd.DataFrame.from_dict(cge_ref, orient="columns")
@@ -52,7 +52,7 @@ cge_ref_df["carbon footprint"] = cge_ref_df["carbon footprint"] *1000
 # Run model with presamples
 ege_parameters.stochastic(iterations=n_iter)
 ege_model = GeothermalEnhancedModel(ege_parameters, exploration = exploration, success_rate = success_rate)
-ege_parameters_sto=ege_model.run_ps(ege_parameters)
+ege_parameters_sto=ege_model.run_with_presamples(ege_parameters)
 ege_ref = run_mc(ege_parameters_sto, electricity_enh_prod, ILCD_CC, n_iter)
 
 ege_ref_df=pd.DataFrame.from_dict(ege_ref, orient="columns")

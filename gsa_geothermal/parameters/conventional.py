@@ -1,11 +1,10 @@
 import stats_arrays as sa
 import numpy as np
 import klausen
-import copy
 
-# Insert parameters distribution and generate klausen instance
 
-def get_parameters():
+def get_parameters_conventional():
+    """Parameters for conventional geothermal."""
 
     parameters = {
         "gross_power_per_well": {
@@ -107,18 +106,15 @@ def get_parameters():
             "loc": 99,
         }
     }
-
     parameters = klausen.NamedParameters(parameters)
-
+    parameters.static()
     return parameters
 
 
 
-def get_parameters_diff_distr():
-    '''
-    Parameters for checking robustness to distribution choice
-    '''
-    
+def get_parameters_conventional_diff_distr():
+    """Parameters for conventional geothermal for checking robustness to distribution choice."""
+
     parameters = {
         "gross_power_per_well": {
             "minimum": 0,
@@ -241,9 +237,8 @@ def get_parameters_diff_distr():
             "loc": 99,
         },
     }
-
     parameters = klausen.NamedParameters(parameters)
-
+    parameters.static()
     return parameters
 
 # Parameters with Lifetime distributed normally

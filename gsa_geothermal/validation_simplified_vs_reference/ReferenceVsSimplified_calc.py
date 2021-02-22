@@ -53,7 +53,7 @@ cge_parameters.stochastic(iterations=n_iter, seed=seed)
 
 # Compute
 cge_model = GeothermalConventionalModel(cge_parameters)
-cge_parameters_sto = cge_model.run_ps(cge_parameters)
+cge_parameters_sto = cge_model.run_with_presamples(cge_parameters)
 cge_ref = run_mc(cge_parameters_sto, {electricity_conv_prod:1}, ILCD, n_iter)
 
 # Save
@@ -69,7 +69,7 @@ ege_parameters.stochastic(iterations=n_iter, seed=seed)
 
 # Compute
 ege_model = GeothermalEnhancedModel(ege_parameters)
-ege_parameters_sto = ege_model.run_ps(ege_parameters)
+ege_parameters_sto = ege_model.run_with_presamples(ege_parameters)
 ege_ref = run_mc(ege_parameters_sto, {electricity_enh_prod:1}, ILCD, n_iter)
 
 # Save

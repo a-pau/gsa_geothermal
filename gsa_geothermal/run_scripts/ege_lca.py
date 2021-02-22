@@ -44,7 +44,7 @@ for method in ILCD:
 n_iter=1000 # Number of iterations
 parameters.stochastic(iterations=n_iter)
 model = GeothermalEnhancedModel(exploration=True)
-parameters_sto=model.run_ps(parameters)
+parameters_sto=model.run_with_presamples(parameters)
 
 # Create presamples
 matrix_data = []

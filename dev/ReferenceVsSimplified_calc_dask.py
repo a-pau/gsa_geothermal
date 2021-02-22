@@ -40,7 +40,7 @@ cge_parameters.stochastic(iterations=n_iter)
 
 # Reference model
 cge_model = GeothermalConventionalModel(cge_parameters)
-cge_parameters_sto = cge_model.run_ps(cge_parameters)
+cge_parameters_sto = cge_model.run_with_presamples(cge_parameters)
 
 #%%Compute normal
 

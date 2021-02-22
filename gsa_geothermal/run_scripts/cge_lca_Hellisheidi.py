@@ -37,7 +37,7 @@ success_rate = True
 # Static LCA with presamples
 parameters.static()
 model = GeothermalConventionalModel(parameters, exploration=exploration, success_rate=success_rate)
-parameters_sta=model.run_ps(parameters)
+parameters_sta=model.run_with_presamples(parameters)
 static_filepath = create_presamples(parameters_sta)
 
 #%% Do LCA

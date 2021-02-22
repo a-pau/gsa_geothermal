@@ -59,7 +59,7 @@ sb.barplot(y = list(sta_results_norm.keys()), x = list(sta_results_norm.values()
 n_iter=1000 # Number of iterations
 parameters.stochastic(iterations=n_iter)
 model = GeothermalModel(parameters)
-parameters_sto=model.run_ps(parameters)
+parameters_sto=model.run_with_presamples(parameters)
 
 # Create presamples
 matrix_data = []
@@ -116,7 +116,7 @@ print("Time elapsed: ", time() - start)
 # Static parameters
 parameters.static
 model = GeothermalModel(parameters)
-parameters_sta=model.run_ps(parameters)
+parameters_sta=model.run_with_presamples(parameters)
 
 # Create presamples
 matrix_data = []

@@ -4,20 +4,18 @@ import os
 import contextlib
 
 # Conventional
-def lookup_geothermal(ecoinvent = "ecoinvent 3.6 cutoff"):
-    
-    bw.projects.set_current('Geothermal')
+def lookup_geothermal(ecoinvent_version="ecoinvent 3.6 cutoff"):
 
     db_geothe = bw.Database("geothermal energy")
-    db_ecoinv = bw.Database(ecoinvent)
+    db_ecoinv = bw.Database(ecoinvent_version)
     db_biosph = bw.Database("biosphere3")
     
     #needed to exclude print statements from the search function
     with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
     
-        # TODO we had to include filter "code" because:
-        # search sometimes gives different order (on different computers); and 
-        # it is not possible to filter multiple times for the same keyword
+        # Note that we had to include `filter` because:
+        # - search sometimes gives different order (eg on different computers);
+        # - it is not possible to filter multiple times for the same keyword
         
         wellhead      = db_geothe.search("geothermal wellhead")[0].key
         diesel        = db_ecoinv.search("market diesel, burned diesel-electric generating set 10MW")[0].key 
@@ -39,26 +37,27 @@ def lookup_geothermal(ecoinvent = "ecoinvent 3.6 cutoff"):
         electricity_prod_conventional = db_geothe.search("electricity production, geothermal, conventional", mask={"name":"zeros"})[0].key
         electricity_prod_enhanced     = db_geothe.search("electricity production, geothermal, enhanced", mask={"name":"zeros"})[0].key
     
-    return wellhead,     \
-           diesel,       \
-           steel,        \
-           cement,       \
-           water,        \
-           drilling_mud, \
-           drill_wst,    \
-           wells_closr,  \
-           coll_pipe,    \
-           plant,        \
-           ORC_fluid,    \
-           ORC_fluid_wst,\
-           diesel_stim,  \
-           co2,          \
-           electricity_prod_conventional, \
-           electricity_prod_enhanced
+    return [
+        wellhead,
+        diesel,
+        steel,
+        cement,
+        water,
+        drilling_mud,
+        drill_wst,
+        wells_closr,
+        coll_pipe,
+        plant,
+        ORC_fluid,
+        ORC_fluid_wst,
+        diesel_stim,
+        co2,
+        electricity_prod_conventional,
+        electricity_prod_enhanced
+    ]
 
 
 # def lookup_geothermal():
-        
 #     wellhead      = ('geothermal energy', '7fa61b637a4d96f73ca8c79385b6613d')
 #     diesel        = ('ecoinvent 3.5 cutoff', '722cb89122fabcc67bc45f6886baa5f4')
 #     steel         = ('ecoinvent 3.5 cutoff', 'a2f8c9bc4b63e67804c69dd9fcc75d2b')
@@ -75,23 +74,24 @@ def lookup_geothermal(ecoinvent = "ecoinvent 3.6 cutoff"):
 #     co2           = ('biosphere3', '349b29d1-3e58-4c66-98b9-9d1a076efd2e')
 #     electricity_prod_conventional = ('geothermal energy', '2ef3af7fcb17cd0bc186fe172f9b8d4f')
 #     electricity_prod_enhanced     = ('geothermal energy', '71e0f3893f9e7b4f0d49ccfbfdb37c8a')
-    
-#     return wellhead,     \
-#            diesel,       \
-#            steel,        \
-#            cement,       \
-#            water,        \
-#            drilling_mud, \
-#            drill_wst,    \
-#            wells_closr,  \
-#            coll_pipe,    \
-#            plant,        \
-#            # ORC_fluid,    \
-#            ORC_fluid_wst,\
-#            diesel_stim,  \
-#            co2,          \
-#            electricity_prod_conventional, \
-#            electricity_prod_enhanced
+#     return [
+#         wellhead,
+#         diesel,
+#         steel,
+#         cement,
+#         water,
+#         drilling_mud,
+#         drill_wst,
+#         wells_closr,
+#         coll_pipe,
+#         plant,
+#         ORC_fluid,
+#         ORC_fluid_wst,
+#         diesel_stim,
+#         co2,
+#         electricity_prod_conventional,
+#         electricity_prod_enhanced
+#     ]
            
 
 

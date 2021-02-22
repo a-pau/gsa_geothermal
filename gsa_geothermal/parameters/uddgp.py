@@ -1,59 +1,59 @@
-import stats_arrays as sa
-import numpy as np
 import klausen
 
-# Insert parameters distribution and generate klausen instance
 
-parameters = {
+def get_parameters_uddgp():
+    """Klausen parameters for UDDGP."""
+    parameters = {
         "number_of_wells": {
-                "amount":2
+            "amount":2
         },
         "average_depth_of_wells": {
-                "amount": 4000,
+            "amount": 4000,
         },
         "collection_pipelines": {
-                "amount": 50,
+            "amount": 50,
         },
         "installed_capacity": {
-                "amount": 1,
+            "amount": 1,
         },
         "lifetime": {
-                "amount": 30,
+            "amount": 30,
         },
         "capacity_factor": {
-                "amount": 0.9,
+            "amount": 0.9,
         },
         "auxiliary_power": {
-                "amount": 0.3,   
+            "amount": 0.3,
         },
         "specific_diesel_consumption": {
-                "amount": 7200,
+            "amount": 7200,
         },
         "specific_steel_consumption": {
-                "amount": 80,
+            "amount": 80,
         },
         "specific_cement_consumption": {
-                "amount": 29,
+            "amount": 29,
         },
         "specific_drilling_mud_consumption": {
-                "amount": 0.525,
+            "amount": 0.525,
         },
         "number_of_wells_stimulated_0to1": {
-                "amount": 0.1,
+            "amount": 0.1,
         },
         "water_stimulation": {
-                "amount": 20000 * 1000,
+            "amount": 20000 * 1000,
         },
         "specific_electricity_stimulation": {
-                "amount": 19.4,
+            "amount": 19.4,
         },
         "success_rate_exploration_wells": {
-                "amount":67
+            "amount":67
         },
         "success_rate_primary_wells": {
-                "amount":100
-       }
-                
-}
+            "amount":100
+        }
 
-parameters = klausen.NamedParameters(parameters)
+    }
+    parameters = klausen.NamedParameters(parameters)
+    parameters.static()
+    return parameters
