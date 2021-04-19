@@ -92,6 +92,11 @@ def get_parameters_enhanced():
             "amount": 72.13139637749236,
             "uncertainty_type": sa.TriangularUncertainty.id,
             "loc": 99,
+       },
+        "ORC_fluid_losses": {
+            "minimum": 0,
+            "maximum": 5,
+            "uncertainty_type": sa.UniformUncertainty.id,
        }
 
     }
@@ -223,6 +228,12 @@ def get_parameters_enhanced_diff_distr():
             "amount": 72.13139637749236,
             "uncertainty_type": sa.TriangularUncertainty.id,
             "loc": 99,
+       },
+        "ORC_fluid_losses": {
+            "minimum": 0,
+            "maximum": 5,
+            "uncertainty_type": sa.TriangularUncertainty.id,
+            "loc": 2.5,
        }
 
     }

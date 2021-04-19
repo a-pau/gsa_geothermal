@@ -21,6 +21,8 @@ class GeothermalEnhancedModel:
         _, self.electricity_prod = lookup_geothermal(ecoinvent_version = ecoinvent_version)
 
         self.drilling_waste_per_metre = 450 # kilogram (for open hole diameter of 8.5 in and assume factor 3 production line to total volume drilled)
+        self.ORC_fluid = 300
+        
         if self.exploration:
             self.number_of_expl_wells = 3
         else:
@@ -111,7 +113,7 @@ class GeothermalEnhancedModel:
         # Only Treyer et al. consider that value as electrical energy (in case we wanted to we would need to consider efficiency of conversion of ~ 30%)
         diesel_for_stim = ((water_stim_consumption / 1000) * parameters["specific_electricity_stimulation"] * 3.6) # 3.6 is to convert to MJ from kWh.
         
-        ORC_fluid_consumption = 300 * parameters["installed_capacity"]
+        ORC_fluid_consumption = self.ORC_fluid (1 + parameters["ORC_fluid)_losses"] * parameters["lifetime"]) * parameters["installed_capacity"]
         
         # self.number_of_wells, self.diesel_consumption, self.steel_consumption,\
         # self.cement_consumption, self.total_water_consumption, self.drilling_mud_consumption,\

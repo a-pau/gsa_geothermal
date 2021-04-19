@@ -47,11 +47,14 @@ def get_parameters_uddgp():
             "amount": 19.4,
         },
         "success_rate_exploration_wells": {
-            "amount":67
+            "amount":67,
         },
         "success_rate_primary_wells": {
-            "amount":100
-        }
+            "amount":100,
+        },
+        "ORC_fluid_losses": {
+            "amount":0,
+            }
 
     }
     parameters = klausen.NamedParameters(parameters)
