@@ -1,10 +1,17 @@
 import os, pickle
 from copy import deepcopy
-from utils.gsa_lca_dask import *
+import brightway2 as bw
+import numpy as np
+
+# Local files
+from gsa_geothermal.utils.lookup_func import lookup_geothermal
+from gsa_geothermal.parameters import get_parameters
+from gsa_geothermal.general_models import GeothermalConventionalModel, GeothermalEnhancedModel
+from pypardiso import spsolve
 
 
 
-def setup_gsa(n_dimensions):
+def setup_gsa_problem(n_dimensions):
     calc_second_order = False
     problem = {
       'num_vars': n_dimensions,
@@ -13,47 +20,41 @@ def setup_gsa(n_dimensions):
     }
     return problem, calc_second_order
 
-def setup_gt_project(project, option, diff_distr=False):
-    
+
+def setup_geothermal(project, option, flag_diff_distributions=False):
+    # Project
     bw.projects.set_current(project)
-    
-    #Local files
-    from utils.lookup_func import lookup_geothermal
-
     # Demand
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conv, electricity_prod_enha = lookup_geothermal()   
-       
-    if option == 'cge':
-        demand = {electricity_prod_conv: 1}
-        if diff_distr == False:
-            from cge_klausen import get_parameters
-            parameters = get_parameters()
-        elif diff_distr == True:
-            from cge_klausen import get_parameters_diff_distr
-            parameters = get_parameters_diff_distr()
-        from cge_model import GeothermalConventionalModel as GTModel
-    elif option == 'ege':
-        demand = {electricity_prod_enha: 1}
-        if diff_distr == False:
-            from ege_klausen import get_parameters
-            parameters = get_parameters()
-        if diff_distr == True:
-            from ege_klausen import get_parameters_diff_distr
-            parameters = get_parameters_diff_distr()
-        from ege_model import GeothermalEnhancedModel as GTModel
-        
-    gt_model = GTModel(parameters)
+    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced = lookup_geothermal()
+    # Which parameters to choose
+    if flag_diff_distributions:
+        cge_parameters = get_parameters("conventional.diff_distributions")
+        ege_parameters = get_parameters("enhanced.diff_distributions")
+    else:
+        cge_parameters = get_parameters("conventional")
+        ege_parameters = get_parameters("enhanced")
+    # Select all for conventional or enhanced
+    if option == "conventional":
+        demand = electricity_prod_conventional
+        parameters = cge_parameters
+        GeothermalModel = GeothermalConventionalModel
+    elif option == "enhanced":
+        demand = electricity_prod_enhanced
+        parameters = ege_parameters
+        GeothermalModel = GeothermalEnhancedModel
+    else:
+        print("Choose {} as `conventional` or `enhanced`")
+        return
+    geothermal_model = GeothermalModel(parameters)
+    return demand, geothermal_model, parameters
 
-    return demand, gt_model, parameters
 
-def get_ILCD_methods(CC_only=False, units=False):
-    
+def get_ILCD_methods(select_climate_change_only=False, return_units=False):
     # ILCD-EF2.0 methods
     ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "climate change total" in str(method)]
     ILCD_HH = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "human health" in str(method)]
     ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "ecosystem quality" in str(method)]
     ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
-    
     # Adjust units
     adjust_units_dict = {
         'kg NMVOC-.': 'kg NMVOC-Eq',
@@ -61,29 +62,28 @@ def get_ILCD_methods(CC_only=False, units=False):
         'CTU' : 'CTUe',
         'kg CFC-11.' : 'kg CFC-11-Eq',
         'megajoule': 'MJ'}
-    
-    if CC_only:
+    if select_climate_change_only:
         methods = ILCD_CC
     else:
         methods = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
-     
-    if units:
+    if return_units:
         temp=[bw.methods[method]["unit"] for method in methods]
         ILCD_units=[adjust_units_dict[elem] if elem in adjust_units_dict else elem for elem in temp]        
         return methods, ILCD_units
     else:
-        return methods 
+        return methods
 
-def gen_cf_matrices(lca, methods):
+
+def gen_characterization_matrices(lca, methods):
     method_matrices = []
     for method in methods:
         lca.switch_method(method)
         method_matrices.append(lca.characterization_matrix)
-        
     return method_matrices
 
 
 def get_lcia_results(path):
+    """TODO Sasha change os to pathlib"""
     files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) 
              and 'all' not in f and 'scores' in f]
     starts = [int(f.split('_')[1]) for f in files]
@@ -97,22 +97,21 @@ def get_lcia_results(path):
     return np.vstack(np.array(scores))
 
 
-def setup_all(option):
+def setup_project(option):
     project = 'Geothermal'
-
-    demand, gt_model, parameters = setup_gt_project(project, option)
+    demand, geothermal_model, parameters = setup_geothermal(project, option)
     methods = get_ILCD_methods()
 
     lca = bw.LCA(demand, methods[0])
     lca.lci()
     lca.lcia()
     lca.build_demand_array()
-    gsa_in_lca = GSAinLCA(lca, parameters, gt_model, project = project)
+    gsa_in_lca = GSAinLCA(lca, parameters, geothermal_model, project = project)
 
     num_vars = len(gsa_in_lca.parameters_array) \
              + len(gsa_in_lca.uncertain_exchanges_dict['tech_params_where']) \
              + len(gsa_in_lca.uncertain_exchanges_dict['bio_params_where'])
-    problem, calc_second_order = setup_gsa(num_vars)
+    problem, calc_second_order = setup_gsa_problem(num_vars)
     parameters_list = gsa_in_lca.parameters_array['name'].tolist()
     
     return problem, calc_second_order, parameters_list, methods
@@ -217,7 +216,7 @@ def run_mc(parameters, demand, methods, n_iter):
     tech_params = lca.tech_params['amount']
     bio_params = lca.bio_params['amount']
 
-    method_matrices = gen_cf_matrices(lca, methods)
+    method_matrices = gen_characterization_matrices(lca, methods)
     CF_matr = [sum(m) for m in method_matrices]
 
     where_tech, amt_tech, where_bio, amt_bio = find_where_in_techparams(parameters, lca)

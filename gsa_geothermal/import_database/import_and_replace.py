@@ -14,7 +14,7 @@ def replace_datasets(parameters, geothermal_model):
     params_sta_conv = array_io
 
     # Lookup activities
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced, = lookup_geothermal()
+    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced = lookup_geothermal()
     if "conventional" in geothermal_model.label:
         electricity_prod = electricity_prod_conventional
     elif "enhanced" in geothermal_model.label:

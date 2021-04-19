@@ -1,18 +1,16 @@
-# TODO we need not consider exchanges in db that are not being used
-# TODO remove repetitive exchanges
-
-
 import numpy as np
-import pandas as pd
 from scipy import sparse
-
+import pandas as pd
 import brightway2 as bw
 from bw2calc.utils import TYPE_DICTIONARY
-
 from pypardiso import spsolve
 from klausen.named_parameters import NamedParameters
 
-from gsa_geothermal.global_sensitivity_analysis.convert_distributions import *
+# Local files
+from ..global_sensitivity_analysis.convert_distributions import convert_sample
+
+# TODO we need not consider exchanges in db that are not being used
+# TODO remove repetitive exchanges
 
 
 
@@ -21,22 +19,16 @@ class GSAinLCA:
     Perform Global Sensivitiy Analysis (GSA) in Life Cycle Assessment (LCA).
     """
 
-    def __init__(self, lca, parameters = None, ParametersModel = None, options = None, project = None):
+    def __init__(self, project, lca, parameters=None, ParametersModel=None, options=None):
 
-        if bw.projects.current == 'default':
-            if project == None:
-                print('Choose bw project!')
-            else:
-                bw.projects.set_current(project)
-
+        self.project = project
         self.lca = lca
         self.options = options
-        # self.gsa_distr = gsa_distr
+
+        bw.projects.set_current(project)
 
         # 1. Generate parameters dictionary
         if parameters != None and ParametersModel != None:
-            # if self.gsa_distr == True:
-            #     self.parameters = self.add_distr_parameters()
             if type(parameters) is not NamedParameters:
                 #Initiate NamedParameters object
                 self.parameters = NamedParameters(parameters)
@@ -44,57 +36,33 @@ class GSAinLCA:
                 self.parameters = parameters
             self.ParametersModel = ParametersModel
             self.parameters.static()
-            self.convert_named_parameters_to_array()
-            self.obtain_parameterized_exchanges(parameters, ParametersModel)
+            self.parameters_array = self.convert_named_parameters_to_array()
+            self.parameterized_exc_dict = self.obtain_parameterized_exchanges(self.lca, self.parameters, self.ParametersModel)
         else:
             self.parameters = None
             self.ParametersModel = None
 
         # 2. Generate dictionary of uncertain exchanges based on options
-        self.obtain_uncertain_exchanges()
+        self.uncertain_exc_dict = self.obtain_uncertain_exchanges(self.lca, self.options)
             
         #Generate pandas dataframe
-        self.sa_pandas_init()
+        # self.sa_pandas_init()
 
-
-
-    # def add_distr_parameters(self):
-    #     '''
-    #     include lognormal, normal, uniform and triangular
-    #     '''
-    #     self.start_distr_params = len(self.parameters)
-    #     for key, val in self.parameters.items():
-    #         if val['uncertainty_type'] != sa.DiscreteUniform.id:
-    #             distr_param = {
-    #                 name + '_distr': {
-    #                     'minimum': 2,
-    #                     'maximum': 6,
-    #                     'uncertainty_type': sa.DiscreteUniform.id # min included, max excluded
-    #                 }
-    #             }
-    #             self.parameters.update(distr_param)
-    #     self.end_distr_params = len(self.parameters)
-
-
-
-    def obtain_uncertain_exchanges(self):
-
-        lca = self.lca
+    def obtain_uncertain_exchanges(self, lca, options):
 
         uncertain_exc_dict = {}
 
         indices_tech_all = np.array([], dtype=int)
         indices_bio_all  = np.array([], dtype=int)
 
-        if self.options == None:
+        if options == None:
             uncertain_exc_dict['tech_params_where'] = np.array([])
             uncertain_exc_dict['tech_params_amounts'] = np.array([])
             uncertain_exc_dict['bio_params_where'] = np.array([])
             uncertain_exc_dict['bio_params_amounts'] = np.array([])
-            self.uncertain_exchanges_dict = uncertain_exc_dict
-            return
+            return uncertain_exc_dict
 
-        for option in self.options:
+        for option in options:
 
             indices_tech = np.array([], dtype=int)
             indices_bio  = np.array([], dtype=int)
@@ -106,14 +74,19 @@ class GSAinLCA:
                 if len(db_act_indices_tech) > 0:
                     db_act_index_min_tech = db_act_indices_tech[0]
                     db_act_index_max_tech = db_act_indices_tech[-1]
-                    mask = lambda i : np.all( [lca.tech_params['uncertainty_type']!=0, 
-                                               lca.tech_params['col']==i,
-                                               lca.tech_params['amount']!=0], axis=0 )
+                    mask = lambda i : np.all(
+                        [
+                            lca.tech_params['uncertainty_type']!=0,
+                            lca.tech_params['col']==i,
+                            lca.tech_params['amount']!=0
+                        ],
+                        axis=0
+                    )
                     indices_tech = [ np.where( mask(i) ) [0] for i in range(db_act_index_min_tech, db_act_index_max_tech+1) ]
                     indices_tech = np.concatenate(indices_tech)
 
                 # Indices corresponding to flows in the biosphere params depending on the given database
-                if 'biosphere' in self.options:
+                if 'biosphere' in options:
                     mask = lambda j : np.all( [lca.bio_params['uncertainty_type']!=0, lca.bio_params['col']==j], axis=0 )
                     indices_bio = [ np.where(mask(j))[0] for j in range(db_act_index_min_tech, db_act_index_max_tech+1) ]
                     indices_bio = np.concatenate(indices_bio)
@@ -121,16 +94,26 @@ class GSAinLCA:
             elif option == 'demand_acts':
                 cols = np.where(lca.demand_array)[0]
                 # Indices corresponding to exchanges in the tech_params depending on the given demand
-                mask = lambda i : np.all( [lca.tech_params['uncertainty_type']!=0, 
-                                           lca.tech_params['col']==i,
-                                           lca.tech_params['amount']!=0], axis=0 )
+                mask = lambda i : np.all(
+                    [
+                        lca.tech_params['uncertainty_type']!=0,
+                        lca.tech_params['col']==i,
+                        lca.tech_params['amount']!=0
+                    ],
+                    axis=0
+                )
                 indices_tech = [ np.where( mask(i) ) [0] for i in cols ]
                 indices_tech = np.concatenate(indices_tech)
 
                 # Indices corresponding to flows in the biosphere params depending on the given demand
-                mask = lambda i : np.all( [lca.bio_params['uncertainty_type']!=0, 
-                                           lca.bio_params['col']==i,
-                                           lca.bio_params['amount']!=0], axis=0 )
+                mask = lambda i : np.all(
+                    [
+                        lca.bio_params['uncertainty_type']!=0,
+                        lca.bio_params['col']==i,
+                        lca.bio_params['amount']!=0
+                    ],
+                    axis=0
+                )
                 indices_bio = [ np.where( mask(i) ) [0] for i in cols ]
                 indices_bio = np.concatenate(indices_bio)
 
@@ -160,9 +143,7 @@ class GSAinLCA:
         uncertain_exc_dict['bio_params_amounts'] = lca.bio_params['amount'][indices_bio_all]
         assert uncertain_exc_dict['bio_params_where'].shape[0] == uncertain_exc_dict['bio_params_amounts'].shape[0]
 
-        self.uncertain_exchanges_dict = uncertain_exc_dict
-
-
+        return uncertain_exc_dict
 
     def convert_named_parameters_to_array(self):
         """
@@ -194,15 +175,12 @@ class GSAinLCA:
             for k,v in self.parameters.data[name].items():
                 parameters_array[i][k] = v
 
-        self.parameters_array = parameters_array
+        return parameters_array
 
 
+    def obtain_parameterized_exchanges(self, lca, parameters, ParametersModel):
 
-    def obtain_parameterized_exchanges(self, parameters, ParametersModel):
-
-        lca = self.lca
-
-        exchanges = self.ParametersModel.run(self.parameters)
+        exchanges = ParametersModel.run(parameters)
 
         indices_tech = np.array([], dtype=int)
         indices_bio  = np.array([], dtype=int)
@@ -231,8 +209,7 @@ class GSAinLCA:
         parameterized_exc_dict['bio_params_amounts'] = np.array([ exc['amount'] for exc in exc_bio ])
         assert parameterized_exc_dict['bio_params_where'].shape[0] == parameterized_exc_dict['bio_params_amounts'].shape[0]
 
-        self.parameterized_exchanges_dict = parameterized_exc_dict
-
+        return parameterized_exc_dict
 
 
     def convert_sample_to_proper_distribution(self, params, sample):
@@ -301,10 +278,6 @@ class GSAinLCA:
         return tech_params_amounts, bio_params_amounts
 
 
-    # def change_distributions_types(self):
-
-
-
     def replace_parameterized_exchanges(self, sample):
         """
         Replace parameterized exchanges, namely replace self.amounts_tech and self.amounts_bio 
@@ -322,12 +295,6 @@ class GSAinLCA:
         """
 
         n_parameters  = len(self.parameters_array)
-
-        # if self.gsa_distr == True:
-        #     distr_subsample = sample[self.i_sample + self.start_distr_params : self.i_sample + self.end_distr_params]
-        #     sample = np.hstack([sample[self.i_sample : self.i_sample + self.start_distr_params],
-        #                         sample[self.i_sample + self.end_distr_params : ]])
-        #     self.change_distributions_types(distr_subsample)
 
         parameters_subsample = sample[self.i_sample : self.i_sample+n_parameters]
         self.i_sample += n_parameters
@@ -416,27 +383,20 @@ class GSAinLCA:
                (len(row_dict), len(col_dict))).tocsr()
 
 
-
     def rebuild_technosphere_matrix(self, lca, vector):
-                
         A = self.build_matrix(
             lca.tech_params, lca._activity_dict, lca._product_dict,
             "row", "col",
             new_data=self.fix_supply_use(lca.tech_params, vector.copy())
         )
-        
         return A
-    
-    
+
     
     def rebuild_biosphere_matrix(self, lca, vector):
-        
         B = self.build_matrix(
             lca.bio_params, lca._biosphere_dict, lca._activity_dict,
             "row", "col", new_data=vector)
-        
         return B
-
     
     
     def model(self, sample, method_matrices):
@@ -466,89 +426,79 @@ class GSAinLCA:
     
     
     
-    def sa_pandas_init(self):
-        """
-        Initialize a dataframe to store sensitivity indices later on. 
-
-        Returns
-        -------
-        A GSAinLCA object that contains self.sensitivity_indices_df dataframe with 
-          columns: 'Products or flows' and 'Activities' corresponding to inputs and outputs of exchanges resp.
-                   For parameters these values coincide.
-          index:   consecutive numbers of the varied exchanges/parameters.
-
-        """
-
-        lca = self.lca
-
-        ind_activity  = 0
-        ind_product   = 1
-        ind_biosphere = 2
-
-        cols = []
-        rows = []
-        inputs = []
-
-        #All exchanges in inputs
-#         for input_ in self.inputs:
-
-#             if input_ == 'biosphere':
-#                 continue
-
-#             for i in self.inputs_dict[input_]['tech_params']:
-#                 act  = lca.reverse_dict() [ind_activity] [i['col']]
-#                 prod = lca.reverse_dict() [ind_product]  [i['row']]
-#                 cols += [ bw.get_activity(act) ['name'] ]
-#                 rows += [ bw.get_activity(prod)['name'] ]
-#                 inputs += [input_]
-#             for j in self.inputs_dict[input_]['bio_params']:
-#                 act = lca.reverse_dict() [ind_activity]  [j['col']]
-#                 bio = lca.reverse_dict() [ind_biosphere] [j['row']]
-#                 cols += [ bw.get_activity(act) ['name'] ]
-#                 rows += [ bw.get_activity(prod)['name'] ]
-#                 inputs += [input_]
-
-        if self.parameters != None:
-            # All parameters
-            parameters_names_list = [name for name in self.parameters_array['name']]
-            cols += parameters_names_list
-            rows += parameters_names_list
-            inputs += ['Parameters']*len(parameters_names_list)
-
-        df = pd.DataFrame([inputs, rows, cols], index = ['Inputs', 'Products or flows', 'Activities'])
-        df = df.transpose()
-
-        self.sensitivity_indices_df = df
-    
-    
-    
-    def sa_pandas_append(self, sa_dict):
-        """
-        Update a dataframe with the new sensitivity indices taken from sa_dict dictionary.
-
-        Attributes
-        ----------
-        sa_dict : dictionary
-            Dictionary that contains sensitivity indices from some method.
-
-        Returns
-        -------
-        A GSAinLCA object with the updated self.sensitivity_indices_df dataframe, where new columns include 
-        computed sensitivity indices for all exchanges/parameters of interest.
-
-        """
-
-        df    = self.sensitivity_indices_df
-        df_sa = pd.DataFrame(sa_dict, columns = sa_dict.keys(), index = df.index)
-        self.sensitivity_indices_df = df.join(df_sa)
-        
-        
-        
-        
-
-
-
-
-
-
-
+#     def sa_pandas_init(self):
+#         """
+#         Initialize a dataframe to store sensitivity indices later on.
+#
+#         Returns
+#         -------
+#         A GSAinLCA object that contains self.sensitivity_indices_df dataframe with
+#           columns: 'Products or flows' and 'Activities' corresponding to inputs and outputs of exchanges resp.
+#                    For parameters these values coincide.
+#           index:   consecutive numbers of the varied exchanges/parameters.
+#
+#         """
+#
+#         lca = self.lca
+#
+#         ind_activity  = 0
+#         ind_product   = 1
+#         ind_biosphere = 2
+#
+#         cols = []
+#         rows = []
+#         inputs = []
+#
+#         # All exchanges in inputs
+# #         for input_ in self.inputs:
+# #             if input_ == 'biosphere':
+# #                 continue
+# #             for i in self.inputs_dict[input_]['tech_params']:
+# #                 act  = lca.reverse_dict() [ind_activity] [i['col']]
+# #                 prod = lca.reverse_dict() [ind_product]  [i['row']]
+# #                 cols += [ bw.get_activity(act) ['name'] ]
+# #                 rows += [ bw.get_activity(prod)['name'] ]
+# #                 inputs += [input_]
+# #             for j in self.inputs_dict[input_]['bio_params']:
+# #                 act = lca.reverse_dict() [ind_activity]  [j['col']]
+# #                 bio = lca.reverse_dict() [ind_biosphere] [j['row']]
+# #                 cols += [ bw.get_activity(act) ['name'] ]
+# #                 rows += [ bw.get_activity(prod)['name'] ]
+# #                 inputs += [input_]
+#
+#         if self.parameters != None:
+#             # All parameters
+#             parameters_names_list = [name for name in self.parameters_array['name']]
+#             cols += parameters_names_list
+#             rows += parameters_names_list
+#             inputs += ['Parameters']*len(parameters_names_list)
+#
+#         df = pd.DataFrame([inputs, rows, cols], index = ['Inputs', 'Products or flows', 'Activities'])
+#         df = df.transpose()
+#
+#         self.sensitivity_indices_df = df
+#
+#
+#
+#     def sa_pandas_append(self, sa_dict):
+#         """
+#         Update a dataframe with the new sensitivity indices taken from sa_dict dictionary.
+#
+#         Attributes
+#         ----------
+#         sa_dict : dictionary
+#             Dictionary that contains sensitivity indices from some method.
+#
+#         Returns
+#         -------
+#         A GSAinLCA object with the updated self.sensitivity_indices_df dataframe, where new columns include
+#         computed sensitivity indices for all exchanges/parameters of interest.
+#
+#         """
+#
+#         df    = self.sensitivity_indices_df
+#         df_sa = pd.DataFrame(sa_dict, columns = sa_dict.keys(), index = df.index)
+#         self.sensitivity_indices_df = df.join(df_sa)
+#
+#
+#
