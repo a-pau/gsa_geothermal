@@ -48,29 +48,6 @@ def setup_geothermal(project, option, flag_diff_distributions=False):
     return demand, geothermal_model, parameters
 
 
-def get_ILCD_methods(select_climate_change_only=False, return_units=False):
-    # ILCD-EF2.0 methods
-    ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "climate change total" in str(method)]
-    ILCD_HH = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "human health" in str(method)]
-    ILCD_EQ = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "ecosystem quality" in str(method)]
-    ILCD_RE = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "resources" in str(method)]
-    # Adjust units
-    adjust_units_dict = {
-        'kg NMVOC-.': 'kg NMVOC-Eq',
-        'm3 water-.' : 'm3 water world-Eq',
-        'CTU' : 'CTUe',
-        'kg CFC-11.' : 'kg CFC-11-Eq',
-        'megajoule': 'MJ'}
-    if select_climate_change_only:
-        methods = ILCD_CC
-    else:
-        methods = ILCD_CC + ILCD_HH + ILCD_EQ + ILCD_RE
-    if return_units:
-        temp=[bw.methods[method]["unit"] for method in methods]
-        ILCD_units=[adjust_units_dict[elem] if elem in adjust_units_dict else elem for elem in temp]        
-        return methods, ILCD_units
-    else:
-        return methods
 
 
 def gen_characterization_matrices(lca, methods):
