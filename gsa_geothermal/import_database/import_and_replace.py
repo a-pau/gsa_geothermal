@@ -1,11 +1,23 @@
-import brightway2 as bw
-from pathlib import Path
+import bw2data as bd
+import bw2io as bi
 from copy import deepcopy
 
 # Local files
 from ..utils.lookup_func import lookup_geothermal
 from ..parameters import get_parameters
 from ..general_models import GeothermalConventionalModel, GeothermalEnhancedModel
+from ..data import get_db_filepath
+
+
+def import_ecoinvent(ei_path, ei_name):
+    if ei_name in bd.databases:
+        print(ei_name + " database already present!!! No import is needed")
+    else:
+        ei = bi.SingleOutputEcospold2Importer(ei_path, ei_name)
+        ei.apply_strategies()
+        ei.match_database(db_name='biosphere3', fields=('name', 'category', 'unit', 'location'))
+        ei.statistics()
+        ei.write_database()
 
 
 def replace_datasets(parameters, geothermal_model):
@@ -14,7 +26,8 @@ def replace_datasets(parameters, geothermal_model):
     params_sta_conv = array_io
 
     # Lookup activities
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced = lookup_geothermal()
+    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced = \
+        lookup_geothermal()
     if "conventional" in geothermal_model.label:
         electricity_prod = electricity_prod_conventional
     elif "enhanced" in geothermal_model.label:
@@ -23,9 +36,9 @@ def replace_datasets(parameters, geothermal_model):
         print("Demand for `{}` model not defined".format(geothermal_model.label))
         return
 
-    act = bw.get_activity(electricity_prod)
+    act = bd.get_activity(electricity_prod)
     # Create copy of activity with exchanges equal to 0
-    if not bw.Database("geothermal energy").search(act["name"] + " zeros"):
+    if not bd.Database("geothermal energy").search(act["name"] + " zeros"):
         act.copy(name=act["name"] + " (zeros)")
     # Delete all exchanges
     for exc in act.exchanges():
@@ -42,12 +55,12 @@ def replace_datasets(parameters, geothermal_model):
 
 def import_geothermal_database(ecoinvent_version='ecoinvent 3.6 cutoff', flag_diff_distributions=False):
 
-    filepath = Path("..") / "input_data" / "Geothermal_power_processes_brightway.xlsx"
+    filepath = get_db_filepath()
 
-    if ecoinvent_version not in bw.databases:
+    if ecoinvent_version not in bd.databases:
         return print('Please import ' + ecoinvent_version)
 
-    ex = bw.ExcelImporter(filepath)
+    ex = bi.ExcelImporter(filepath)
 
     # Replace previous version of ecoinvent with a new one
     for act in ex.data:
@@ -79,19 +92,7 @@ def import_geothermal_database(ecoinvent_version='ecoinvent 3.6 cutoff', flag_di
     replace_datasets(ege_parameters, geothermal_enhanced_model)
 
 
-def run_import():
-    ecoinvent_version = input('Please choose which ecoinvent version should be linked to geothermal: \n')
+def run_import(ecoinvent_version=None):
+    if ecoinvent_version is None:
+        ecoinvent_version = input('Please choose which ecoinvent version should be linked to geothermal: \n')
     import_geothermal_database(ecoinvent_version=ecoinvent_version)
-
-
-
-
-
-
-
-
-
-
-
-
-

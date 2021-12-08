@@ -10,7 +10,6 @@ from gsa_geothermal.general_models import GeothermalConventionalModel, Geotherma
 from pypardiso import spsolve
 
 
-
 def setup_gsa_problem(n_dimensions):
     calc_second_order = False
     problem = {
