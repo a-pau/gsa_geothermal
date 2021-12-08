@@ -40,24 +40,24 @@ def get_parameters_hellisheidi():
             "amount": 40,
         },
         "specific_drilling_mud_consumption": {
-            "amount": 0.7, #Used to check influence of high consumption of drilling mud,
-            #"amount": 8.7,
+            "amount": 0.7,  # Used to check influence of high consumption of drilling mud,
+            # "amount": 8.7,
         },
         "initial_harmonic_decline_rate": {
-            "amount" : 0.03,
+            "amount": 0.03,
         },
         "success_rate_exploration_wells": {
             "amount": 100,
         },
         "production_to_injection_ratio": {
-            "amount":2,
+            "amount": 2,
         },
         "success_rate_primary_wells": {
             "amount": 100,
         },
         "success_rate_makeup_wells": {
             "amount": 100,
-        }
+        },
     }
     parameters = klausen.NamedParameters(parameters)
     parameters.static()

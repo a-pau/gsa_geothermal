@@ -8,9 +8,9 @@ def set_axlims(series, marginfactor):
     """
     minv = series.min()
     maxv = series.max()
-    datarange = maxv-minv
-    border = abs(datarange*marginfactor)
-    maxlim = maxv+border
-    minlim = minv-border
+    datarange = maxv - minv
+    border = abs(datarange * marginfactor)
+    maxlim = maxv + border
+    minlim = minv - border
 
-    return minlim,maxlim
+    return minlim, maxlim

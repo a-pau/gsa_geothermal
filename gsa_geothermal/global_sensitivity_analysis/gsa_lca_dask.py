@@ -16,7 +16,9 @@ from ..global_sensitivity_analysis.convert_distributions import convert_sample
 class GSAinLCA:
     """Perform Global Sensitivity Analysis (GSA) in Life Cycle Assessment (LCA)."""
 
-    def __init__(self, project, lca, parameters=None, parameters_model=None, options=None):
+    def __init__(
+        self, project, lca, parameters=None, parameters_model=None, options=None
+    ):
 
         self.project = project
         self.lca = lca
@@ -42,17 +44,19 @@ class GSAinLCA:
             self.parameters_model = None
 
         # 2. Generate dictionary of uncertain exchanges based on options
-        self.uncertain_exc_dict = self.obtain_uncertain_exchanges(lca=self.lca, options=self.options)
+        self.uncertain_exc_dict = self.obtain_uncertain_exchanges(
+            lca=self.lca, options=self.options
+        )
 
     @staticmethod
     def get_mask_unc_col_amt(params, i):
         mask = np.all(
             [
-                params['uncertainty_type'] != 0,
-                params['col'] == i,
-                params['amount'] != 0,
+                params["uncertainty_type"] != 0,
+                params["col"] == i,
+                params["amount"] != 0,
             ],
-            axis=0
+            axis=0,
         )
         return mask
 
@@ -60,10 +64,10 @@ class GSAinLCA:
     def get_mask_unc_col(params, i):
         mask = np.all(
             [
-                params['uncertainty_type'] != 0,
-                params['col'] == i,
+                params["uncertainty_type"] != 0,
+                params["col"] == i,
             ],
-            axis=0
+            axis=0,
         )
         return mask
 
@@ -71,10 +75,10 @@ class GSAinLCA:
     def get_mask_row_col(params, i, j):
         mask = np.all(
             [
-                params['row'] == i,
-                params['col'] == j,
-                ],
-            axis=0
+                params["row"] == i,
+                params["col"] == j,
+            ],
+            axis=0,
         )
         return mask
 
@@ -87,10 +91,10 @@ class GSAinLCA:
         indices_bio_all = np.array([], dtype=int)
 
         if options is None:
-            uncertain_exc_dict['tech_params_where'] = np.array([])
-            uncertain_exc_dict['tech_params_amounts'] = np.array([])
-            uncertain_exc_dict['bio_params_where'] = np.array([])
-            uncertain_exc_dict['bio_params_amounts'] = np.array([])
+            uncertain_exc_dict["tech_params_where"] = np.array([])
+            uncertain_exc_dict["tech_params_amounts"] = np.array([])
+            uncertain_exc_dict["bio_params_where"] = np.array([])
+            uncertain_exc_dict["bio_params_amounts"] = np.array([])
             return uncertain_exc_dict
 
         for option in options:
@@ -101,41 +105,39 @@ class GSAinLCA:
             if option in bw.databases:
                 # Select all products and flows that are linked to the given database
                 # Indices corresponding to exchanges in the tech_params depending on the given database
-                db_act_indices_tech = [val for key, val in lca.activity_dict.items() if key[0] == option]
+                db_act_indices_tech = [
+                    val for key, val in lca.activity_dict.items() if key[0] == option
+                ]
                 if len(db_act_indices_tech) > 0:
                     db_act_index_min_tech = db_act_indices_tech[0]
                     db_act_index_max_tech = db_act_indices_tech[-1]
                     indices_tech = [
-                        np.where(
-                            self.get_mask_unc_col_amt(lca.tech_params, i)
-                        )[0] for i in range(db_act_index_min_tech, db_act_index_max_tech+1)
+                        np.where(self.get_mask_unc_col_amt(lca.tech_params, i))[0]
+                        for i in range(db_act_index_min_tech, db_act_index_max_tech + 1)
                     ]
                     indices_tech = np.concatenate(indices_tech)
 
                 # Indices corresponding to flows in the biosphere params depending on the given database
-                if 'biosphere' in options:
+                if "biosphere" in options:
                     indices_bio = [
-                        np.where(
-                            self.get_mask_unc_col(lca.bio_params, j)
-                        )[0] for j in range(db_act_index_min_tech, db_act_index_max_tech+1)
+                        np.where(self.get_mask_unc_col(lca.bio_params, j))[0]
+                        for j in range(db_act_index_min_tech, db_act_index_max_tech + 1)
                     ]
                     indices_bio = np.concatenate(indices_bio)
 
-            elif option == 'demand_acts':
+            elif option == "demand_acts":
                 cols = np.where(lca.demand_array)[0]
                 # Indices corresponding to exchanges in the tech_params depending on the given demand
                 indices_tech = [
-                    np.where(
-                        self.get_mask_unc_col_amt(lca.tech_params, i)
-                    )[0] for i in cols
+                    np.where(self.get_mask_unc_col_amt(lca.tech_params, i))[0]
+                    for i in cols
                 ]
                 indices_tech = np.concatenate(indices_tech)
 
                 # Indices corresponding to flows in the biosphere params depending on the given demand
                 indices_bio = [
-                    np.where(
-                        self.get_mask_unc_col_amt(lca.bio_params, i)
-                    )[0] for i in cols
+                    np.where(self.get_mask_unc_col_amt(lca.bio_params, i))[0]
+                    for i in cols
                 ]
                 indices_bio = np.concatenate(indices_bio)
 
@@ -144,26 +146,40 @@ class GSAinLCA:
 
             # Do not add indices_tech that are already in the indices_tech_all
             indices_tech_same = np.intersect1d(indices_tech, indices_tech_all)
-            pos_tech = np.array([np.where(indices_tech == same)[0] for same in indices_tech_same]).flatten()
+            pos_tech = np.array(
+                [np.where(indices_tech == same)[0] for same in indices_tech_same]
+            ).flatten()
             indices_tech = np.delete(indices_tech, pos_tech)
             indices_tech_all = np.append(indices_tech_all, indices_tech)
 
             # Do not add indices_bio that are already in the indices_bio_all
             indices_bio_same = np.intersect1d(indices_bio, indices_bio_all)
-            pos_bio = np.array([np.where(indices_bio == s)[0] for s in indices_bio_same]).flatten()
+            pos_bio = np.array(
+                [np.where(indices_bio == s)[0] for s in indices_bio_same]
+            ).flatten()
             indices_bio = np.delete(indices_bio, pos_bio)
             indices_bio_all = np.append(indices_bio_all, indices_bio)
 
         indices_tech_all = np.sort(indices_tech_all)
         indices_bio_all = np.sort(indices_bio_all)
 
-        uncertain_exc_dict['tech_params_where'] = indices_tech_all
-        uncertain_exc_dict['tech_params_amounts'] = lca.tech_params['amount'][indices_tech_all]
-        assert uncertain_exc_dict['tech_params_where'].shape[0] == uncertain_exc_dict['tech_params_amounts'].shape[0]
+        uncertain_exc_dict["tech_params_where"] = indices_tech_all
+        uncertain_exc_dict["tech_params_amounts"] = lca.tech_params["amount"][
+            indices_tech_all
+        ]
+        assert (
+            uncertain_exc_dict["tech_params_where"].shape[0]
+            == uncertain_exc_dict["tech_params_amounts"].shape[0]
+        )
 
-        uncertain_exc_dict['bio_params_where'] = indices_bio_all
-        uncertain_exc_dict['bio_params_amounts'] = lca.bio_params['amount'][indices_bio_all]
-        assert uncertain_exc_dict['bio_params_where'].shape[0] == uncertain_exc_dict['bio_params_amounts'].shape[0]
+        uncertain_exc_dict["bio_params_where"] = indices_bio_all
+        uncertain_exc_dict["bio_params_amounts"] = lca.bio_params["amount"][
+            indices_bio_all
+        ]
+        assert (
+            uncertain_exc_dict["bio_params_where"].shape[0]
+            == uncertain_exc_dict["bio_params_amounts"].shape[0]
+        )
 
         return uncertain_exc_dict
 
@@ -180,24 +196,24 @@ class GSAinLCA:
 
         dtype_parameters = np.dtype(
             [
-                ('name', '<U40'),  # TODO change hardcoded 40 here
-                ('uncertainty_type', 'u1'),
-                ('amount', '<f4'),
-                ('loc', '<f4'),
-                ('scale', '<f4'),
-                ('shape', '<f4'),
-                ('minimum', '<f4'),
-                ('maximum', '<f4'),
-                ('negative', '?')
+                ("name", "<U40"),  # TODO change hardcoded 40 here
+                ("uncertainty_type", "u1"),  # TODO change type
+                ("amount", "<f4"),
+                ("loc", "<f4"),
+                ("scale", "<f4"),
+                ("shape", "<f4"),
+                ("minimum", "<f4"),
+                ("maximum", "<f4"),
+                ("negative", "?"),
             ]
         )
 
         parameters_array = np.zeros(len(self.parameters), dtype_parameters)
-        parameters_array[:] = np.nan
- 
+        parameters_array[:] = np.nan  # TODO
+
         for i, name in enumerate(self.parameters):
-            parameters_array[i]['name'] = name
-            parameters_array[i]['negative'] = False
+            parameters_array[i]["name"] = name
+            parameters_array[i]["negative"] = False
             for k, v in self.parameters.data[name].items():
                 parameters_array[i][k] = v
 
@@ -210,10 +226,12 @@ class GSAinLCA:
         indices_tech = np.array([], dtype=int)
         indices_bio = np.array([], dtype=int)
 
-        get_input = lambda exc: (exc['input_db'],  exc['input_code'])
-        get_output = lambda exc: (exc['output_db'], exc['output_code'])
+        get_input = lambda exc: (exc["input_db"], exc["input_code"])
+        get_output = lambda exc: (exc["output_db"], exc["output_code"])
 
-        exc_tech = np.array([exc for exc in exchanges if get_input(exc) in lca.activity_dict])
+        exc_tech = np.array(
+            [exc for exc in exchanges if get_input(exc) in lca.activity_dict]
+        )
         if exc_tech.shape[0] != 0:
             indices_tech = np.hstack(
                 [
@@ -221,32 +239,44 @@ class GSAinLCA:
                         lca.tech_params,
                         lca.activity_dict[get_input(exc)],
                         lca.activity_dict[get_output(exc)],
-                    ) for exc in exc_tech
+                    )
+                    for exc in exc_tech
                 ]
             )[0]
 
-        exc_bio = np.array([exc for exc in exchanges if get_input(exc) in lca.biosphere_dict])
+        exc_bio = np.array(
+            [exc for exc in exchanges if get_input(exc) in lca.biosphere_dict]
+        )
         if exc_bio.shape[0] != 0:
             indices_bio = np.hstack(
                 [
                     self.get_mask_row_col(
                         lca.bio_params,
                         lca.biosphere_dict[get_input(exc)],
-                        lca.activity_dict[get_output(exc)]
-                    ) for exc in exc_bio
+                        lca.activity_dict[get_output(exc)],
+                    )
+                    for exc in exc_bio
                 ]
             )[0]
 
         parameterized_exc_dict = dict()
-        parameterized_exc_dict['tech_params_where'] = indices_tech
-        parameterized_exc_dict['tech_params_amounts'] = np.array([exc['amount'] for exc in exc_tech])
-        assert parameterized_exc_dict['tech_params_where'].shape[0] == \
-               parameterized_exc_dict['tech_params_amounts'].shape[0]
+        parameterized_exc_dict["tech_params_where"] = indices_tech
+        parameterized_exc_dict["tech_params_amounts"] = np.array(
+            [exc["amount"] for exc in exc_tech]
+        )
+        assert (
+            parameterized_exc_dict["tech_params_where"].shape[0]
+            == parameterized_exc_dict["tech_params_amounts"].shape[0]
+        )
 
-        parameterized_exc_dict['bio_params_where'] = indices_bio
-        parameterized_exc_dict['bio_params_amounts'] = np.array([exc['amount'] for exc in exc_bio])
-        assert parameterized_exc_dict['bio_params_where'].shape[0] == \
-               parameterized_exc_dict['bio_params_amounts'].shape[0]
+        parameterized_exc_dict["bio_params_where"] = indices_bio
+        parameterized_exc_dict["bio_params_amounts"] = np.array(
+            [exc["amount"] for exc in exc_bio]
+        )
+        assert (
+            parameterized_exc_dict["bio_params_where"].shape[0]
+            == parameterized_exc_dict["bio_params_amounts"].shape[0]
+        )
 
         return parameterized_exc_dict
 
@@ -258,7 +288,7 @@ class GSAinLCA:
 
         Attributes
         ----------
-        params : np.array 
+        params : np.array
             params dtype should contain 'uncertainty_type' and uncertainty/distribution information consistent with
             stats_arrays.
             Can be in the same format as lca.tech_params.
@@ -277,28 +307,30 @@ class GSAinLCA:
 
         uncertainties_dict = dict(
             [
-                (uncert_choice, params[u'uncertainty_type'] == uncert_choice.id)
+                (uncert_choice, params[u"uncertainty_type"] == uncert_choice.id)
                 for uncert_choice in sa.uncertainty_choices
-                if any(params[u'uncertainty_type'] == uncert_choice.id)
+                if any(params[u"uncertainty_type"] == uncert_choice.id)
             ]
         )
-        
+
         converted_sample = np.empty(len(params))
 
         for key in uncertainties_dict:
             mask = uncertainties_dict[key]
-            converted_sample[mask] = convert_sample(params[mask], sample[mask]).flatten()
+            converted_sample[mask] = convert_sample(
+                params[mask], sample[mask]
+            ).flatten()
 
         return converted_sample
 
     def update_parameterized_exchanges(self, lca, parameters):
         """
-        Update parameterized exchanges by running ParametersModel(parameters) with the new converted parameters. 
+        Update parameterized exchanges by running ParametersModel(parameters) with the new converted parameters.
 
         Attributes
         ----------
         parameters : NamedParameters object
-            Contains parameters and their uncertainty information for the parameterization of exchanges. 
+            Contains parameters and their uncertainty information for the parameterization of exchanges.
 
         Returns
         -------
@@ -307,21 +339,25 @@ class GSAinLCA:
         """
 
         exchanges = self.parameters_model.run(parameters)
-        
-        get_input = lambda exc: (exc['input_db'],  exc['input_code'])
 
-        exc_tech = np.array([exc for exc in exchanges if get_input(exc) in lca.activity_dict])
-        exc_bio = np.array([exc for exc in exchanges if get_input(exc) in lca.biosphere_dict])
-        
-        tech_params_amounts = np.array([exc['amount'] for exc in exc_tech])
-        bio_params_amounts = np.array([exc['amount'] for exc in exc_bio])
-        
+        get_input = lambda exc: (exc["input_db"], exc["input_code"])
+
+        exc_tech = np.array(
+            [exc for exc in exchanges if get_input(exc) in lca.activity_dict]
+        )
+        exc_bio = np.array(
+            [exc for exc in exchanges if get_input(exc) in lca.biosphere_dict]
+        )
+
+        tech_params_amounts = np.array([exc["amount"] for exc in exc_tech])
+        bio_params_amounts = np.array([exc["amount"] for exc in exc_bio])
+
         return tech_params_amounts, bio_params_amounts
 
     def replace_parameterized_exchanges(self, sample):
         """
-        Replace parameterized exchanges, namely replace self.amounts_tech and self.amounts_bio 
-        after running the ParametersModel(parameters) with the new sample values for parameters. 
+        Replace parameterized exchanges, namely replace self.amounts_tech and self.amounts_bio
+        after running the ParametersModel(parameters) with the new sample values for parameters.
 
         Attributes
         ----------
@@ -336,30 +372,42 @@ class GSAinLCA:
 
         n_parameters = len(self.parameters_array)
 
-        parameters_subsample = sample[self.i_sample: self.i_sample+n_parameters]
+        parameters_subsample = sample[self.i_sample: self.i_sample + n_parameters]
         self.i_sample += n_parameters
 
         # Convert uniform [0,1] sample to proper parameters distributions
-        converted_sample = self.convert_sample_to_proper_distribution(self.parameters_array, parameters_subsample)
-        
+        converted_sample = self.convert_sample_to_proper_distribution(
+            self.parameters_array, parameters_subsample
+        )
+
         converted_parameters = {}
 
         # Put converted values to parameters class, order of converted_parameters is the same as in parameters_array
         for i in range(n_parameters):
-            name = self.parameters_array[i]['name']
+            name = self.parameters_array[i]["name"]
             converted_parameters[name] = converted_sample[i]
 
         # Update parameterized exchanges with the new converted values of parameters
-        tech_params_amounts, bio_params_amounts = self.update_parameterized_exchanges(self.lca, converted_parameters)
+        tech_params_amounts, bio_params_amounts = self.update_parameterized_exchanges(
+            self.lca, converted_parameters
+        )
 
         # Replace values in self.amounts_tech and self.amounts_bio
-        np.put(self.amount_tech, self.parameterized_exchanges_dict['tech_params_where'], tech_params_amounts)
-        np.put(self.amount_bio,  self.parameterized_exchanges_dict['bio_params_where'],  bio_params_amounts)
+        np.put(
+            self.amount_tech,
+            self.parameterized_exchanges_dict["tech_params_where"],
+            tech_params_amounts,
+        )
+        np.put(
+            self.amount_bio,
+            self.parameterized_exchanges_dict["bio_params_where"],
+            bio_params_amounts,
+        )
 
     def replace_non_parameterized_exchanges(self, sample):
         """
-        Replace non parameterized exchanges, namely replace values in self.amounts_tech and self.amounts_bio 
-        with the new sample values for all self.inputs. 
+        Replace non parameterized exchanges, namely replace values in self.amounts_tech and self.amounts_bio
+        with the new sample values for all self.inputs.
         self.i_sample iterates over a sample to select subsamples of the correct length for each option in inputs.
 
         Attributes
@@ -371,29 +419,41 @@ class GSAinLCA:
         -------
         A GSAinLCA object that contains resampled values of self.amounts_tech and self.amounts_bio.
 
-        """      
+        """
 
         # 1 Technosphere
-        tech_params_where = self.uncertain_exchanges_dict['tech_params_where']
+        tech_params_where = self.uncertain_exchanges_dict["tech_params_where"]
         tech_params = self.lca.tech_params[tech_params_where]
-        tech_n_params = self.uncertain_exchanges_dict['tech_params_where'].shape[0]
-        tech_subsample = sample[self.i_sample: self.i_sample+tech_n_params]
+        tech_n_params = self.uncertain_exchanges_dict["tech_params_where"].shape[0]
+        tech_subsample = sample[self.i_sample: self.i_sample + tech_n_params]
 
         self.i_sample += tech_n_params
 
-        converted_tech_params = self.convert_sample_to_proper_distribution(tech_params, tech_subsample)
-        np.put(self.amount_tech, self.uncertain_exchanges_dict['tech_params_where'], converted_tech_params)
+        converted_tech_params = self.convert_sample_to_proper_distribution(
+            tech_params, tech_subsample
+        )
+        np.put(
+            self.amount_tech,
+            self.uncertain_exchanges_dict["tech_params_where"],
+            converted_tech_params,
+        )
 
         # 2 Biosphere
-        bio_params_where = self.uncertain_exchanges_dict['bio_params_where']
+        bio_params_where = self.uncertain_exchanges_dict["bio_params_where"]
         bio_params = self.lca.bio_params[bio_params_where]
-        bio_n_params = self.uncertain_exchanges_dict['bio_params_where'].shape[0]
-        bio_subsample = sample[self.i_sample: self.i_sample+bio_n_params]
+        bio_n_params = self.uncertain_exchanges_dict["bio_params_where"].shape[0]
+        bio_subsample = sample[self.i_sample: self.i_sample + bio_n_params]
 
         self.i_sample += bio_n_params
 
-        converted_bio_params = self.convert_sample_to_proper_distribution(bio_params, bio_subsample)
-        np.put(self.amount_bio, self.uncertain_exchanges_dict['bio_params_where'], converted_bio_params)
+        converted_bio_params = self.convert_sample_to_proper_distribution(
+            bio_params, bio_subsample
+        )
+        np.put(
+            self.amount_bio,
+            self.uncertain_exchanges_dict["bio_params_where"],
+            converted_bio_params,
+        )
 
     @staticmethod
     def fix_supply_use(array, vector):
@@ -404,8 +464,15 @@ class GSAinLCA:
         return vector
 
     @staticmethod
-    def build_matrix(array, row_dict, col_dict, row_index_label,
-                     col_index_label, data_label=None, new_data=None):
+    def build_matrix(
+        array,
+        row_dict,
+        col_dict,
+        row_index_label,
+        col_index_label,
+        data_label=None,
+        new_data=None,
+    ):
         """Build sparse matrix."""
         vector = array[data_label] if new_data is None else new_data
         assert vector.shape[0] == array.shape[0], "Incompatible data & indices"
@@ -413,47 +480,55 @@ class GSAinLCA:
         # (row_count, col_count))
         return sparse.coo_matrix(
             (
-               vector.astype(np.float64),
-               (array[row_index_label], array[col_index_label])
+                vector.astype(np.float64),
+                (array[row_index_label], array[col_index_label]),
             ),
-            (len(row_dict), len(col_dict))
+            (len(row_dict), len(col_dict)),
         ).tocsr()
 
     def rebuild_technosphere_matrix(self, lca, vector):
         A = self.build_matrix(
-            lca.tech_params, lca._activity_dict, lca._product_dict,
-            "row", "col",
-            new_data=self.fix_supply_use(lca.tech_params, vector.copy())
+            lca.tech_params,
+            lca._activity_dict,
+            lca._product_dict,
+            "row",
+            "col",
+            new_data=self.fix_supply_use(lca.tech_params, vector.copy()),
         )
         return A
 
     def rebuild_biosphere_matrix(self, lca, vector):
         B = self.build_matrix(
-            lca.bio_params, lca._biosphere_dict, lca._activity_dict,
-            "row", "col", new_data=vector)
+            lca.bio_params,
+            lca._biosphere_dict,
+            lca._activity_dict,
+            "row",
+            "col",
+            new_data=vector,
+        )
         return B
 
     def model(self, sample, method_matrices):
 
-        self.amount_tech = self.lca.tech_params['amount']
-        self.amount_bio = self.lca.bio_params['amount']
+        self.amount_tech = self.lca.tech_params["amount"]
+        self.amount_bio = self.lca.bio_params["amount"]
 
         self.i_sample = 0
         if self.options is not None:
             self.replace_non_parameterized_exchanges(sample)
         if self.parameters is not None and self.parameters_model is not None:
             self.replace_parameterized_exchanges(sample)
-        
+
         A = self.rebuild_technosphere_matrix(self.lca, self.amount_tech)  # TODO change
-        B = self.rebuild_biosphere_matrix(self.lca, self.amount_bio)  
-        
+        B = self.rebuild_biosphere_matrix(self.lca, self.amount_bio)
+
         env_flows = B * spsolve(A, self.lca.demand_array)
-        
+
         scores = np.empty(len(method_matrices))
         k = 0
         for cf_matrix in method_matrices:
             c = sum(cf_matrix)
-            scores[k] = c*env_flows
+            scores[k] = c * env_flows
             k += 1
 
         return scores

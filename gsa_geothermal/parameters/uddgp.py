@@ -4,9 +4,7 @@ import klausen
 def get_parameters_uddgp():
     """Klausen parameters for UDDGP."""
     parameters = {
-        "number_of_wells": {
-            "amount":2
-        },
+        "number_of_wells": {"amount": 2},
         "average_depth_of_wells": {
             "amount": 4000,
         },
@@ -46,13 +44,8 @@ def get_parameters_uddgp():
         "specific_electricity_stimulation": {
             "amount": 19.4,
         },
-        "success_rate_exploration_wells": {
-            "amount":67
-        },
-        "success_rate_primary_wells": {
-            "amount":100
-        }
-
+        "success_rate_exploration_wells": {"amount": 67},
+        "success_rate_primary_wells": {"amount": 100},
     }
     parameters = klausen.NamedParameters(parameters)
     parameters.static()

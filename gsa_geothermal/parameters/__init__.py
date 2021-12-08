@@ -1,7 +1,11 @@
-from .conventional import get_parameters_conventional, get_parameters_conventional_diff_distr
+from .conventional import (
+    get_parameters_conventional,
+    get_parameters_conventional_diff_distr,
+)
 from .enhanced import get_parameters_enhanced, get_parameters_enhanced_diff_distr
 from .hellisheidi import get_parameters_hellisheidi
 from .uddgp import get_parameters_uddgp
+
 
 def get_parameters(option):
     if option == "conventional":

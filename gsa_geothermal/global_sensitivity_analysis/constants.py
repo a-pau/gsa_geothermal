@@ -11,10 +11,12 @@ def compute_three_sigma_q():
     """
     mu, sigma = 0, 1  # mean and standard deviation
     THREE_SIGMA_Q = quad(
-        lambda x: 1 / np.sqrt(2 * pi * sigma ** 2) * exp(-(x - mu) ** 2 / (2 * sigma ** 2)),
+        lambda x: 1
+        / np.sqrt(2 * pi * sigma ** 2)
+        * exp(-((x - mu) ** 2) / (2 * sigma ** 2)),
         -3 * sigma,
         +3 * sigma,
     )[0]
-    Q_LOW = (1-THREE_SIGMA_Q)/2
-    Q_HIGH = (1+THREE_SIGMA_Q)/2
+    Q_LOW = (1 - THREE_SIGMA_Q) / 2
+    Q_HIGH = (1 + THREE_SIGMA_Q) / 2
     return Q_LOW, Q_HIGH, THREE_SIGMA_Q

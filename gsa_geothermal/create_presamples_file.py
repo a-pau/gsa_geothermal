@@ -6,17 +6,9 @@ def create_presamples(parameters):
     matrix_data = []
     for p in parameters:
         if p[0][0] != "biosphere3":
-            a = (
-                p[2].reshape((1,-1)),
-                [(p[0], p[1], "technosphere")],
-                "technosphere"
-            )
+            a = (p[2].reshape((1, -1)), [(p[0], p[1], "technosphere")], "technosphere")
         else:
-            a = (
-                p[2].reshape((1,-1)),
-                [(p[0], p[1], "biosphere")],
-                "biosphere"
-            )
+            a = (p[2].reshape((1, -1)), [(p[0], p[1], "biosphere")], "biosphere")
         matrix_data.append(a)
 
     _, presamples_filepath = ps.create_presamples_package(matrix_data)

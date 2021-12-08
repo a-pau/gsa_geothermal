@@ -15,7 +15,9 @@ def import_ecoinvent(ei_path, ei_name):
     else:
         ei = bi.SingleOutputEcospold2Importer(ei_path, ei_name)
         ei.apply_strategies()
-        ei.match_database(db_name='biosphere3', fields=('name', 'category', 'unit', 'location'))
+        ei.match_database(
+            db_name="biosphere3", fields=("name", "category", "unit", "location")
+        )
         ei.statistics()
         ei.write_database()
 
@@ -26,8 +28,24 @@ def replace_datasets(parameters, geothermal_model):
     params_sta_conv = array_io
 
     # Lookup activities
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced = \
-        lookup_geothermal()
+    (
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        electricity_prod_conventional,
+        electricity_prod_enhanced,
+    ) = lookup_geothermal()
     if "conventional" in geothermal_model.label:
         electricity_prod = electricity_prod_conventional
     elif "enhanced" in geothermal_model.label:
@@ -45,28 +63,36 @@ def replace_datasets(parameters, geothermal_model):
         exc.delete()
     # Insert new exchanges
     for inp in params_sta_conv:
-        if inp['input_db'] != "biosphere3":
-            act.new_exchange(input=(inp['input_db'], inp['input_code']), amount=float(inp['amount']),
-                             type="technosphere").save()
+        if inp["input_db"] != "biosphere3":
+            act.new_exchange(
+                input=(inp["input_db"], inp["input_code"]),
+                amount=float(inp["amount"]),
+                type="technosphere",
+            ).save()
         else:
-            act.new_exchange(input=(inp['input_db'], inp['input_code']), amount=float(inp['amount']),
-                             type="biosphere").save()
+            act.new_exchange(
+                input=(inp["input_db"], inp["input_code"]),
+                amount=float(inp["amount"]),
+                type="biosphere",
+            ).save()
 
 
-def import_geothermal_database(ecoinvent_version='ecoinvent 3.6 cutoff', flag_diff_distributions=False):
+def import_geothermal_database(
+    ecoinvent_version="ecoinvent 3.6 cutoff", flag_diff_distributions=False
+):
 
     filepath = get_db_filepath()
 
     if ecoinvent_version not in bd.databases:
-        return print('Please import ' + ecoinvent_version)
+        return print("Please import " + ecoinvent_version)
 
     ex = bi.ExcelImporter(filepath)
 
     # Replace previous version of ecoinvent with a new one
     for act in ex.data:
-        for exc in act['exchanges']:
-            if exc['database'] == 'ecoinvent 3.5 cutoff':
-                exc['database'] = ecoinvent_version
+        for exc in act["exchanges"]:
+            if exc["database"] == "ecoinvent 3.5 cutoff":
+                exc["database"] = ecoinvent_version
 
     ex.apply_strategies()
     ex.match_database(ecoinvent_version, fields=("name", "location"))
@@ -76,7 +102,7 @@ def import_geothermal_database(ecoinvent_version='ecoinvent 3.6 cutoff', flag_di
     if len(list(ex.unlinked)) == 0:
         ex.write_database()
     else:
-        print('Cannot write database, unlinked exchanges!')
+        print("Cannot write database, unlinked exchanges!")
 
     if flag_diff_distributions:
         cge_parameters = get_parameters("conventional.diff_distributions")
@@ -94,5 +120,7 @@ def import_geothermal_database(ecoinvent_version='ecoinvent 3.6 cutoff', flag_di
 
 def run_import(ecoinvent_version=None):
     if ecoinvent_version is None:
-        ecoinvent_version = input('Please choose which ecoinvent version should be linked to geothermal: \n')
+        ecoinvent_version = input(
+            "Please choose which ecoinvent version should be linked to geothermal: \n"
+        )
     import_geothermal_database(ecoinvent_version=ecoinvent_version)
