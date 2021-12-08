@@ -2,10 +2,10 @@ import bw2data as bd
 import bw2io as bi
 import bw2calc as bc
 
-from gsa_geothermal.import_database import run_import, import_ecoinvent, get_ILCD_methods
+from gsa_geothermal.import_database import run_import, import_ecoinvent, get_EF_methods
 
 if __name__ == '__main__':
-    ei_path = "/Users/akim/Documents/LCA_files/ecoinvent_36_cutoff/datasets"
+    ei_path = "D:/Andrea/OneDrive - University College London/Library/Ecoinvent/ecoinvent 3.6_cut-off_ecoSpold02/datasets"
     ei_name = "ecoinvent 3.6 cutoff"
     gt_name = "geothermal energy"
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # LCA
     db = bd.Database(gt_name)
-    methods = get_ILCD_methods()
+    methods = get_EF_methods()
 
     act_cge = [act for act in db if 'conventional' in act['name'] and 'zeros' not in act['name']]
     assert len(act_cge) == 1
