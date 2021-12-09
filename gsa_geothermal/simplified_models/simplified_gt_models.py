@@ -6,22 +6,23 @@ from copy import deepcopy
 from sympy import symbols, collect, ratsimp, fraction
 
 # Local
-from ..utils import lookup_geothermal, get_lcia_results, setup_geothermal_gsa
-from ..import_database import get_EF_methods
+from ..utils import lookup_geothermal, get_lcia_results, get_EF_methods
 from ..global_sensitivity_analysis import my_sobol_analyze
 
 
 class GeothermalSimplifiedModel:
     """Geothermal simplified model PARENT class."""
-    def __init__(self, option, threshold, exploration, path):
+    def __init__(self, setup_geothermal_gsa, path, threshold, exploration, option):
         self.option = option
         self.threshold = threshold
-        self.total_df = self.get_total_indices(path)
+        total_df = self.get_total_indices(setup_geothermal_gsa, path)
+        self.total_df = total_df
         self.methods = get_EF_methods()
-        self.methods_groups = self.get_methods_groups(self.total_df, self.threshold)
+        self.methods_groups = self.get_methods_groups(total_df, self.threshold)
         self.i_coeff_matrix = self.compute_i_coeff()
         self.impact = self.define_symbolic_eq()
         self.exploration = exploration
+
         self.correspondence_dict = {
             "co2_emissions": "E_co2",
             "gross_power_per_well": "CW_ne",
@@ -32,8 +33,9 @@ class GeothermalSimplifiedModel:
             "specific_diesel_consumption": "D",
         }
 
-    def get_total_indices(self, path):
+    def get_total_indices(self, setup_geothermal_gsa, path):
         problem, calc_second_order, parameters_list, methods = setup_geothermal_gsa(self.option)
+
         scores = get_lcia_results(path)
         sa_dict = dict(parameters=parameters_list)
         for i, method in enumerate(methods):
@@ -52,7 +54,6 @@ class GeothermalSimplifiedModel:
     @staticmethod
     def get_methods_groups(total_df, threshold):
         """Get methods groups for only one threshold."""
-
         # Identify values above threshold
         mask = np.array(total_df.values >= threshold, dtype=int)
         total_df_mask = pd.DataFrame(mask)
@@ -122,7 +123,7 @@ class GeothermalSimplifiedModel:
         lca = bc.LCA({list_act[0]: 1}, self.methods[0])
         lca.lci()
         lca.lcia()
-        coeff = {}
+        coeff = dict()
         for method in self.methods:
             s = []
             lca.switch_method(method)
@@ -278,7 +279,11 @@ class GeothermalSimplifiedModel:
         return impact
 
     def get_par_dict(self, parameters):
-        """Substitution dictionary for symbolic subs."""
+        """
+        Substitution dictionary for symbolic subs
+        :param parameters:
+        :return:
+        """
         # Fixed values of the parameters that are common to enhanced and conventional
         par_dict = dict(
             # Power plant
@@ -309,15 +314,18 @@ class GeothermalSimplifiedModel:
 
         return par_dict
 
-    def run(self, parameters_sto, simplified_model_dict, lcia_methods=None):
+    def run(self, parameters_sto, simplified_model_dict, lcia_methods=None, ch4=False):
         """Run simplified model."""
         if lcia_methods is None:
             lcia_methods = self.methods
 
-        results = {}
+        results = dict()
         for method in lcia_methods:
             s_const = simplified_model_dict[method[-2]]["s_const"]
-            s_model = simplified_model_dict[method[-2]]["s_model"]
+            if ch4 and method[-2] == "climate change total":
+                s_model = simplified_model_dict[method[-2]]["s_model_ch4"]
+            else:
+                s_model = simplified_model_dict[method[-2]]["s_model"]
 
             res = s_model(s_const, parameters_sto)
 
@@ -331,19 +339,26 @@ class GeothermalSimplifiedModel:
         return results
 
     def get_coeff(self, simplified_model_dict, lcia_methods=None):
+
         if lcia_methods is None:
             lcia_methods = self.methods
+
         coeff = dict()
         for method in lcia_methods:
             coeff[method[-2]] = simplified_model_dict[method[-2]]["s_const"]
+
         return coeff
 
 
 class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
-    """Conventional simplified model CHILD class."""
-    def __init__(self, threshold, exploration=True):
+    """Conventional simplified model CHILD class"""
+    def __init__(self, setup_geothermal_gsa, path, threshold, exploration=True):
         super(ConventionalSimplifiedModel, self).__init__(
-            option="conventional", threshold=threshold, exploration=exploration
+            setup_geothermal_gsa=setup_geothermal_gsa,
+            path=path,
+            threshold=threshold,
+            exploration=exploration,
+            option="conventional",
         )
         self.i_coeff_matrix["i5_1"] = 0
         self.i_coeff_matrix["i5_2"] = 0
@@ -352,10 +367,30 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         parameters.static()
         self.par_subs_dict = self.get_par_dict(parameters)
         self.complete_par_dict(parameters)
+        self.ch4_CF = self.get_ch4_cf()
         self.simplified_model_dict = self.get_simplified_model()
 
+    @staticmethod
+    def get_ch4_cf():
+        db_biosph = bd.Database("biosphere3")
+        ch4 = [
+            act
+            for act in db_biosph
+            if "Methane, fossil" == act["name"]
+            and "air" in act["categories"]
+            and "low" not in str(act["categories"])
+            and "urban" not in str(act["categories"])
+        ][0].key
+        ILCD_CC = get_EF_methods(select_climate_change_only=True)[0]
+        ch4_CF = [cf[1] for cf in bd.Method(ILCD_CC).load() if cf[0] == ch4][0]
+        return ch4_CF
+
     def complete_par_dict(self, parameters):
-        """Add values to a substitution dictionary that are CGE specific."""
+        """
+        Add values to a substitution dictionary that are CGE specific
+        :param parameters:
+        :return:
+        """
         self.par_subs_dict.update(
             dict(
                 # Wells
@@ -372,8 +407,12 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         )
 
     def get_simplified_model(self):
-        """Compute constants (alpha, beta) and an expression for the simplified model."""
+        """
+        Compute constants (alpha, beta) and an expression for the simplified model
+        :return:
+        """
         simplified_model_dict = dict()
+
         for group in self.methods_groups:
             inf_params = group["parameters"]
             par_dict_copy = deepcopy(self.par_subs_dict)
@@ -394,6 +433,12 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
                         "s_model": lambda alpha, parameters: parameters["co2_emissions"]
                         * alpha[1]
                         + alpha[2],
+                        "s_model_ch4": lambda alpha, parameters: parameters[
+                            "co2_emissions"
+                        ]
+                        * alpha[1]
+                        + alpha[2]
+                        + self.ch4_CF * parameters["ch4_emissions"],
                     }
 
             # Betas, 20/15%
@@ -515,8 +560,8 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
 
         return simplified_model_dict
 
-    def run(self, parameters, lcia_methods=None):
-        return super().run(parameters, self.simplified_model_dict, lcia_methods)
+    def run(self, parameters, lcia_methods=None, ch4=False):
+        return super().run(parameters, self.simplified_model_dict, lcia_methods, ch4)
 
     def get_coeff(self, lcia_methods=None):
         return super().get_coeff(self.simplified_model_dict, lcia_methods)
@@ -524,13 +569,16 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
 
 class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
     """Enhanced simplified model CHILD class."""
-    def __init__(self, threshold, exploration=True):
+    def __init__(self, setup_geothermal_gsa, path, threshold, exploration=True):
         super(EnhancedSimplifiedModel, self).__init__(
-            option="enhanced", threshold=threshold, exploration=exploration
+            setup_geothermal_gsa=setup_geothermal_gsa,
+            path=path,
+            threshold=threshold,
+            exploration=exploration,
+            option="enhanced",
         )
         self.i_coeff_matrix["i6"] = 0
         from ..parameters.enhanced import get_parameters_enhanced
-
         parameters = get_parameters_enhanced()
         parameters.static()  # TODO Remember to fix this
         self.par_subs_dict = self.get_par_dict(parameters)
@@ -556,8 +604,11 @@ class EnhancedSimplifiedModel(GeothermalSimplifiedModel):
         )
 
     def get_simplified_model(self):
-        """Compute constants (chi, gamma) and an expression for the simplified model."""
-        simplified_model_dict = {}
+        """
+        Compute constants (chi, gamma) and an expression for the simplified model
+        :return:
+        """
+        simplified_model_dict = dict()
 
         for group in self.methods_groups:
             inf_params = group["parameters"]

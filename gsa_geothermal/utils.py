@@ -1,13 +1,14 @@
 import bw2data as bd
-import bw2calc as bc
+# import bw2calc as bc
 import numpy as np
 import pickle
 import os
 import contextlib
 
 # Local files
-from .global_sensitivity_analysis import setup_geothermal, setup_gsa_problem, GSAinLCA
-from .import_database import get_EF_methods
+# from .global_sensitivity_analysis import GSAinLCA
+# from .parameters import get_parameters
+# from .general_models import GeothermalConventionalModel, GeothermalEnhancedModel
 
 
 def lookup_geothermal(ecoinvent_version="ecoinvent 3.6 cutoff"):
@@ -95,6 +96,42 @@ def lookup_geothermal(ecoinvent_version="ecoinvent 3.6 cutoff"):
     ]
 
 
+def get_EF_methods(select_climate_change_only=False, return_units=False):
+    # EF2.0 methods
+    EF_CC = [
+        method
+        for method in bd.methods
+        if "EF v2.0 2018 no LT" in str(method) and "climate change no LT" in str(method)
+    ]
+    EF_other = [
+        method
+        for method in bd.methods
+        if "EF v2.0 2018 no LT" in str(method) and "climate change" not in str(method)
+    ]
+
+    # Adjust units
+    adjust_units_dict = {
+        "kg NMVOC-.": "kg NMVOC-Eq",
+        "m3 water-.": "m3 water world-Eq",
+        "CTU": "CTUe",
+        "kg CFC-11.": "kg CFC-11-Eq",
+        "megajoule": "MJ",
+    }
+    if select_climate_change_only:
+        methods = EF_CC
+    else:
+        methods = EF_CC + EF_other
+    if return_units:
+        temp = [bd.methods[method]["unit"] for method in methods]
+        EF_units = [
+            adjust_units_dict.get(elem, elem)
+            for elem in temp
+        ]
+        return methods, EF_units
+    else:
+        return methods
+
+
 def get_lcia_results(path):
     """TODO Sasha change os to pathlib"""
     files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))
@@ -108,22 +145,3 @@ def get_lcia_results(path):
         with open(filepath, 'rb') as f:
             scores.append(pickle.load(f))
     return np.vstack(np.array(scores))
-
-
-def setup_geothermal_gsa(option):
-    project = 'Geothermal'
-    demand, gt_model, parameters = setup_geothermal(project, option)
-    methods = get_EF_methods()
-    lca = bc.LCA(demand, methods[0])
-    lca.lci()
-    lca.lcia()
-    lca.build_demand_array()
-    gsa_in_lca = GSAinLCA(project, lca, parameters, gt_model)
-    num_vars = (
-            len(gsa_in_lca.parameters_array) +
-            len(gsa_in_lca.uncertain_exchanges_dict['tech_params_where']) +
-            len(gsa_in_lca.uncertain_exchanges_dict['bio_params_where'])
-    )
-    problem, calc_second_order = setup_gsa_problem(num_vars)
-    parameters_list = gsa_in_lca.parameters_array['name'].tolist()
-    return problem, calc_second_order, parameters_list, methods

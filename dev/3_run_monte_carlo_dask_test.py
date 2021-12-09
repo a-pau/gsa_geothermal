@@ -1,8 +1,7 @@
-import bw2data as bd
 from pathlib import Path
 
 # Local files
-from gsa_geothermal.global_sensitivity_analysis import task_per_worker
+from setups import *
 
 if __name__ == '__main__':
     project = 'Geothermal'
@@ -10,7 +9,7 @@ if __name__ == '__main__':
 
     option = 'enhanced'
     diff_distr = True  # set to true when checking for robustness of GSA results to distribution choice
-    iterations = 5  # number of Monte Carlo iterations per model input
+    iterations = 16  # number of Monte Carlo iterations per model input
 
     # Directory for saving results
     write_dir = Path("write_files")

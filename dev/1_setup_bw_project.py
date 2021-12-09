@@ -2,7 +2,8 @@ import bw2data as bd
 import bw2io as bi
 import bw2calc as bc
 
-from gsa_geothermal.import_database import run_import, import_ecoinvent, get_EF_methods
+from gsa_geothermal.import_database import run_import, import_ecoinvent
+from gsa_geothermal.utils import get_EF_methods
 
 if __name__ == '__main__':
     ei_path = "D:/Andrea/OneDrive - University College London/Library/Ecoinvent/ecoinvent 3.6_cut-off_ecoSpold02/datasets"
@@ -15,8 +16,8 @@ if __name__ == '__main__':
     import_ecoinvent(ei_path, ei_name)
     if gt_name not in bd.databases:
         run_import(ei_name)
-    # else:
-    #     print("Database already exists")
+    else:
+        print("Database already exists")
     #     r = input("Do you want to delete it and reimport? Y/N? ")
     #     if r.lower() == "y":
     #         del bd.databases[gt_name]
@@ -36,23 +37,6 @@ if __name__ == '__main__':
     lca_cge = bc.LCA({act_cge: 1}, methods[0])
     lca_cge.lci()
     lca_cge.lcia()
-
-
-    from gsa_geothermal.parameters.conventional import get_parameters_conventional
-    from klausen.named_parameters import NamedParameters
-    p = get_parameters_conventional()
-    from gsa_geothermal.global_sensitivity_analysis import GSAinLCA
-    from gsa_geothermal.general_models.conventional import GeothermalConventionalModel
-
-    m = GeothermalConventionalModel(p)
-    g = GSAinLCA(
-        project, lca_cge, parameters=p, parameters_model=m,
-    )
-
-
-
-
-
 
     act_ege = [act for act in db if 'enhanced' in act['name'] and 'zeros' not in act['name']]
     assert len(act_ege) == 1
