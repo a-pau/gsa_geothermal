@@ -141,7 +141,7 @@ def get_lcia_results(path):
     files_sorted = [files[i] for i in ind_sort]
     scores = []
     for file in files_sorted:
-        filepath = os.path.join(path,file)
+        filepath = os.path.join(path, file)
         with open(filepath, 'rb') as f:
             scores.append(pickle.load(f))
     return np.vstack(np.array(scores))

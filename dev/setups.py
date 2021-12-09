@@ -118,7 +118,7 @@ def task_per_worker(
     scores_for_methods = model_per_X_chunk(X_chunk, gsa_in_lca, method_matrices)
 
     # 7. Save results
-    filepath = path_files / 'scores_{}_{}.pickle'.format(start, end-1)
+    filepath = path_files / 'scores_{}_{}.pkl'.format(start, end-1)
     with open(filepath, "wb") as fp:
         pickle.dump(scores_for_methods, fp)
 
