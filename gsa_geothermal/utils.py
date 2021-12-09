@@ -1,15 +1,20 @@
-# Lookup activities function
-import brightway2 as bw
+import bw2data as bd
+import bw2calc as bc
+import numpy as np
+import pickle
 import os
 import contextlib
 
+# Local files
+from .global_sensitivity_analysis import setup_geothermal, setup_gsa_problem, GSAinLCA
+from .import_database import get_EF_methods
 
-# Conventional
+
 def lookup_geothermal(ecoinvent_version="ecoinvent 3.6 cutoff"):
 
-    db_geothe = bw.Database("geothermal energy")
-    db_ecoinv = bw.Database(ecoinvent_version)
-    db_biosph = bw.Database("biosphere3")
+    db_geothe = bd.Database("geothermal energy")
+    db_ecoinv = bd.Database(ecoinvent_version)
+    db_biosph = bd.Database("biosphere3")
 
     # needed to exclude print statements from the search function
     with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
@@ -90,38 +95,35 @@ def lookup_geothermal(ecoinvent_version="ecoinvent 3.6 cutoff"):
     ]
 
 
-# def lookup_geothermal():
-#     wellhead      = ('geothermal energy', '7fa61b637a4d96f73ca8c79385b6613d')
-#     diesel        = ('ecoinvent 3.5 cutoff', '722cb89122fabcc67bc45f6886baa5f4')
-#     steel         = ('ecoinvent 3.5 cutoff', 'a2f8c9bc4b63e67804c69dd9fcc75d2b')
-#     cement        = ('ecoinvent 3.5 cutoff', '9bd434870014399fb6d19934d659e46c')
-#     water         = ('ecoinvent 3.5 cutoff', 'c41728f4a2faf38d125c6012cde0f82b')
-#     drilling_mud  = ('geothermal energy', 'e7e259a2f31797168c8cd5039200ee8a')
-#     drill_wst     = ('ecoinvent 3.5 cutoff', '5d678df3228304b3a16c2c97a5af3477')
-#     wells_closr   = ('ecoinvent 3.5 cutoff', 'dbedbe37f167b71afe8eb77d0f7cb2e3')
-#     coll_pipe     = ('geothermal energy', 'bdd05003d0fa61d7d1402015144f3530')
-#     plant         = ('geothermal energy', '2614ce962a9491a55f859a1e0f90a6de')
-#     ORC_fluid     = ('ecoinvent 3.5 cutoff', '3563a8cafd1d7bea5b9d528aab2feabc')
-#     ORC_fluid_wst = ('ecoinvent 3.5 cutoff', 'c3a3b4c8ea00b9921c2b083cee40a2fd')
-#     diesel_stim   = ('ecoinvent 3.5 cutoff', 'a1629bce9922f78115700e998138262d')
-#     co2           = ('biosphere3', '349b29d1-3e58-4c66-98b9-9d1a076efd2e')
-#     electricity_prod_conventional = ('geothermal energy', '2ef3af7fcb17cd0bc186fe172f9b8d4f')
-#     electricity_prod_enhanced     = ('geothermal energy', '71e0f3893f9e7b4f0d49ccfbfdb37c8a')
-#     return [
-#         wellhead,
-#         diesel,
-#         steel,
-#         cement,
-#         water,
-#         drilling_mud,
-#         drill_wst,
-#         wells_closr,
-#         coll_pipe,
-#         plant,
-#         ORC_fluid,
-#         ORC_fluid_wst,
-#         diesel_stim,
-#         co2,
-#         electricity_prod_conventional,
-#         electricity_prod_enhanced
-#     ]
+def get_lcia_results(path):
+    """TODO Sasha change os to pathlib"""
+    files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))
+             and 'all' not in f and 'scores' in f]
+    starts = [int(f.split('_')[1]) for f in files]
+    ind_sort = np.argsort(starts)
+    files_sorted = [files[i] for i in ind_sort]
+    scores = []
+    for file in files_sorted:
+        filepath = os.path.join(path,file)
+        with open(filepath, 'rb') as f:
+            scores.append(pickle.load(f))
+    return np.vstack(np.array(scores))
+
+
+def setup_geothermal_gsa(option):
+    project = 'Geothermal'
+    demand, gt_model, parameters = setup_geothermal(project, option)
+    methods = get_EF_methods()
+    lca = bc.LCA(demand, methods[0])
+    lca.lci()
+    lca.lcia()
+    lca.build_demand_array()
+    gsa_in_lca = GSAinLCA(project, lca, parameters, gt_model)
+    num_vars = (
+            len(gsa_in_lca.parameters_array) +
+            len(gsa_in_lca.uncertain_exchanges_dict['tech_params_where']) +
+            len(gsa_in_lca.uncertain_exchanges_dict['bio_params_where'])
+    )
+    problem, calc_second_order = setup_gsa_problem(num_vars)
+    parameters_list = gsa_in_lca.parameters_array['name'].tolist()
+    return problem, calc_second_order, parameters_list, methods

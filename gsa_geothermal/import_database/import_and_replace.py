@@ -3,7 +3,7 @@ import bw2io as bi
 from copy import deepcopy
 
 # Local files
-from ..utils.lookup_func import lookup_geothermal
+from gsa_geothermal.utils import lookup_geothermal
 from ..parameters import get_parameters
 from ..general_models import GeothermalConventionalModel, GeothermalEnhancedModel
 from ..data import get_db_filepath

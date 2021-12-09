@@ -1,27 +1,11 @@
-import os, pickle
 from copy import deepcopy
 import brightway2 as bw
 import numpy as np
 
 # Local files
-from gsa_geothermal.utils.lookup_func import lookup_geothermal
-from gsa_geothermal.parameters import get_parameters
-from gsa_geothermal.general_models import GeothermalConventionalModel, GeothermalEnhancedModel
 from pypardiso import spsolve
 
-def get_lcia_results(path):
-    """TODO Sasha change os to pathlib"""
-    files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) 
-             and 'all' not in f and 'scores' in f]
-    starts = [int(f.split('_')[1]) for f in files]
-    ind_sort = np.argsort(starts)
-    files_sorted = [files[i] for i in ind_sort]
-    scores = []
-    for file in files_sorted:
-        filepath = os.path.join(path,file)
-        with open(filepath, 'rb') as f:
-            scores.append(pickle.load(f))
-    return np.vstack(np.array(scores))
+
 
 
 def setup_project(option):
@@ -47,54 +31,7 @@ def setup_project(option):
 
 # ## Sobol indices computation ###
 
-def separate_output_values(Y, D, N, calc_second_order):
-    AB = np.zeros((N, D))
-    BA = np.zeros((N, D)) if calc_second_order else None
-    step = 2 * D + 2 if calc_second_order else D + 2
 
-    A = Y[0:Y.size:step]
-    B = Y[(step - 1):Y.size:step]
-    for j in range(D):
-        AB[:, j] = Y[(j + 1):Y.size:step]
-        if calc_second_order:
-            BA[:, j] = Y[(j + 1 + D):Y.size:step]
-
-    return A,B,AB,BA
-
-
-def first_order(A, AB, B):
-    # First order estimator following Saltelli et al. 2010 CPC, normalized by
-    # sample variance
-    return np.mean(B * (AB - A), axis=0) / np.var(np.r_[A,B,AB], axis=0)
-#     return np.mean(B * (AB - A), axis=0) # in the paper
-
-
-def total_order(A, AB, B):
-    # Total order estimator following Saltelli et al. 2010 CPC, normalized by
-    # sample variance
-    return 0.5 * np.mean((A - AB) ** 2, axis=0) / np.var(np.r_[A,AB], axis=0)
-#     return 0.5 * np.mean((A - AB) ** 2, axis=0) # in the paper
-
-
-def my_sobol_analyze(problem, Y, calc_second_order):
-    
-    D = problem['num_vars']
-    if calc_second_order==False:
-        N = Y.shape[0]//(D+2)
-        
-#     Y = (Y - Y.mean())/Y.std()
-    
-    A,B,AB,BA = separate_output_values(Y, D, N, calc_second_order)
-    f = np.zeros(D)
-    t = np.zeros(D)
-    
-    for j in range(D):
-        t[j] = total_order(A, AB[:,j], B)
-        f[j] = first_order(A, AB[:,j], B)
-        
-    dict_ = dict(S1=f, ST=t)
-    
-    return dict_
 
 
 def find_where_in_techparams(cge_parameters_sto, lca):
