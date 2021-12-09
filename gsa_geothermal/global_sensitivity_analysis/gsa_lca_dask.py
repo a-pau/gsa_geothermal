@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import sparse
-import brightway2 as bw
+import bw2data as bd
 from bw2calc.utils import TYPE_DICTIONARY
 from pypardiso import spsolve
 from klausen.named_parameters import NamedParameters
@@ -8,66 +8,9 @@ import stats_arrays as sa
 
 # Local files
 from ..global_sensitivity_analysis.convert_distributions import convert_sample
-from
 
 # TODO we need not consider exchanges in db that are not being used
 # TODO remove repetitive exchanges
-
-
-def model_per_X_chunk(X_chunk, gsa_in_lca, method_matrices):
-    scores = []
-    i = 0
-    for sample in X_chunk:
-        score = gsa_in_lca.model(sample, method_matrices)
-        scores.append(score)
-        i += 1
-    return np.array(scores)
-
-
-def task_per_worker(project, N, option, n_workers, i_chunk, path_files, diff_distr):
-
-    # 1. setup geothermal project
-    demand, gt_model, parameters = setup_gt_project(project, option, diff_distr=diff_distr)
-    methods = get_ILCD_methods(CC_only=False, units=False)
-
-    # 2. generate characterization matrices for all methods
-    lca = bw.LCA(demand, methods[0])
-    lca.lci(factorize=True)
-    lca.lcia()
-    lca.build_demand_array()
-    method_matrices = gen_cf_matrices(lca, methods)
-
-    # 3. gsa in lca model
-    gsa_in_lca = GSAinLCA(lca, parameters, gt_model, project=project)
-
-    # 4. setup GSA project in the SALib format
-    num_vars = len(gsa_in_lca.parameters_array) \
-               + len(gsa_in_lca.uncertain_exchanges_dict['tech_params_where']) \
-               + len(gsa_in_lca.uncertain_exchanges_dict['bio_params_where'])
-    problem, calc_second_order = setup_gsa(num_vars)
-
-    # 5. generate sobol samples, choose correct chunk for the current worker based on index i_chunk
-    X = saltelli.sample(problem, N, calc_second_order=calc_second_order)
-
-    # 6. Extract part of the sample for the current worker
-    chunk_size = X.shape[0]//n_workers
-    start = i_chunk*chunk_size
-    if i_chunk != n_workers-1:
-        end = (i_chunk+1)*chunk_size
-    else:
-        end = X.shape[0]
-    X_chunk = X[start:end, :]
-    del X
-
-    # 6. compute scores for all methods for X_chunk
-    scores_for_methods = model_per_X_chunk(X_chunk, gsa_in_lca, method_matrices)
-
-    # 7. Save results
-    filepath = os.path.join(path_files, 'scores_' + str(start) + '_' + str(end-1) + '.pkl')
-    with open(filepath, "wb") as fp:   #Pickling
-        pickle.dump(scores_for_methods, fp)
-
-    return scores_for_methods
 
 
 class GSAinLCA:
@@ -81,7 +24,7 @@ class GSAinLCA:
         self.lca = lca
         self.options = options
 
-        bw.projects.set_current(project)
+        bd.projects.set_current(project)
 
         # 1. Generate parameters dictionary
         if parameters is not None and parameters_model is not None:
@@ -93,7 +36,7 @@ class GSAinLCA:
             self.parameters_model = parameters_model
             self.parameters.static()
             self.parameters_array = self.convert_named_parameters_to_array()
-            self.parameterized_exc_dict = self.obtain_parameterized_exchanges(
+            self.parameterized_exchanges_dict = self.obtain_parameterized_exchanges(
                 self.lca, self.parameters, self.parameters_model
             )
         else:
@@ -101,9 +44,9 @@ class GSAinLCA:
             self.parameters_model = None
 
         # 2. Generate dictionary of uncertain exchanges based on options
-        # self.uncertain_exc_dict = self.obtain_uncertain_exchanges(
-        #     self, lca=self.lca, options=self.options
-        # )
+        self.uncertain_exchanges_dict = self.obtain_uncertain_exchanges(
+            self, lca=self.lca, options=self.options
+        )
 
     @staticmethod
     def get_mask_unc_col_amt(params, i):
@@ -130,14 +73,14 @@ class GSAinLCA:
 
     @staticmethod
     def get_mask_row_col(params, i, j):
-        mask = np.all(
-            [
+        mask = np.where(
+            np.logical_and(
                 params["row"] == i,
                 params["col"] == j,
-            ],
-            axis=0,
+            )
         )
-        return mask
+        assert len(mask) == 1
+        return mask[0]
 
     @staticmethod
     def obtain_uncertain_exchanges(self, lca, options):
@@ -159,7 +102,7 @@ class GSAinLCA:
             indices_tech = np.array([], dtype=int)
             indices_bio = np.array([], dtype=int)
 
-            if option in bw.databases:
+            if option in bd.databases:
                 # Select all products and flows that are linked to the given database
                 # Indices corresponding to exchanges in the tech_params depending on the given database
                 db_act_indices_tech = [
@@ -254,7 +197,7 @@ class GSAinLCA:
         dtype_parameters = np.dtype(
             [
                 ("name", "<U40"),  # TODO change hardcoded 40 here
-                ("uncertainty_type", "u1"),  # TODO change type
+                ("uncertainty_type", "u1"),
                 ("amount", "<f4"),
                 ("loc", "<f4"),
                 ("scale", "<f4"),
@@ -266,7 +209,9 @@ class GSAinLCA:
         )
 
         parameters_array = np.zeros(len(self.parameters), dtype_parameters)
-        parameters_array[:] = np.nan  # TODO
+        for name in dtype_parameters.names:
+            if dtype_parameters[name].kind not in ['u', 'i']:  # not integer type
+                parameters_array[name] = np.nan
 
         for i, name in enumerate(self.parameters):
             parameters_array[i]["name"] = name
@@ -278,7 +223,8 @@ class GSAinLCA:
 
     def obtain_parameterized_exchanges(self, lca, parameters, parameters_model):
 
-        exchanges = parameters_model.run(parameters)
+        exchanges = parameters_model.array_io
+        exchanges['amount'] = parameters_model.run(parameters)
 
         indices_tech = np.array([], dtype=int)
         indices_bio = np.array([], dtype=int)
@@ -299,7 +245,7 @@ class GSAinLCA:
                     )
                     for exc in exc_tech
                 ]
-            )[0]
+            )
 
         exc_bio = np.array(
             [exc for exc in exchanges if get_input(exc) in lca.biosphere_dict]
@@ -314,7 +260,7 @@ class GSAinLCA:
                     )
                     for exc in exc_bio
                 ]
-            )[0]
+            )
 
         parameterized_exc_dict = dict()
         parameterized_exc_dict["tech_params_where"] = indices_tech
@@ -395,7 +341,8 @@ class GSAinLCA:
 
         """
 
-        exchanges = self.parameters_model.run(parameters)
+        exchanges = self.parameters_model.array_io
+        exchanges['amount'] = self.parameters_model.run(parameters)
 
         get_input = lambda exc: (exc["input_db"], exc["input_code"])
 

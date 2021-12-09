@@ -9,55 +9,6 @@ from gsa_geothermal.parameters import get_parameters
 from gsa_geothermal.general_models import GeothermalConventionalModel, GeothermalEnhancedModel
 from pypardiso import spsolve
 
-
-def setup_gsa_problem(n_dimensions):
-    calc_second_order = False
-    problem = {
-      'num_vars': n_dimensions,
-      'names':    np.arange(n_dimensions),
-      'bounds':   np.array([[0,1]]*n_dimensions)
-    }
-    return problem, calc_second_order
-
-
-def setup_geothermal(project, option, flag_diff_distributions=False):
-    # Project
-    bw.projects.set_current(project)
-    # Demand
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced = lookup_geothermal()
-    # Which parameters to choose
-    if flag_diff_distributions:
-        cge_parameters = get_parameters("conventional.diff_distributions")
-        ege_parameters = get_parameters("enhanced.diff_distributions")
-    else:
-        cge_parameters = get_parameters("conventional")
-        ege_parameters = get_parameters("enhanced")
-    # Select all for conventional or enhanced
-    if option == "conventional":
-        demand = electricity_prod_conventional
-        parameters = cge_parameters
-        GeothermalModel = GeothermalConventionalModel
-    elif option == "enhanced":
-        demand = electricity_prod_enhanced
-        parameters = ege_parameters
-        GeothermalModel = GeothermalEnhancedModel
-    else:
-        print("Choose {} as `conventional` or `enhanced`")
-        return
-    geothermal_model = GeothermalModel(parameters)
-    return demand, geothermal_model, parameters
-
-
-
-
-def gen_characterization_matrices(lca, methods):
-    method_matrices = []
-    for method in methods:
-        lca.switch_method(method)
-        method_matrices.append(lca.characterization_matrix)
-    return method_matrices
-
-
 def get_lcia_results(path):
     """TODO Sasha change os to pathlib"""
     files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) 

@@ -30,7 +30,7 @@ def get_EF_methods(select_climate_change_only=False, return_units=False):
     if return_units:
         temp = [bd.methods[method]["unit"] for method in methods]
         EF_units = [
-            adjust_units_dict[elem] if elem in adjust_units_dict else elem
+            adjust_units_dict.get(elem, elem)
             for elem in temp
         ]
         return methods, EF_units
