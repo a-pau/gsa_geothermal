@@ -74,10 +74,10 @@ colors = {
     'water_stimulation': 'rgb(255,210,255)',
     'specific_electricity_stimulation': 'rgb(255,237,0)',
 }
-colors = {parameters_dict.get(k) or k: v for k,v in colors.items()}
+colors = {parameters_dict.get(k) or k: v for k, v in colors.items()}
 
 # Background color
-plot_bgcolor_ ='rgb(231,231,231)'
+plot_bgcolor_ = 'rgb(231,231,231)'
 
 # # Choose colors
 # import colorlover as cl
@@ -102,7 +102,7 @@ plot_bgcolor_ ='rgb(231,231,231)'
 # Save Sobol indices
 def save_dict_json(dict_, path):
     dict_save = {}
-    for k,v in dict_.items():
+    for k, v in dict_.items():
         if type(v) == dict:
             v['S1'] = list(v['S1'])
             v['ST'] = list(v['ST'])
