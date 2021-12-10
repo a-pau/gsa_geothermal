@@ -107,8 +107,8 @@ venv.bak/
 .DS_Store
 
 # Local files
-dev/input_data
-dev/output_data
+archived/input_data
+archived/output_data
 gsa_geothermal/data/Geothermal_power_processes_brightway.xlsx
 dev/write_files
 
