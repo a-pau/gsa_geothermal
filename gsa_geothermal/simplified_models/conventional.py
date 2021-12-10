@@ -179,9 +179,9 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
                     impact_copy = deepcopy(self.impact.subs(par_dict_copy))
                     impact_copy = impact_copy.subs(is_dict)
                     impact_copy = ratsimp(impact_copy)
-                    temp = collect(impact_copy, [1 / CW_ne * SR_p, 1], evaluate=False)
+                    temp = collect(impact_copy, [CW_ne*SR_p], evaluate=False)
                     temp2 = collect(
-                        temp[list(temp.keys())[1]],
+                        temp[list(temp.keys())[0]],
                         [SR_p * W_d * D_i, D_i * SR_p, SR_p, W_d],
                         evaluate=False,
                     )
