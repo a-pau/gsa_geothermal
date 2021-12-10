@@ -107,7 +107,7 @@ def get_parameters_conventional():
         },
     }
     parameters = klausen.NamedParameters(parameters)
-    # parameters.static()
+    parameters.static()
     return parameters
 
 

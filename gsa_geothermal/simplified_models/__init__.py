@@ -1,1 +1,2 @@
-from .simplified_gt_models import ConventionalSimplifiedModel, EnhancedSimplifiedModel
+from .conventional import ConventionalSimplifiedModel
+from .enhanced import EnhancedSimplifiedModel

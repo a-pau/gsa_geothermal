@@ -1,14 +1,8 @@
 import bw2data as bd
-# import bw2calc as bc
 import numpy as np
 import pickle
 import os
 import contextlib
-
-# Local files
-# from .global_sensitivity_analysis import GSAinLCA
-# from .parameters import get_parameters
-# from .general_models import GeothermalConventionalModel, GeothermalEnhancedModel
 
 
 def lookup_geothermal(ecoinvent_version="ecoinvent 3.6 cutoff"):
@@ -121,15 +115,40 @@ def get_EF_methods(select_climate_change_only=False, return_units=False):
         methods = EF_CC
     else:
         methods = EF_CC + EF_other
+
+    order = {
+        0: ('EF v2.0 2018 no LT', 'climate change no LT', 'global warming potential (GWP100) no LT'),
+        1: ('EF v2.0 2018 no LT', 'human toxicity: carcinogenic no LT', 'comparative toxic unit for human (CTUh)  no LT'),
+        2: ('EF v2.0 2018 no LT', 'ionising radiation: human health no LT', 'human exposure efficiency relative to u235 no LT'),
+        3: ('EF v2.0 2018 no LT', 'human toxicity: non-carcinogenic no LT', 'comparative toxic unit for human (CTUh)  no LT'),
+        4: ('EF v2.0 2018 no LT', 'ozone depletion no LT', 'ozone depletion potential (ODP)  no LT'),
+        5: ('EF v2.0 2018 no LT', 'photochemical ozone formation: human health no LT', 'tropospheric ozone concentration increase no LT'),
+        6: ('EF v2.0 2018 no LT', 'particulate matter formation no LT', 'impact on human health no LT'),
+        7: ('EF v2.0 2018 no LT', 'acidification no LT', 'accumulated exceedance (ae) no LT'),
+        8: ('EF v2.0 2018 no LT', 'ecotoxicity: freshwater no LT', 'comparative toxic unit for ecosystems (CTUe)  no LT'),
+        9: ('EF v2.0 2018 no LT', 'eutrophication: freshwater no LT', 'fraction of nutrients reaching freshwater end compartment (P) no LT'),
+        10: ('EF v2.0 2018 no LT', 'eutrophication: marine no LT', 'fraction of nutrients reaching marine end compartment (N) no LT'),
+        11: ('EF v2.0 2018 no LT', 'eutrophication: terrestrial no LT', 'accumulated exceedance (AE)  no LT'),
+        12: ('EF v2.0 2018 no LT', 'material resources: metals/minerals no LT', 'abiotic depletion potential (ADP): elements (ultimate reserves) no LT'),
+        13: ('EF v2.0 2018 no LT', 'water use no LT', 'user deprivation potential (deprivation-weighted water consumption) no LT'),
+        14: ('EF v2.0 2018 no LT', 'energy resources: non-renewable no LT', 'abiotic depletion potential (ADP): fossil fuels no LT'),
+        15: ('EF v2.0 2018 no LT', 'land use no LT', 'soil quality index no LT'),
+    }
+    order_reversed = {v: k for k, v in order.items()}
+    methods_sorted = [""]*len(methods)
+    for method in methods:
+        position = order_reversed[method]
+        methods_sorted[position] = method
+
     if return_units:
-        temp = [bd.methods[method]["unit"] for method in methods]
+        temp = [bd.methods[method]["unit"] for method in methods_sorted]
         EF_units = [
             adjust_units_dict.get(elem, elem)
             for elem in temp
         ]
-        return methods, EF_units
+        return methods_sorted, EF_units
     else:
-        return methods
+        return methods_sorted
 
 
 def get_lcia_results(path):

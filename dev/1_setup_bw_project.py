@@ -18,14 +18,14 @@ if __name__ == '__main__':
         run_import(ei_name)
     else:
         print("Database already exists")
-    #     r = input("Do you want to delete it and reimport? Y/N? ")
-    #     if r.lower() == "y":
-    #         del bd.databases[gt_name]
-    #         run_import(ei_name)
-    #     elif r.lower() == 'n':
-    #         print('Skipping import')
-    #     else:
-    #         print('Invalid answer')
+        r = input("Do you want to delete it and reimport? Y/N? ")
+        if r.lower() == "y":
+            del bd.databases[gt_name]
+            run_import(ei_name)
+        elif r.lower() == 'n':
+            print('Skipping import')
+        else:
+            print('Invalid answer')
 
     # LCA
     db = bd.Database(gt_name)

@@ -10,22 +10,19 @@ from gsa_geothermal.general_models import GeothermalConventionalModel, Geotherma
 from gsa_geothermal.global_sensitivity_analysis import GSAinLCA, model_per_X_chunk, gen_characterization_matrices
 
 
-def setup_geothermal(project, option, flag_diff_distributions=False):
+def setup_geothermal(project, option):
     # Project
     bd.projects.set_current(project)
     # Demand
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_prod_conventional, electricity_prod_enhanced \
         = lookup_geothermal()
     # Which parameters to choose
-    if flag_diff_distributions:
-        parameters = get_parameters("{}.diff_distributions".format(option))
-    else:
-        parameters = get_parameters(option)
+    parameters = get_parameters(option)
     # Select all for conventional or enhanced
-    if option == "conventional":
+    if "conventional" in option:
         demand = electricity_prod_conventional
         GeothermalModel = GeothermalConventionalModel
-    elif option == "enhanced":
+    elif "enhanced" in option:
         demand = electricity_prod_enhanced
         GeothermalModel = GeothermalEnhancedModel
     else:
@@ -71,11 +68,10 @@ def task_per_worker(
         n_workers,
         i_chunk,
         path_files,
-        diff_distr,
 ):
 
     # 1. setup geothermal project
-    demand_act, gt_model, parameters = setup_geothermal(project, option, flag_diff_distributions=diff_distr)
+    demand_act, gt_model, parameters = setup_geothermal(project, option)
     methods = get_EF_methods(select_climate_change_only=False, return_units=False)
 
     # 2. generate characterization matrices for all methods
