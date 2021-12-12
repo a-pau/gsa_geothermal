@@ -1,6 +1,6 @@
 import stats_arrays as sa
 import numpy as np
-import klausen
+from gsa_geothermal.utils import NamedParametersSeed as NamedParameters
 
 
 def get_parameters_conventional():
@@ -106,7 +106,7 @@ def get_parameters_conventional():
             "loc": 99,
         },
     }
-    parameters = klausen.NamedParameters(parameters)
+    parameters = NamedParameters(parameters)
     parameters.static()
     return parameters
 
@@ -236,7 +236,7 @@ def get_parameters_conventional_diff_distr():
             "loc": 99,
         },
     }
-    parameters = klausen.NamedParameters(parameters)
+    parameters = NamedParameters(parameters)
     parameters.static()
     return parameters
 

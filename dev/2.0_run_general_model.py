@@ -20,22 +20,21 @@ if __name__ == '__main__':
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
     # Number of iterations
-    iterations = 23
+    iterations = 1000
 
     # Options
-    option = "conventional"
+    option = "enhanced"
     exploration = True
     success_rate = True
 
     # Save data
     write_dir = Path("write_files") / "validation"
     write_dir.mkdir(parents=True, exist_ok=True)
-    filename = "{}.general_vs_literature_CC_N{}.json".format(option, iterations)
+    filename = "{}.general.climate_change.N{}.json".format(option, iterations)
     filepath = write_dir / filename
 
     if filepath.exists():
-        print("{} already exists, reading from file".format(filename))
-        df_reference_scores = pd.read_json(filepath)
+        print("{} already exists".format(filename))
     else:
         # Run general model
         parameters = get_parameters(option)
@@ -60,7 +59,3 @@ if __name__ == '__main__':
 
         print("Saving {}".format(filepath))
         df_reference_scores.to_json(filepath)
-
-    print()
-
-    a =

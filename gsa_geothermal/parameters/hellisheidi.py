@@ -1,4 +1,4 @@
-import klausen
+from gsa_geothermal.utils import NamedParametersSeed as NamedParameters
 
 
 def get_parameters_hellisheidi():
@@ -59,6 +59,6 @@ def get_parameters_hellisheidi():
             "amount": 100,
         },
     }
-    parameters = klausen.NamedParameters(parameters)
+    parameters = NamedParameters(parameters)
     parameters.static()
     return parameters

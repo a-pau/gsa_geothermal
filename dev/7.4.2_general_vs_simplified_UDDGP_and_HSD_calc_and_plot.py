@@ -2,16 +2,13 @@
 import brightway2 as bw
 import pandas as pd
 import os
-import warnings
 import seaborn as sb
 import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.ticker import FormatStrFormatter
 from matplotlib import patches
 import textwrap
 
 # Import local
-from setup_files_gsa import setup_gt_project, get_ILCD_methods, run_mc
+from archived.setup_files_gsa import get_ILCD_methods
 from simplified_gt_models import ConventionalSimplifiedModel as cge_model_s_
 from simplified_gt_models import EnhancedSimplifiedModel as ege_model_s_
 

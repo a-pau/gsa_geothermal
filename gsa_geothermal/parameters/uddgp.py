@@ -1,4 +1,4 @@
-import klausen
+from gsa_geothermal.utils import NamedParametersSeed as NamedParameters
 
 
 def get_parameters_uddgp():
@@ -47,6 +47,6 @@ def get_parameters_uddgp():
         "success_rate_exploration_wells": {"amount": 67},
         "success_rate_primary_wells": {"amount": 100},
     }
-    parameters = klausen.NamedParameters(parameters)
+    parameters = NamedParameters(parameters)
     parameters.static()
     return parameters

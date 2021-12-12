@@ -2,7 +2,6 @@
 import brightway2 as bw
 import pandas as pd
 import os
-import warnings
 import seaborn as sb
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +9,7 @@ from matplotlib import ticker
 from matplotlib.ticker import FormatStrFormatter
 
 # Import local
-from setup_files_gsa import setup_gt_project, get_ILCD_methods, run_mc
+from archived.setup_files_gsa import get_ILCD_methods
 from simplified_gt_models_ch4 import ConventionalSimplifiedModel as cge_model_s_
 from simplified_gt_models_ch4 import EnhancedSimplifiedModel as ege_model_s_
 

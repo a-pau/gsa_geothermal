@@ -1,7 +1,7 @@
 import brightway2 as bw
 import seaborn as sb
 import pandas as pd
-import os
+from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 
@@ -10,6 +10,7 @@ from gsa_geothermal.data import (
     get_df_carbon_footprints_from_literature_conventional,
     get_df_carbon_footprints_from_literature_enhanced
 )
+from gsa_geothermal.utils import get_EF_methods
 
 
 if __name__ == '__main__':
@@ -17,28 +18,34 @@ if __name__ == '__main__':
     bw.projects.set_current("Geothermal")
 
     # Method
-    ILCD_CC = [
-        method
-        for method in bw.methods
-        if "ILCD 2.0 2018 midpoint no LT" in str(method)
-        and "climate change total" in str(method)
-    ]
+    method = get_EF_methods(select_climate_change_only=True)
+
+    # Number of iterations
+    iterations = 1000
+
+    # Save data
+    write_dir = Path("write_files") / "validation"
+    write_dir.mkdir(parents=True, exist_ok=True)
+    filename_conventional_scores = "{}.general.climate_change.N{}.json".format("conventional", iterations)
+    filepath_conventional_scores = write_dir / filename_conventional_scores
+    filename_enhanced_scores = "{}.general.climate_change.N{}.json".format("enhanced", iterations)
+    filepath_enhanced_scores = write_dir / filename_enhanced_scores
 
     # Carbon footprints from literature
-
-    conventional_cfs = get_df_carbon_footprints_from_literature_conventional()
-    conventional_cfs = conventional_cfs.drop(
+    df_conventional_literature = get_df_carbon_footprints_from_literature_conventional()
+    df_conventional_literature = df_conventional_literature.drop(
         columns=[
             "Technology",
             "Notes",
             "Operational CO2 emissions (g/kWh)",
             "Operational CH4 emissions (g/kWh)",
+            "Type",  # TODO Andrea check if that's correct
         ]
     )
-    conventional_cfs.columns = ["study", "carbon footprint"]
+    df_conventional_literature.columns = ["study", "carbon footprint"]
 
-    enhanced_cfs = get_df_carbon_footprints_from_literature_enhanced()
-    enhanced_cfs = enhanced_cfs.drop(
+    df_enhanced_literature = get_df_carbon_footprints_from_literature_enhanced()
+    df_enhanced_literature = df_enhanced_literature.drop(
         columns=[
             "Technology",
             "Notes",
@@ -46,22 +53,14 @@ if __name__ == '__main__':
             "Installed capacity (MW)",
             "Depth of wells (m)",
             "Success rate (%)",
+            "Type",  # TODO Andrea check if that's correct
         ]
     )
-    enhanced_cfs.columns = ["study", "carbon footprint"]
+    df_enhanced_literature.columns = ["study", "carbon footprint"]
 
     # Reference model carbon footprints
-    n_iter = 10000
-    ecoinvent_version = "ecoinvent_3.6"
-    folder_IN = os.path.join("generated_files", ecoinvent_version, "validation")
-    file_name = "ReferenceVsLiterature CC N" + str(n_iter)
-
-    cge_ref_df = pd.read_json(
-        os.path.join(absolute_path, folder_IN, file_name + " - Conventional")
-    )
-    ege_ref_df = pd.read_json(
-        os.path.join(absolute_path, folder_IN, file_name + " - Enhanced")
-    )
+    df_conventional_general = pd.read_json(filepath_conventional_scores)
+    df_enhanced_general = pd.read_json(filepath_enhanced_scores)
 
     # Seaborn palette
     Sb_colorblind_pal = sb.color_palette(palette="colorblind")
@@ -71,15 +70,15 @@ if __name__ == '__main__':
     palette.append(Color_brewer_Set2[-1])
 
     # Add columns for plotting with stripplot
-    enhanced_cfs["position"] = 1
-    conventional_cfs["position"] = 1
+    df_enhanced_literature["position"] = 1
+    df_conventional_literature["position"] = 1
 
-    #%% Conventional model plot
+    # %% Conventional model plot
     fig = plt.figure()
     fig.add_subplot(121)
 
     g1 = sb.boxplot(
-        data=cge_ref_df,
+        data=df_conventional_general,
         y="carbon footprint",
         whis=[1, 99],
         showfliers=False,
@@ -87,7 +86,7 @@ if __name__ == '__main__':
         color="white",
     )
     g1 = sb.stripplot(
-        data=conventional_cfs,
+        data=df_conventional_literature,
         x="position",
         y="carbon footprint",
         palette=palette[:11],
@@ -118,10 +117,10 @@ if __name__ == '__main__':
     g1.set_xticks([])
     g1.get_yaxis().set_major_formatter(ticker.ScalarFormatter())
 
-    #%%  Enhanced model Plot
+    # %%  Enhanced model Plot
     fig.add_subplot(122)
     g2 = sb.boxplot(
-        data=ege_ref_df,
+        data=df_enhanced_general,
         y="carbon footprint",
         whis=[1, 99],
         showfliers=False,
@@ -129,7 +128,7 @@ if __name__ == '__main__':
         color="white",
     )
     g2 = sb.stripplot(
-        data=enhanced_cfs,
+        data=df_enhanced_literature,
         x="position",
         y="carbon footprint",
         palette=palette[:13],
@@ -160,21 +159,23 @@ if __name__ == '__main__':
     g2.set_xticks([])
     g2.get_yaxis().set_major_formatter(ticker.ScalarFormatter())
 
-    #%% Layout
+    # %% Layout
     sb.despine(fig=fig, bottom=True)
     fig.set_size_inches([8, 4])
     fig.tight_layout()
 
-    #%% Save plots
+    # %% Save plots
 
-    folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
-    fig.savefig(os.path.join(folder_OUT, file_name + ".tiff"), dpi=300)
+    fig.savefig(
+        write_dir / "{}.tiff".format(filepath_conventional_scores.stem.replace("conventional.", "")),
+        dpi=300
+    )
 
-    #%% Conventional plot - Violin
+    # %% Conventional plot - Violin
 
-    cge_1 = pd.DataFrame(cge_ref_df["carbon footprint"])
+    cge_1 = pd.DataFrame(df_conventional_general["carbon footprint"])
     cge_1["type"] = "model"
-    cge_2 = pd.DataFrame(conventional_cfs["carbon footprint"])
+    cge_2 = pd.DataFrame(df_conventional_literature["carbon footprint"])
     cge_2["type"] = "literature"
     cge = pd.concat([cge_1, cge_2], ignore_index=True)
     cge["x"] = "x"
@@ -193,14 +194,14 @@ if __name__ == '__main__':
     handles, labels = g3.get_legend_handles_labels()
     g3.legend(handles=handles[0:], labels=labels[0:], loc="upper right", fontsize=9)
 
-    g3.set(xlabel="", ylabel="$g CO_2 eq./kWh$", ylim=(0))
+    g3.set(xlabel="", ylabel="$g CO_2 eq./kWh$", ylim=0)
     g3.set_xticks([])
 
-    #%% Enhanced plot - Violin
+    # %% Enhanced plot - Violin
 
-    ege_1 = pd.DataFrame(ege_ref_df["carbon footprint"])
+    ege_1 = pd.DataFrame(df_enhanced_general["carbon footprint"])
     ege_1["type"] = "model"
-    ege_2 = pd.DataFrame(enhanced_cfs["carbon footprint"])
+    ege_2 = pd.DataFrame(df_enhanced_literature["carbon footprint"])
     ege_2["type"] = "literature"
     ege = pd.concat([ege_1, ege_2], ignore_index=True)
     ege["x"] = "x"
@@ -219,19 +220,17 @@ if __name__ == '__main__':
     handles, labels = g4.get_legend_handles_labels()
     g4.legend(handles=handles[0:], labels=labels[0:], loc="upper right", fontsize=9)
 
-    g4.set(xlabel="", ylabel="$g CO_2 eq./kWh$", ylim=(0))
+    g4.set(xlabel="", ylabel="$g CO_2 eq./kWh$", ylim=0)
     g4.set_xticks([])
 
-    #%% Save Violin
-    folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
-
+    # %% Save Violin
     f3.savefig(
-        os.path.join(folder_OUT, file_name + " - Conventional VIOLIN.png"),
+        write_dir / "{}.violin.png".format(filepath_conventional_scores.stem),
         dpi=600,
         format="png",
     )
     f4.savefig(
-        os.path.join(folder_OUT, file_name + " - Enhanced VIOLIN.png"),
+        write_dir / "{}.violin.png".format(filepath_enhanced_scores.stem),
         dpi=600,
         format="png",
     )

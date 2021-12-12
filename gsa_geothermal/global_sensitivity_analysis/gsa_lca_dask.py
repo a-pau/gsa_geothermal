@@ -3,7 +3,7 @@ from scipy import sparse
 import bw2data as bd
 from bw2calc.utils import TYPE_DICTIONARY
 from pypardiso import spsolve
-from klausen.named_parameters import NamedParameters
+from gsa_geothermal.utils import NamedParametersSeed as NamedParameters
 import stats_arrays as sa
 
 # Local files

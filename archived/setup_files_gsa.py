@@ -5,9 +5,6 @@ import numpy as np
 # Local files
 from pypardiso import spsolve
 
-
-
-
 def setup_project(option):
     project = 'Geothermal'
     demand, geothermal_model, parameters = setup_geothermal(project, option)
