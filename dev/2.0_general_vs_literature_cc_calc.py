@@ -1,70 +1,66 @@
-#%% Set up
-
 import brightway2 as bw
 import pandas as pd
-import os
+from pathlib import Path
+from time import time
 
-# Set working directory
-path = "."
-os.chdir(path)
-absolute_path = os.path.abspath(path)
+# Local files
+from gsa_geothermal.utils import lookup_geothermal, get_EF_methods
+from gsa_geothermal.general_models import GeothermalConventionalModel, GeothermalEnhancedModel
+from gsa_geothermal.parameters import get_parameters
+from gsa_geothermal.global_sensitivity_analysis import run_monte_carlo
 
-# Set project
-bw.projects.set_current("Geothermal")
+if __name__ == '__main__':
+    # Set project
+    bw.projects.set_current("Geothermal")
 
-# Import local
-from utils.lookup_func import lookup_geothermal
-from utils.FileNameFromOptions import get_file_name
-from cge_model import GeothermalConventionalModel
-from cge_klausen import parameters as cge_parameters
-from ege_model import GeothermalEnhancedModel
-from ege_klausen import parameters as ege_parameters
-from utils.Stoc_MultiMethod_LCA_pygsa import run_mc
+    # Method
+    method = get_EF_methods(select_climate_change_only=True)
 
-# Method 
-ILCD_CC = [method for method in bw.methods if "ILCD 2.0 2018 midpoint no LT" in str(method) and "climate change total" in str(method)]
+    # Find demand
+    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
-# Find demand
-_, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
+    # Number of iterations
+    iterations = 23
 
-# Number of iterations
-n_iter=10000
+    # Options
+    option = "conventional"
+    exploration = True
+    success_rate = True
 
-#%% Options
-exploration= True
-success_rate = True
+    # Save data
+    write_dir = Path("write_files") / "validation"
+    write_dir.mkdir(parents=True, exist_ok=True)
+    filename = "{}.general_vs_literature_CC_N{}.json".format(option, iterations)
+    filepath = write_dir / filename
 
-#%% Reference model
+    if filepath.exists():
+        print("{} already exists, reading from file".format(filename))
+        df_reference_scores = pd.read_json(filepath)
+    else:
+        # Run general model
+        parameters = get_parameters(option)
+        parameters.stochastic(iterations=iterations)
+        if "conventional" in option:
+            ModelClass = GeothermalConventionalModel
+            demand = {electricity_conv_prod: 1}
+        elif "enhanced" in option:
+            ModelClass = GeothermalEnhancedModel
+            demand = {electricity_enh_prod: 1}
+        model = ModelClass(parameters, exploration, success_rate)
 
-# Run model with presamples
-cge_parameters.stochastic(iterations=n_iter)
-cge_model = GeothermalConventionalModel(cge_parameters, exploration = exploration, success_rate = success_rate)
-cge_parameters_sto=cge_model.run_with_presamples(cge_parameters)
-cge_ref = run_mc(cge_parameters_sto, electricity_conv_prod, ILCD_CC, n_iter)
+        parameters = model.run_with_presamples(parameters)
+        t0 = time()
+        reference_scores = run_monte_carlo(parameters, demand, method, iterations)
+        print("Monte Carlo took {:6.2f} seconds".format(time()-t0))
 
-cge_ref_df=pd.DataFrame.from_dict(cge_ref, orient="columns")
-cge_ref_df.columns = ["carbon footprint"]
-# Multiply by 1000 to get gCO2 eq.
-cge_ref_df["carbon footprint"] = cge_ref_df["carbon footprint"] *1000
+        df_reference_scores = pd.DataFrame.from_dict(reference_scores, orient="columns")
+        df_reference_scores.columns = ["carbon footprint"]
+        # Multiply by 1000 to get gCO2 eq.
+        df_reference_scores["carbon footprint"] = df_reference_scores["carbon footprint"] * 1000
 
-#%% Enhanced model
+        print("Saving {}".format(filepath))
+        df_reference_scores.to_json(filepath)
 
-# Run model with presamples
-ege_parameters.stochastic(iterations=n_iter)
-ege_model = GeothermalEnhancedModel(ege_parameters, exploration = exploration, success_rate = success_rate)
-ege_parameters_sto=ege_model.run_with_presamples(ege_parameters)
-ege_ref = run_mc(ege_parameters_sto, electricity_enh_prod, ILCD_CC, n_iter)
+    print()
 
-ege_ref_df=pd.DataFrame.from_dict(ege_ref, orient="columns")
-ege_ref_df.columns = ["carbon footprint"]
-# Multiply by 1000 to get gCO2 eq.
-ege_ref_df["carbon footprint"] = ege_ref_df["carbon footprint"] *1000
-
-#%% Save data 
-file_name = "ReferenceVsLiterature CC N" + str(n_iter)
-folder = os.path.join("generated_files", ecoinvent_version, "validation")
-
-print("Saving ", file_name, "in", folder_OUT)
-
-cge_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Conventional"))
-ege_ref_df.to_json(os.path.join(absolute_path, folder, file_name + " - Enhanced"))
+    a =
