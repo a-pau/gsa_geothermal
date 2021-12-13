@@ -7,7 +7,7 @@ from pathlib import Path
 
 from gsa_geothermal.utils import lookup_geothermal, get_EF_methods
 from gsa_geothermal.global_sensitivity_analysis import run_monte_carlo
-from setups import setup_geothermal
+from setups import setup_geothermal_gsa
 from gsa_geothermal.parameters import get_parameters
 from gsa_geothermal.general_models import GeothermalConventionalModel, GeothermalEnhancedModel
 from gsa_geothermal.simplified_models import ConventionalSimplifiedModel
@@ -21,12 +21,12 @@ if __name__ == '__main__':
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
     # Get methods
-    ILCD = get_EF_methods()
+    methods = get_EF_methods()
 
     # Number of iterations
     iterations = 1000
 
-    # Seed for stochastic parameters
+    # Seed for stochastic parameters #TODO this needs to be moved e.g. in utils
     seed = 13413203
 
     write_dir_validation = Path("write_files") / "validation"
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     cge_parameters = get_parameters("conventional")
     ege_parameters = get_parameters("enhanced")
 
-    # %% CONVENTIONAL model calculations - REFERENCE TODO this has already been computed
+    # %% CONVENTIONAL model calculations - REFERENCE
 
     # Generate stochastic values
     cge_parameters.stochastic(iterations=iterations, seed=seed)
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # Compute
     cge_model = GeothermalConventionalModel(cge_parameters)
     cge_parameters_sto = cge_model.run_with_presamples(cge_parameters)
-    cge_ref = run_monte_carlo(cge_parameters_sto, {electricity_conv_prod: 1}, ILCD, iterations)
+    cge_ref = run_monte_carlo(cge_parameters_sto, {electricity_conv_prod: 1}, methods, iterations)
 
     # Save
     cge_ref_df = pd.DataFrame.from_dict(cge_ref)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # Compute
     ege_model = GeothermalEnhancedModel(ege_parameters)
     ege_parameters_sto = ege_model.run_with_presamples(ege_parameters)
-    ege_ref = run_monte_carlo(ege_parameters_sto, {electricity_enh_prod: 1}, ILCD, iterations)
+    ege_ref = run_monte_carlo(ege_parameters_sto, {electricity_enh_prod: 1}, methods, iterations)
 
     # Save
     ege_ref_df = pd.DataFrame.from_dict(ege_ref)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
         # Initialize class
         cge_model_s = ConventionalSimplifiedModel(
-            setup_geothermal_gsa=setup_geothermal,
+            setup_geothermal_gsa=setup_geothermal_gsa,
             path=write_dir_conventional,
             threshold=t,
         )
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
         # Initialize class
         ege_model_s = EnhancedSimplifiedModel(
-            setup_geothermal_gsa=setup_geothermal,
+            setup_geothermal_gsa=setup_geothermal_gsa,
             path=write_dir_enhanced,
             threshold=t,
         )
