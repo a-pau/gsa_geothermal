@@ -6,7 +6,7 @@ import warnings
 from pathlib import Path
 
 # Local files
-from gsa_geothermal.utils import lookup_geothermal, get_EF_methods
+from gsa_geothermal.utils import get_EF_methods
 from setups import setup_geothermal_gsa
 from gsa_geothermal.parameters import get_parameters
 from gsa_geothermal.simplified_models import ConventionalSimplifiedModel
@@ -15,9 +15,6 @@ from gsa_geothermal.simplified_models import EnhancedSimplifiedModel
 if __name__ == '__main__':
     # Set project
     bw.projects.set_current("Geothermal")
-
-    # Find demand
-    _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
     # Get methods
     methods = get_EF_methods()

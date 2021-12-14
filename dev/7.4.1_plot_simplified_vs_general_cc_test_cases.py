@@ -49,8 +49,6 @@ df_enhanced_literature = df_enhanced_literature.sort_values(by="study")
 
 # Options
 iterations = 10 #TODO Need to be recalculated
-threshold_cge = [0.1]
-threshold_ege = [0.1, 0.05]
 
 # Load general models scores
 write_dir_validation = Path("write_files") / "validation"
@@ -73,58 +71,15 @@ ege_gen_df = (
     * 1000
 )
 
-    
+# Load simplified model scores
+filename_conventional_simplified = "{}.{}.cc_test_cases.json".format("conventional", "simplified")
+filename_enhanced_simplified = "{}.{}.cc_test_cases.json".format("enhanced", "simplified")
 
-#%% Initialize classes
-# Set threshold
-# Note that only these thresholds are needed for CC
-threshold_cge = [0.1]
-threshold_ege = [0.1, 0.05]
+filepath_conventional_simplified = write_dir_validation / filename_conventional_simplified
+filepath_enhanced_simplified = write_dir_validation/ filename_enhanced_simplified
 
-# Conventional
-cge_model_s = {}
-for t in threshold_cge:
-    cge_model_s[t] = cge_model_s_(t)
-
-# Enhanced
-ege_model_s = {}
-for t in threshold_ege:
-    ege_model_s[t] = ege_model_s_(t)
-
-#%% Compute simplified
-
-# Conventional
-cge_s = {}
-for t in threshold_cge:
-    temp_ = {}
-    for _, rows in df_conventional_literature.iterrows():
-        # Values are multplied by 1000 to get gCO2 eq
-        temp_[rows["study"]] = (
-            cge_model_s[t].run(rows, lcia_methods=method)[method[0][-1]] * 1000
-        )
-    cge_s[t] = temp_
-
-# Re-arrange results
-cge_s_df = pd.DataFrame.from_dict(cge_s)
-cge_s_df.columns = ["{:.0%}".format(t) for t in cge_s_df.columns]
-cge_s_df = cge_s_df.reset_index().rename(columns={"index": "study"})
-
-# Enhanced
-ege_s = {}
-for t in threshold_ege:
-    temp_ = {}
-    for _, rows in df_enhanced_literature.iterrows():
-        # Values are multplied by 1000 to get gCO2 eq
-        temp_[rows["study"]] = (
-            ege_model_s[t].run(rows, lcia_methods=method)[method[0][-1]] * 1000
-        )
-    ege_s[t] = temp_
-
-# Re-arrange results
-ege_s_df = pd.DataFrame.from_dict(ege_s)
-ege_s_df.columns = ["{:.0%}".format(t) for t in ege_s_df.columns]
-ege_s_df = ege_s_df.reset_index().rename(columns={"index": "study"})
-
+cge_s_df = pd.read_json(filepath_conventional_simplified)
+ege_s_df = pd.read_json(filepath_enhanced_simplified)
 
 #%% Plot
 
@@ -168,7 +123,7 @@ cge_ticklabels.append("general model")
 
 # Plot
 cge_ax.boxplot(
-    x=cge_ref_df,
+    x=cge_gen_df,
     positions=[pos_cge_ref],
     vert=True,
     whis=[1, 99],
@@ -238,7 +193,7 @@ ege_ticklabels.append("general model")
 
 # Plot
 ege_ax.boxplot(
-    x=ege_ref_df,
+    x=ege_gen_df,
     positions=[pos_ege_ref],
     vert=True,
     whis=[1, 99],
@@ -341,7 +296,7 @@ cge_ticklabels.append("general model")
 # Plot
 for cge_ax in [cge_ax_up, cge_ax_low]:
     cge_ax.boxplot(
-        x=cge_ref_df,
+        x=cge_gen_df,
         positions=[pos_cge_ref],
         vert=True,
         whis=[1, 99],
@@ -412,7 +367,7 @@ ege_ticklabels.append("general model")
 # Plot
 for ege_ax in [ege_ax_up, ege_ax_low]:
     ege_ax.boxplot(
-        x=ege_ref_df,
+        x=ege_gen_df,
         positions=[pos_ege_ref],
         vert=True,
         whis=[1, 99],
