@@ -7,71 +7,67 @@ import os
 import numpy as np
 from scipy.stats import spearmanr, pearsonr
 from matplotlib import ticker
+from pathlib import Path
 
 # Import local
-from archived.setup_files_gsa import get_ILCD_methods
+from gsa_geothermal.utils import get_EF_methods
 
-# Set working directry
-path = "."
-os.chdir(path)
-absolute_path = os.path.abspath(path)
+if __name__ == '__main__':
+    # Set project
+    bw.projects.set_current("Geothermal")
+    
+    # Methods
+    methods, methods_units = get_EF_methods(return_units=True)
+    
+    # Options
+    iterations = 10000
+    thresholds = [0.2, 0.15, 0.1, 0.05]
+    
+    # TODO to be changed
+    iterations = 10
+    
+    # Load data
+    write_dir_validation = Path("write_files") / "validation"
+    
+    filename_conventional_general = "{}.{}.all_categories.N{}.json".format("conventional", "general", iterations)
+    filename_enhanced_general = "{}.{}.all_categories.N{}.json".format("enhanced", "general", iterations)
+    filepath_conventional_general = write_dir_validation / filename_conventional_general
+    filepath_enhanced_general = write_dir_validation / filename_enhanced_general
+    cge_gen_df = pd.read_json(filepath_conventional_general).melt(var_name="method", value_name="general")
+    ege_gen_df = pd.read_json(filepath_enhanced_general).melt(var_name="method", value_name="general")
 
-# Set project
-bw.projects.set_current("Geothermal")
+    cge_s_df = {}
+    ege_s_df = {}
+    for t in thresholds:
+        filename_conventional_simplified = "{}.{}.all_categories.N{}.threshold{}.json".format("conventional", "simplified", iterations, t)
+        filename_enhanced_simplified = "{}.{}.all_categories.N{}.threshold{}.json".format("enhanced", "simplified", iterations, t)
+        filepath_conventional_simplified = write_dir_validation / filename_conventional_simplified
+        filepath_enhanced_simplified = write_dir_validation/ filename_enhanced_simplified
+        cge_s_df[t] = pd.read_json(filepath_conventional_simplified).melt(var_name="method", value_name="simplified_" + str(t))
+        ege_s_df[t] = pd.read_json(filepath_enhanced_simplified).melt(var_name="method", value_name="simplified_" + str(t))
+    
+    cge_df = cge_gen_df
+    ege_df = ege_gen_df
+    for t in thresholds:
+        cge_df = pd.concat([cge_df, cge_s_df[t]["simplified_" + str(t)]], axis=1)
+        ege_df = pd.concat([ege_df, ege_s_df[t]["simplified_" + str(t)]], axis=1)           
+        
+    # save data
+    write_dir = Path("write_plots")
+    write_dir.mkdir(parents=True, exist_ok=True)
 
-# Methods
-ILCD, ILCD_units = get_ILCD_methods(units=True)
-
-# Iterations
-n_iter = 10000
-
-# Folders
-file_name = "ReferenceVsSimplified_N" + str(n_iter)
-ecoinvent_version = "ecoinvent_3.6"
-folder_IN = os.path.join(
-    absolute_path, "generated_files", ecoinvent_version, "validation"
-)
-folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
-
-# Thresholds
-threshold = [0.2, 0.15, 0.1, 0.05]
-
-# Reference
-cge_ref_df = pd.read_json(
-    os.path.join(folder_IN, file_name + "_Conventional_Reference")
-).melt(var_name="method", value_name="Reference")
-ege_ref_df = pd.read_json(
-    os.path.join(folder_IN, file_name + "_Enhanced_Reference")
-).melt(var_name="method", value_name="Reference")
-
-cge_s_df = {}
-ege_s_df = {}
-for t in threshold:
-    cge_s_df[t] = pd.read_json(
-        os.path.join(folder_IN, file_name + "_Conventional_Simplified_t" + str(t))
-    ).melt(var_name="method", value_name="Simplified_" + str(t))
-    ege_s_df[t] = pd.read_json(
-        os.path.join(folder_IN, file_name + "_Enhanced_Simplified_t" + str(t))
-    ).melt(var_name="method", value_name="Simplified_" + str(t))
-
-cge_df = cge_ref_df
-ege_df = ege_ref_df
-for t in threshold:
-    cge_df = pd.concat([cge_df, cge_s_df[t]["Simplified_" + str(t)]], axis=1)
-    ege_df = pd.concat([ege_df, ege_s_df[t]["Simplified_" + str(t)]], axis=1)
-
-#%% Calculate spearman and pearson correlation coefficient
+#%% CALCULATE PEARSON AND SPEARMAN CORRELATION COEFFICIENTS
 
 cge_pearson, cge_spearman = {}, {}
-for method in ILCD:
-    df = cge_df[cge_df.method == method[2]]
+for method in methods:
+    df = cge_df[cge_df.method == method[1]]
     sp_ = {}
     pe_ = {}
-    for t in threshold:
-        sp_[t] = spearmanr(df["Reference"], df["Simplified_" + str(t)])[0]
-        pe_[t] = pearsonr(df["Reference"], df["Simplified_" + str(t)])[0]
-        cge_spearman[method[2]] = sp_
-        cge_pearson[method[2]] = pe_
+    for t in thresholds:
+        sp_[t] = spearmanr(df["general"], df["simplified_" + str(t)])[0]
+        pe_[t] = pearsonr(df["general"], df["simplified_" + str(t)])[0]
+        cge_spearman[method[1]] = sp_
+        cge_pearson[method[1]] = pe_
 
 cge_pearson_df = pd.DataFrame.from_dict(cge_pearson, orient="index")
 cge_pearson_df.columns = ["{:.0%}".format(t) for t in cge_pearson_df.columns]
@@ -81,24 +77,24 @@ cge_spearman_df.columns = ["{:.0%}".format(t) for t in cge_spearman_df.columns]
 # Remove outliers
 qt = 0.999
 ege_pearson, ege_spearman = {}, {}
-for method in ILCD:
-    df = ege_df[ege_df.method == method[2]]
+for method in methods:
+    df = ege_df[ege_df.method == method[1]]
     sp_ = {}
     pe_ = {}
-    for t in threshold:
-        qt_val = df.Reference.quantile(qt)
-        mask = np.where(df.Reference < qt_val, True, False)
-        sp_[t] = spearmanr(df["Reference"][mask], df["Simplified_" + str(t)][mask])[0]
-        pe_[t] = pearsonr(df["Reference"][mask], df["Simplified_" + str(t)][mask])[0]
-        ege_spearman[method[2]] = sp_
-        ege_pearson[method[2]] = pe_
+    for t in thresholds:
+        qt_val = df.general.quantile(qt)
+        mask = np.where(df.general < qt_val, True, False)
+        sp_[t] = spearmanr(df["general"][mask], df["simplified_" + str(t)][mask])[0]
+        pe_[t] = pearsonr(df["general"][mask], df["simplified_" + str(t)][mask])[0]
+        ege_spearman[method[1]] = sp_
+        ege_pearson[method[1]] = pe_
 
 ege_pearson_df = pd.DataFrame.from_dict(ege_pearson, orient="index")
 ege_pearson_df.columns = ["{:.0%}".format(t) for t in ege_pearson_df.columns]
 ege_spearman_df = pd.DataFrame.from_dict(ege_spearman, orient="index")
 ege_spearman_df.columns = ["{:.0%}".format(t) for t in ege_spearman_df.columns]
 
-#%% Plot Pearson
+#%% PLOT PEARSON
 
 # Re arrange dataframes
 cge_pearson_df_m = cge_pearson_df.reset_index().rename(columns={"index": "method"})
@@ -173,7 +169,13 @@ fig_pears.legend(handles, labels, loc=(0.45, 0.02), ncol=4)
 fig_pears.set_size_inches([11, 5])
 fig_pears.tight_layout(rect=[0, 0.1, 1, 1])
 
-#%% Plot Spearman
+# save plot
+filename_pears_plot = "pearson_plot.simplified_vs_general.N{}.tiff".format(iterations)
+filepath_pears_plot = write_dir /  filename_pears_plot
+print("Saving {}".format(filepath_pears_plot))
+fig_pears.savefig(filepath_pears_plot, dpi=300)
+
+#%% PLOT SPEARMAN
 
 # Re arrange dataframes
 cge_spearman_df_m = cge_spearman_df.reset_index().rename(columns={"index": "method"})
@@ -243,26 +245,28 @@ fig_spear.legend(handles, labels, loc=(0.45, 0.02), ncol=4)
 fig_spear.set_size_inches([11, 5])
 fig_spear.tight_layout(rect=[0, 0.1, 1, 1])
 
+# Save plot
+filename_spear_plot = "spearman_plot.simplified_vs_general.N{}.tiff".format(iterations)
+filepath_spear_plot = write_dir /  filename_spear_plot
+print("Saving {}".format(filepath_spear_plot))
+fig_pears.savefig(filepath_spear_plot, dpi=300)
 
-#%% Save
-fig_pears.savefig(os.path.join(folder_OUT, file_name + "_Pearson.tiff"), dpi=300)
-fig_spear.savefig(os.path.join(folder_OUT, file_name + "_Spearman.tiff"), dpi=300)
 
-#%% Calculate and plot enhanced ony, with outliers
+#%% CALCULATE AND PLOT, PEARSON AND SPEARMAN - ENHANCED ONLY
 
 qt = 1
 ege_pearson_all, ege_spearman_all = {}, {}
-for method in ILCD:
-    df = ege_df[ege_df.method == method[2]]
+for method in methods:
+    df = ege_df[ege_df.method == method[1]]
     sp_ = {}
     pe_ = {}
-    for t in threshold:
-        qt_val = df.Reference.quantile(qt)
-        mask = np.where(df.Reference < qt_val, True, False)
-        sp_[t] = spearmanr(df["Reference"][mask], df["Simplified_" + str(t)][mask])[0]
-        pe_[t] = pearsonr(df["Reference"][mask], df["Simplified_" + str(t)][mask])[0]
-        ege_spearman_all[method[2]] = sp_
-        ege_pearson_all[method[2]] = pe_
+    for t in thresholds:
+        qt_val = df.general.quantile(qt)
+        mask = np.where(df.general < qt_val, True, False)
+        sp_[t] = spearmanr(df["general"][mask], df["simplified_" + str(t)][mask])[0]
+        pe_[t] = pearsonr(df["general"][mask], df["simplified_" + str(t)][mask])[0]
+        ege_spearman_all[method[1]] = sp_
+        ege_pearson_all[method[1]] = pe_
 
 ege_pearson_all_df = pd.DataFrame.from_dict(ege_pearson_all, orient="index")
 ege_pearson_all_df.columns = ["{:.0%}".format(t) for t in ege_pearson_all_df.columns]
@@ -336,4 +340,8 @@ fig_enh.legend(handles, labels, loc=(0.45, 0.02), ncol=4)
 fig_enh.set_size_inches([11, 5])
 fig_enh.tight_layout(rect=[0, 0.1, 1, 0.95])
 
-fig_enh.savefig(os.path.join(folder_OUT, file_name + "_ENH_W-OUTL.tiff"), dpi=300)
+# Save plot
+filename_enh_plot = "enhanced_pearson_spearman_plot.simplified_vs_general.N{}.tiff".format(iterations)
+filepath_enh_plot = write_dir /  filename_enh_plot
+print("Saving {}".format(filepath_enh_plot))
+fig_enh.savefig(filepath_enh_plot, dpi=300)

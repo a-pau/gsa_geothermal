@@ -21,6 +21,9 @@ if __name__ == '__main__':
 
     # Number of iterations
     iterations = 1000
+    
+    # Seed for stochastic parameters #TODO this needs to be moved e.g. in utils
+    seed = 13413203
 
     # Options
     option = "enhanced"
@@ -38,7 +41,7 @@ if __name__ == '__main__':
     else:
         # Run general model
         parameters = get_parameters(option)
-        parameters.stochastic(iterations=iterations)
+        parameters.stochastic(iterations=iterations, seed=seed)
         if "conventional" in option:
             ModelClass = GeothermalConventionalModel
             demand = {electricity_conv_prod: 1}

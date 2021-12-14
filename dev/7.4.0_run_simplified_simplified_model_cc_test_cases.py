@@ -7,59 +7,36 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.ticker as ticker
 from matplotlib.ticker import FormatStrFormatter
+from pathlib import Path
 
 # Import local
-from archived.setup_files_gsa import get_ILCD_methods
-from simplified_gt_models import ConventionalSimplifiedModel as cge_model_s_
-from simplified_gt_models import EnhancedSimplifiedModel as ege_model_s_
-
-# Set working directory
-path = "."
-os.chdir(path)
+from gsa_geothermal.utils import get_EF_methods
+from gsa_geothermal.data import (
+    get_df_carbon_footprints_from_literature_conventional,
+    get_df_carbon_footprints_from_literature_enhanced
+)
 
 # Set project
 bw.projects.set_current("Geothermal")
 
-# Retrieve methods
-ILCD_CC = get_ILCD_methods(CC_only=True)
+# Method
+method = get_EF_methods(select_climate_change_only=True)
 
-# Folder and file name for saving
-ecoinvent_version = "ecoinvent_3.6"
-absolute_path = os.path.abspath(path)
-folder_OUT = os.path.join(absolute_path, "generated_plots", ecoinvent_version)
-file_name = "ReferenceVsSimplified_test_cases_CC"
+# Load and rearrange literature data
+df_conventional_literature = get_df_carbon_footprints_from_literature_conventional()
+df_enhanced_literature = get_df_carbon_footprints_from_literature_enhanced()
 
-# Load parameters and carbon footprints
-cge_data = pd.read_excel(
-    os.path.join(
-        absolute_path, "data_and_models/Carbon footprints from literature.xlsx"
-    ),
-    sheet_name="Conventional",
-    index_col=None,
-    skiprows=1,
-)
-ege_data = pd.read_excel(
-    os.path.join(
-        absolute_path, "data_and_models/Carbon footprints from literature.xlsx"
-    ),
-    sheet_name="Enhanced",
-    index_col=None,
-    skiprows=1,
-    nrows=13,
-)
-
-# Re-arrange
-cge_data = cge_data.dropna(subset=["Operational CO2 emissions (g/kWh)"]).reset_index(
+df_conventional_literature = df_conventional_literature.dropna(subset=["Operational CO2 emissions (g/kWh)"]).reset_index(
     drop=True
 )
-# cge_data = cge_data.iloc[[4,5,6,7]]
-cge_data = cge_data[cge_data.columns[[0, 2, 3]]]
-cge_data.columns = ["study", "carbon footprint", "co2_emissions"]
-cge_data["co2_emissions"] = cge_data["co2_emissions"] / 1000
-cge_data = cge_data.sort_values(by="study")
+# df_conventional_literature = df_conventional_literature.iloc[[4,5,6,7]]
+df_conventional_literature = df_conventional_literature[df_conventional_literature.columns[[0, 2, 3]]]
+df_conventional_literature.columns = ["study", "carbon footprint", "co2_emissions"]
+df_conventional_literature["co2_emissions"] = df_conventional_literature["co2_emissions"] / 1000
+df_conventional_literature = df_conventional_literature.sort_values(by="study")
 
-ege_data = ege_data[ege_data.columns[[0, 2, 3, 4, 5, 6]]]
-ege_data.columns = [
+df_enhanced_literature = df_enhanced_literature[df_enhanced_literature.columns[[0, 2, 3, 4, 5, 6]]]
+df_enhanced_literature.columns = [
     "study",
     "carbon footprint",
     "specific_diesel_consumption",
@@ -67,27 +44,27 @@ ege_data.columns = [
     "average_depth_of_wells",
     "success_rate_primary_wells",
 ]
-ege_data["specific_diesel_consumption"] = ege_data["specific_diesel_consumption"] * 1000
-ege_data = ege_data.sort_values(by="study")
+df_enhanced_literature["specific_diesel_consumption"] = df_enhanced_literature["specific_diesel_consumption"] * 1000
+df_enhanced_literature = df_enhanced_literature.sort_values(by="study")
 
-# Load reference model
-n_iter = 10000
-folder_IN = os.path.join(
-    absolute_path, "generated_files", ecoinvent_version, "validation"
-)
-file_name_IN = "ReferenceVsSimplified_N" + str(n_iter)
-cge_ref_df = (
-    pd.read_json(os.path.join(folder_IN, file_name_IN + "_Conventional_Reference"))[
-        "climate change total"
+# Options
+threshold_cge = [0.1]
+threshold_ege = [0.1, 0.05]
+
+cge_gen_df = (
+    pd.read_json(filepath_conventional_general)[
+        "climate change no LT"
     ]
     * 1000
 )
-ege_ref_df = (
-    pd.read_json(os.path.join(folder_IN, file_name_IN + "_Enhanced_Reference"))[
-        "climate change total"
+
+ege_gen_df = (
+    pd.read_json(filepath_enhanced_general)[
+        "climate change no LT"
     ]
     * 1000
 )
+    
 
 #%% Initialize classes
 # Set threshold
@@ -111,10 +88,10 @@ for t in threshold_ege:
 cge_s = {}
 for t in threshold_cge:
     temp_ = {}
-    for _, rows in cge_data.iterrows():
+    for _, rows in df_conventional_literature.iterrows():
         # Values are multplied by 1000 to get gCO2 eq
         temp_[rows["study"]] = (
-            cge_model_s[t].run(rows, lcia_methods=ILCD_CC)[ILCD_CC[0][-1]] * 1000
+            cge_model_s[t].run(rows, lcia_methods=method)[method[0][-1]] * 1000
         )
     cge_s[t] = temp_
 
@@ -127,10 +104,10 @@ cge_s_df = cge_s_df.reset_index().rename(columns={"index": "study"})
 ege_s = {}
 for t in threshold_ege:
     temp_ = {}
-    for _, rows in ege_data.iterrows():
+    for _, rows in df_enhanced_literature.iterrows():
         # Values are multplied by 1000 to get gCO2 eq
         temp_[rows["study"]] = (
-            ege_model_s[t].run(rows, lcia_methods=ILCD_CC)[ILCD_CC[0][-1]] * 1000
+            ege_model_s[t].run(rows, lcia_methods=method)[method[0][-1]] * 1000
         )
     ege_s[t] = temp_
 
@@ -168,11 +145,11 @@ cge_s_df_2 = cge_s_df.rename(columns={"10%": "all thresholds"})
 cge_s_df_2 = cge_s_df_2.melt(
     id_vars="study", var_name="simplified model", value_name="carbon footprint"
 )
-cge_lit = cge_data
+cge_lit = df_conventional_literature
 cge_lit["type"] = "literature"
 
 # Set positions
-pos_cge_lit = np.arange(len(cge_data))
+pos_cge_lit = np.arange(len(df_conventional_literature))
 pos_cge_s = pos_cge_lit + dist
 pos_cge_ticks = pos_cge_lit + dist / 2
 pos_cge_ref = pos_cge_lit[-1] + 2
@@ -191,7 +168,7 @@ cge_ax.boxplot(
     medianprops={"color": "black"},
 )
 sb.scatterplot(
-    data=cge_data,
+    data=df_conventional_literature,
     y="carbon footprint",
     x=pos_cge_lit,
     style="type",
@@ -238,11 +215,11 @@ ege_s_df_2 = ege_s_df.rename(columns={"10%": "10,15,20%"})
 ege_s_df_2 = ege_s_df_2.melt(
     id_vars="study", var_name="simplified model", value_name="carbon footprint"
 )
-ege_lit = ege_data
+ege_lit = df_enhanced_literature
 ege_lit["type"] = "literature"
 
 # Set positions
-pos_ege_lit = np.arange(len(ege_data))
+pos_ege_lit = np.arange(len(df_enhanced_literature))
 pos_ege_s = np.hstack([pos_ege_lit + dist, pos_ege_lit + dist])
 pos_ege_ticks = pos_ege_lit + dist / 2
 pos_ege_ref = pos_ege_lit[-1] + 2
@@ -261,7 +238,7 @@ ege_ax.boxplot(
     medianprops={"color": "black"},
 )
 sb.scatterplot(
-    data=ege_data,
+    data=df_enhanced_literature,
     y="carbon footprint",
     x=pos_ege_lit,
     style="type",
@@ -340,11 +317,11 @@ cge_s_df_2 = cge_s_df.rename(columns={"10%": "all thresholds"})
 cge_s_df_2 = cge_s_df_2.melt(
     id_vars="study", var_name="simplified model", value_name="carbon footprint"
 )
-cge_lit = cge_data
+cge_lit = df_conventional_literature
 cge_lit["type"] = "literature"
 
 # Set positions
-pos_cge_lit = np.arange(len(cge_data))
+pos_cge_lit = np.arange(len(df_conventional_literature))
 pos_cge_s = pos_cge_lit + dist
 pos_cge_ticks = pos_cge_lit + dist / 2
 pos_cge_ref = pos_cge_lit[-1] + 2
@@ -364,7 +341,7 @@ for cge_ax in [cge_ax_up, cge_ax_low]:
         medianprops={"color": "black"},
     )
     sb.scatterplot(
-        data=cge_data,
+        data=df_conventional_literature,
         y="carbon footprint",
         x=pos_cge_lit,
         style="type",
@@ -411,11 +388,11 @@ ege_s_df_2 = ege_s_df.rename(columns={"10%": "10,15,20%"})
 ege_s_df_2 = ege_s_df_2.melt(
     id_vars="study", var_name="simplified model", value_name="carbon footprint"
 )
-ege_lit = ege_data
+ege_lit = df_enhanced_literature
 ege_lit["type"] = "literature"
 
 # Set positions
-pos_ege_lit = np.arange(len(ege_data))
+pos_ege_lit = np.arange(len(df_enhanced_literature))
 pos_ege_s = np.hstack([pos_ege_lit + dist, pos_ege_lit + dist])
 pos_ege_ticks = pos_ege_lit + dist / 2
 pos_ege_ref = pos_ege_lit[-1] + 2
@@ -435,7 +412,7 @@ for ege_ax in [ege_ax_up, ege_ax_low]:
         medianprops={"color": "black"},
     )
     sb.scatterplot(
-        data=ege_data,
+        data=df_enhanced_literature,
         y="carbon footprint",
         x=pos_ege_lit,
         style="type",
