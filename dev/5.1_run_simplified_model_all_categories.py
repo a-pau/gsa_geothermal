@@ -1,6 +1,6 @@
 # %% SETUP
 
-import brightway2 as bw
+import bw2data as bd
 import pandas as pd
 import warnings
 from pathlib import Path
@@ -13,7 +13,7 @@ from gsa_geothermal.simplified_models import ConventionalSimplifiedModel, Enhanc
 
 if __name__ == '__main__':
     # Set project
-    bw.projects.set_current("Geothermal")
+    bd.projects.set_current("Geothermal")
 
     # Find demand
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()

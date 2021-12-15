@@ -1,5 +1,5 @@
-#%% Set-up
-import brightway2 as bw
+# %% Set-up
+import bw2data as bd
 import pandas as pd
 import os
 import seaborn as sb
@@ -17,7 +17,7 @@ from gsa_geothermal.data import (
 )
 
 # Set project
-bw.projects.set_current("Geothermal")
+bd.projects.set_current("Geothermal")
 
 # Method
 method = get_EF_methods(select_climate_change_only=True)
