@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
         # Save
         ege_s_df = pd.DataFrame.from_dict(ege_s)
-        filename_ege_s = "enhanced.simplified_vs_general.N().threshold{}.json".format(iterations, t)
+        filename_ege_s = "enhanced.simplified.N().threshold{}.json".format(iterations, t)
         filepath_ege_s = write_dir_validation / filename_ege_s
         print("Saving {}".format(filepath_ege_s))
         ege_s_df.to_json(filepath_ege_s, double_precision=15)

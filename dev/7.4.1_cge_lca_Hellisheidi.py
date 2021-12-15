@@ -41,7 +41,7 @@ parameters_sta=model.run_with_presamples(parameters)
 static_filepath = create_presamples(parameters_sta)
 
 #%% Do LCA
-lca = bw.LCA({electricity_prod: 1}, presamples=[static_filepath])
+lca = bw.LCA({electricity_prod: 1}, presamples=[static_filepath])  # TODO Sasha
 lca.lci()
 sta_results={}
 for method in ILCD:
