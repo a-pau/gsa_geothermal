@@ -6,7 +6,7 @@ import warnings
 from pathlib import Path
 
 # Local files
-from gsa_geothermal.utils import lookup_geothermal, get_EF_methods
+from gsa_geothermal.utils import lookup_geothermal, get_EF_methods, methods_ilcd_to_ef_dict
 from gsa_geothermal.global_sensitivity_analysis import run_monte_carlo
 from gsa_geothermal.parameters import get_parameters
 from gsa_geothermal.general_models import GeothermalConventionalModel, GeothermalEnhancedModel
@@ -22,30 +22,37 @@ if __name__ == '__main__':
     methods = get_EF_methods()
 
     # Number of iterations # TODO to be recalculated 
-    iterations = 10
+    iterations = 10000
 
-    # Seed for stochastic parameters #TODO this needs to be moved e.g. in utils
+    # Seed for stochastic parameters #TODO this needs to be moved e.g. in utils, and should be part of filename
     seed = 13413203
 
-    #save data
-    write_dir_validation = Path("write_files") / "validation"
-    write_dir_validation.mkdir(parents=True, exist_ok=True)
+    # Options
+    option = "enhanced"
+    exploration = True
+    success_rate = True
+
+    # Save data
+    write_dir = Path("../dev/write_files") / "validation"
+    write_dir.mkdir(parents=True, exist_ok=True)
+    filename = "{}.general.all_categories.N{}.json".format(option, iterations)
+    filepath = write_dir / filename
 
     # To ignore warnings from MC (Sparse Efficiency Warning)
     warnings.filterwarnings("ignore")
 
     # Get parameters
-    cge_parameters = get_parameters("conventional")
-    ege_parameters = get_parameters("enhanced")
+    parameters = get_parameters(option)
 
-    # %% CONVENTIONAL model calculations
+    # %% CONVENTIONAL model calculation
 
     # Generate stochastic values
-    cge_parameters.stochastic(iterations=iterations, seed=seed)
+
+    parameters.stochastic(iterations=iterations, seed=seed)
 
     # Compute
-    cge_model = GeothermalConventionalModel(cge_parameters)
-    cge_parameters_sto = cge_model.run_with_presamples(cge_parameters)
+    cge_model = GeothermalConventionalModel(parameters)
+    cge_parameters_sto = cge_model.run_with_presamples(parameters)
     cge_ref = run_monte_carlo(cge_parameters_sto, {electricity_conv_prod: 1}, methods, iterations)
 
     # Save

@@ -21,14 +21,16 @@ if __name__ == '__main__':
     method = get_EF_methods(select_climate_change_only=True)
 
     # Number of iterations
-    iterations = 1000
+    iterations = 10000
+    seed = 13413203
 
     # Save data
     write_dir = Path("write_files") / "validation"
-    write_dir.mkdir(parents=True, exist_ok=True)
-    filename_conventional_scores = "{}.general.climate_change.N{}.json".format("conventional", iterations)
+    write_dir_figures = write_dir / "figures"
+    write_dir_figures.mkdir(parents=True, exist_ok=True)
+    filename_conventional_scores = "{}.general.climate_change.N{}.seed{}.json".format("conventional", iterations, seed)
     filepath_conventional_scores = write_dir / filename_conventional_scores
-    filename_enhanced_scores = "{}.general.climate_change.N{}.json".format("enhanced", iterations)
+    filename_enhanced_scores = "{}.general.climate_change.N{}.seed{}.json".format("enhanced", iterations, seed)
     filepath_enhanced_scores = write_dir / filename_enhanced_scores
 
     # Carbon footprints from literature
@@ -167,7 +169,7 @@ if __name__ == '__main__':
     # %% Save plots
 
     fig.savefig(
-        write_dir / "{}.tiff".format(filepath_conventional_scores.stem.replace("conventional.", "")),
+        write_dir_figures / "{}.tiff".format(filepath_conventional_scores.stem.replace("conventional.", "")),
         dpi=300
     )
 
@@ -225,12 +227,12 @@ if __name__ == '__main__':
 
     # %% Save Violin
     f3.savefig(
-        write_dir / "{}.violin.png".format(filepath_conventional_scores.stem),
+        write_dir_figures / "{}.violin.png".format(filepath_conventional_scores.stem),
         dpi=600,
         format="png",
     )
     f4.savefig(
-        write_dir / "{}.violin.png".format(filepath_enhanced_scores.stem),
+        write_dir_figures / "{}.violin.png".format(filepath_enhanced_scores.stem),
         dpi=600,
         format="png",
     )
