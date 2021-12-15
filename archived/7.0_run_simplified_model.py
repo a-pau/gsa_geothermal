@@ -29,31 +29,27 @@ if __name__ == '__main__':
     # Seed for stochastic parameters
     seed = 13413203
 
-    write_dir_validation = Path("write_files") / "validation"
-    write_dir_conventional = Path("write_files") / "conventional.N{}".format(iterations)
-    write_dir_enhanced = Path("write_files") / "enhanced.N{}".format(iterations)
+    option = "conventional"
 
-    # # Folder and file name for saving
-    # ecoinvent_version = "ecoinvent_3.6"
-    # absolute_path = os.path.abspath(path)
-    # folder_OUT = os.path.join(absolute_path, "generated_files", ecoinvent_version, "validation")
-    # file_name = "ReferenceVsSimplified_N" + str(n_iter)
+    write_dir_validation = Path("../dev/write_files") / "validation"
+    write_dir_scores = Path("../dev/write_files") / "{}.N{}".format(option, iterations) / "scores"
 
     # To ignore warnings from MC (Sparse Efficiency Warning)
     warnings.filterwarnings("ignore")
 
     # Get parameters
-    cge_parameters = get_parameters("conventional")
-    ege_parameters = get_parameters("enhanced")
+    parameters = get_parameters(option)
 
     # %% CONVENTIONAL model calculations - REFERENCE TODO this has already been computed
 
     # Generate stochastic values
-    cge_parameters.stochastic(iterations=iterations, seed=seed)
+    parameters.stochastic(iterations=iterations, seed=seed)
+
+
 
     # Compute
-    cge_model = GeothermalConventionalModel(cge_parameters)
-    cge_parameters_sto = cge_model.run_with_presamples(cge_parameters)
+    cge_model = GeothermalConventionalModel(parameters)
+    cge_parameters_sto = cge_model.run_with_presamples(parameters)
     cge_ref = run_monte_carlo(cge_parameters_sto, {electricity_conv_prod: 1}, ILCD, iterations)
 
     # Save
@@ -85,7 +81,7 @@ if __name__ == '__main__':
 
     threshold = [0.2, 0.15, 0.1, 0.05]
 
-    cge_parameters.stochastic(iterations=iterations, seed=seed)
+    parameters.stochastic(iterations=iterations, seed=seed)
 
     for t in threshold:
 
@@ -97,7 +93,7 @@ if __name__ == '__main__':
         )
 
         # Compute
-        cge_s = cge_model_s.run(cge_parameters)
+        cge_s = cge_model_s.run(parameters)
 
         # Save
         cge_s_df = pd.DataFrame.from_dict(cge_s)

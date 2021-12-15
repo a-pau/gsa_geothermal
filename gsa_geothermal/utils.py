@@ -8,6 +8,26 @@ import stats_arrays as sa
 import warnings
 
 
+methods_ilcd_to_ef_dict = {
+    'climate change total': "climate change no LT",
+    'carcinogenic effects': 'human toxicity: carcinogenic no LT',
+    'ionising radiation': 'ionising radiation: human health no LT',
+    'non-carcinogenic effects': 'human toxicity: non-carcinogenic no LT',
+    'ozone layer depletion': 'ozone depletion no LT',
+    'photochemical ozone creation': 'photochemical ozone formation: human health no LT',
+    'respiratory effects, inorganics': 'particulate matter formation no LT',
+    'freshwater and terrestrial acidification': 'acidification no LT',
+    'freshwater ecotoxicity': 'ecotoxicity: freshwater no LT',
+    'freshwater eutrophication': 'eutrophication: freshwater no LT',
+    'marine eutrophication': 'eutrophication: marine no LT',
+    'terrestrial eutrophication': 'eutrophication: terrestrial no LT',
+    'dissipated water': 'water use no LT',
+    'fossils': 'energy resources: non-renewable no LT',
+    'land use': 'land use no LT',
+    'minerals and metals': 'material resources: metals/minerals no LT',
+}
+
+
 def lookup_geothermal(ecoinvent_version="ecoinvent 3.6 cutoff"):
 
     db_geothe = bd.Database("geothermal energy")
