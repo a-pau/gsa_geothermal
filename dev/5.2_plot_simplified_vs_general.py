@@ -27,10 +27,7 @@ if __name__ == "__main__":
     # Load data
     write_dir_validation = Path("write_files") / "validation"
     filename_conventional_general = "{}.{}.all_categories.N{}.seed{}.json".format(
-        "conventional",
-        "general",
-        iterations,
-        seed,
+        "conventional", "general", iterations, seed,
     )
     filename_enhanced_general = "{}.{}.all_categories.N{}.seed{}.json".format(
         "enhanced", "general", iterations, seed
