@@ -241,6 +241,9 @@ if __name__ == "__main__":
     print("Saving {}".format(filepath_ege_plot))
     ege_parityplot_col.savefig(filepath_ege_plot, dpi=300)
 
+
+
+
     # %% OTHER PLOTS NOT USED IN PAPER
 
     # BOX PLOT
