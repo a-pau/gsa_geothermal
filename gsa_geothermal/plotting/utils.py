@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import matplotlib.lines as mlines
 
 # Rename parameters to be consistent with names in the paper
 parameters_dict = {
@@ -183,3 +184,20 @@ def set_axlims(series, marginfactor):
     minlim = minv - border
 
     return minlim, maxlim
+
+
+def make_handle(n, t, palette):
+    
+    # n is the number of circles, which corresponds to generic models
+    # t is the total number of points
+    
+    handles_new=[]
+    for x in range(0,t):
+        if x < n:
+            marker='o'
+        else:
+            marker='^'
+        
+        handles_new.append(mlines.Line2D([], [], color=palette[x], marker=marker, linestyle='None', markersize=10))
+        
+    return handles_new
