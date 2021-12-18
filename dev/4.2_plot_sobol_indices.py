@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # Load data and setup everything
     path_base = Path("write_files") / "{}.N{}".format(option, iterations)
 
-    first_df = pd.read_excel(path_base / "sobol_first.xlsx", )
+    first_df = pd.read_excel(path_base / "sobol_first.xlsx")
     total_df = pd.read_excel(path_base / "sobol_total.xlsx")
 
     fig = make_subplots(
@@ -86,5 +86,5 @@ if __name__ == "__main__":
     # Save image
     path_figures = path_base / "figures"
     path_figures.mkdir(parents=True, exist_ok=True)
-    filepath = path_figures / "{}.pdf".format(first_or_total)
+    filepath = path_figures / "sobol_indices.pdf"
     fig.write_image(filepath)
