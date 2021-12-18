@@ -141,7 +141,7 @@ for counter, method_ in enumerate(methods):
     cge_ax[j][i].set_xlabel("")
     cge_ax[j][i].set_ylabel(methods_units[counter])
     cge_ax[j][i].set_xticks([], [])
-    cge_ax[j][i].set_title(textwrap.fill(method_[2], 15) + "\n")
+    cge_ax[j][i].set_title(textwrap.fill(method_[1][:-6], 15) + "\n")
     cge_ax[j][i].ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
     cge_ax[j][i].set_xlim(0.5, 1.5)
 
@@ -229,7 +229,7 @@ for exploration in [True, False]:
         ege_ax[j][i].set_xlabel("")
         ege_ax[j][i].set_ylabel(methods_units[counter])
         ege_ax[j][i].set_xticks([], [])
-        ege_ax[j][i].set_title(textwrap.fill(method_[2], 15) + "\n")
+        ege_ax[j][i].set_title(textwrap.fill(method_[1][:-6], 15) + "\n")
         ege_ax[j][i].ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
         ege_ax[j][i].set_xlim(0.5, 1.5)
     
