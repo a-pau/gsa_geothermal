@@ -36,7 +36,6 @@ if __name__ == '__main__':
     ).reset_index(
         drop=True
     )
-    # df_conventional_literature = df_conventional_literature.iloc[[4,5,6,7]]
     df_conventional_literature = df_conventional_literature[df_conventional_literature.columns[[0,3,4]]]
     df_conventional_literature.columns = ["study", "co2_emissions", "ch4_emissions"]
     df_conventional_literature["co2_emissions"] = df_conventional_literature["co2_emissions"] / 1000
