@@ -84,7 +84,7 @@ sb.set_context(
 sb_pal = sb.color_palette()
 
 # Save data
-write_dir_plots = Path("write_plots")
+write_dir_figures = Path("write_files") / "validation" / "figures"
 
 #%% Conventional plot
 
@@ -165,9 +165,9 @@ cge_plot.tight_layout(rect=[0, 0.05, 1, 0.95])
 filename_plot_hellisheidi = (
     "simplified_vs_general.hellisheidi.N{}.tiff".format(iterations)
 )
-filepath_plot = write_dir_plots / filename_plot_hellisheidi
-print("Saving {}".format(filepath_plot))
-cge_plot.savefig((filepath_plot), dpi=300)
+filepath_plot_hellisheidi = write_dir_figures / filename_plot_hellisheidi
+print("Saving {}".format(filepath_plot_hellisheidi))
+cge_plot.savefig(filepath_plot_hellisheidi, dpi=300)
 
 
 #%% Enhanced plot
@@ -255,10 +255,10 @@ for exploration in [True, False]:
     ege_plot.set_size_inches([14, 8])
     ege_plot.tight_layout(rect=[0, 0.05, 1, 0.95])
 
-# save plot
-filename_plot_uddgp = (
-    "simplified_vs_general.uddgp.exploration_{}.N{}.tiff".format(exploration, iterations)
-)
-filepath_plot = write_dir_plots / filename_plot_hellisheidi
-print("Saving {}".format(filepath_plot))
-cge_plot.savefig((filepath_plot), dpi=300)
+    # save plot
+    filename_plot_uddgp = (
+        "simplified_vs_general.uddgp.exploration_{}.N{}.tiff".format(exploration, iterations)
+    )
+    filepath_plot_uddgp = write_dir_figures / filename_plot_uddgp
+    print("Saving {}".format(filepath_plot_uddgp))
+    ege_plot.savefig(filepath_plot_uddgp, dpi=300)

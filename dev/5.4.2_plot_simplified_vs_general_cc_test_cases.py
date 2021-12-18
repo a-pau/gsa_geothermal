@@ -78,7 +78,7 @@ cge_s_df_ch4_false = pd.read_json(filepath_conventional_simplified_ch4_false)
 ege_s_df = pd.read_json(filepath_enhanced_simplified)
 
 # save data
-write_dir = Path("write_plots")
+write_dir = Path("write_files") / "validation" / "figures"
 
 #%% Plot - with CH4=True
 
@@ -251,7 +251,7 @@ fig.tight_layout()
 
 # save plot
 filename_plot = (
-    "simplified_vs_general.cc_test_cases.N{}.tiff".format(iterations)
+    "simplified_vs_general.cc_test_cases.N{}.seed{}.tiff".format(iterations, seed)
 )
 filepath_plot = write_dir / filename_plot
 print("Saving {}".format(filepath_plot))
@@ -333,7 +333,7 @@ fig.tight_layout()
 
 # save plot
 filename_plot_ch4_false = (
-    "simplified_vs_general.cc_test_cases.conventiona_ch4_false.N{}.tiff".format(iterations)
+    "simplified_vs_general.cc_test_cases.conventiona_ch4_false.N{}.seed{}.tiff".format(iterations, seed)
 )
 filepath_plot_ch4_false = write_dir / filename_plot_ch4_false
 print("Saving {}".format(filepath_plot))

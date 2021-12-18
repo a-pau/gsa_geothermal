@@ -56,8 +56,6 @@ if __name__ == '__main__':
 
 #%% CONVENTIONAL model calculations
 
-# TODO Need to recalculate conventional with and without ch4 option
-
 # Only this threshold is needed for conventional and climate change category
 threshold_cge = [0.1]
 
