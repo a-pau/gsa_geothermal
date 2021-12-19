@@ -3,7 +3,6 @@ import brightway2 as bw
 import seaborn as sb
 import matplotlib.pyplot as plt
 import pandas as pd
-import os
 import numpy as np
 from scipy.stats import spearmanr, pearsonr
 from matplotlib import ticker
@@ -21,16 +20,14 @@ if __name__ == '__main__':
     
     # Options
     iterations = 10000
+    seed = 13413203
     thresholds = [0.2, 0.15, 0.1, 0.05]
-    
-    # TODO to be changed
-    iterations = 10
     
     # Load data
     write_dir_validation = Path("write_files") / "validation"
     
-    filename_conventional_general = "{}.{}.all_categories.N{}.json".format("conventional", "general", iterations)
-    filename_enhanced_general = "{}.{}.all_categories.N{}.json".format("enhanced", "general", iterations)
+    filename_conventional_general = "{}.{}.all_categories.N{}.seed{}.json".format("conventional", "general", iterations, seed)
+    filename_enhanced_general = "{}.{}.all_categories.N{}.seed{}.json".format("enhanced", "general", iterations,seed)
     filepath_conventional_general = write_dir_validation / filename_conventional_general
     filepath_enhanced_general = write_dir_validation / filename_enhanced_general
     cge_gen_df = pd.read_json(filepath_conventional_general).melt(var_name="method", value_name="general")
@@ -39,8 +36,8 @@ if __name__ == '__main__':
     cge_s_df = {}
     ege_s_df = {}
     for t in thresholds:
-        filename_conventional_simplified = "{}.{}.all_categories.N{}.threshold{}.json".format("conventional", "simplified", iterations, t)
-        filename_enhanced_simplified = "{}.{}.all_categories.N{}.threshold{}.json".format("enhanced", "simplified", iterations, t)
+        filename_conventional_simplified = "{}.{}.t{:02d}.all_categories.N{}.seed{}.json".format("conventional", "simplified", int(t*100), iterations, seed)
+        filename_enhanced_simplified = "{}.{}.t{:02d}.all_categories.N{}.seed{}.json".format("enhanced", "simplified", int(t*100), iterations, seed)
         filepath_conventional_simplified = write_dir_validation / filename_conventional_simplified
         filepath_enhanced_simplified = write_dir_validation/ filename_enhanced_simplified
         cge_s_df[t] = pd.read_json(filepath_conventional_simplified).melt(var_name="method", value_name="simplified_" + str(t))
@@ -53,8 +50,13 @@ if __name__ == '__main__':
         ege_df = pd.concat([ege_df, ege_s_df[t]["simplified_" + str(t)]], axis=1)           
         
     # save data
-    write_dir = Path("write_plots")
-    write_dir.mkdir(parents=True, exist_ok=True)
+    write_dir_figures = write_dir_validation / "figures"
+    write_dir_figures.mkdir(parents=True, exist_ok=True)
+    
+    # Fix methods names for plots
+    methods_plots = []
+    for m_ in methods:
+        methods_plots.append(m_[1][:-6])
 
 #%% CALCULATE PEARSON AND SPEARMAN CORRELATION COEFFICIENTS
 
@@ -101,10 +103,13 @@ cge_pearson_df_m = cge_pearson_df.reset_index().rename(columns={"index": "method
 cge_pearson_df_m = cge_pearson_df_m.melt(
     id_vars="method", var_name="threshold", value_name="pearson"
 )
+cge_pearson_df_m["method"] = cge_pearson_df_m["method"].str.replace(' no LT', '')
+
 ege_pearson_df_m = ege_pearson_df.reset_index().rename(columns={"index": "method"})
 ege_pearson_df_m = ege_pearson_df_m.melt(
     id_vars="method", var_name="threshold", value_name="pearson"
 )
+ege_pearson_df_m["method"] = ege_pearson_df_m["method"].str.replace(' no LT', '')
 
 # Set seaborn style
 sb.set_style("darkgrid")
@@ -170,8 +175,8 @@ fig_pears.set_size_inches([11, 5])
 fig_pears.tight_layout(rect=[0, 0.1, 1, 1])
 
 # save plot
-filename_pears_plot = "pearson_plot.simplified_vs_general.N{}.tiff".format(iterations)
-filepath_pears_plot = write_dir /  filename_pears_plot
+filename_pears_plot = "pearson_plot.simplified_vs_general.N{}.seed{}.tiff".format(iterations, seed)
+filepath_pears_plot = write_dir_figures /  filename_pears_plot
 print("Saving {}".format(filepath_pears_plot))
 fig_pears.savefig(filepath_pears_plot, dpi=300)
 
@@ -182,10 +187,13 @@ cge_spearman_df_m = cge_spearman_df.reset_index().rename(columns={"index": "meth
 cge_spearman_df_m = cge_spearman_df_m.melt(
     id_vars="method", var_name="threshold", value_name="spearman"
 )
+cge_spearman_df_m["method"] = cge_spearman_df_m["method"].str.replace(' no LT', '')
+
 ege_spearman_df_m = ege_spearman_df.reset_index().rename(columns={"index": "method"})
 ege_spearman_df_m = ege_spearman_df_m.melt(
     id_vars="method", var_name="threshold", value_name="spearman"
 )
+ege_spearman_df_m["method"] = ege_spearman_df_m["method"].str.replace(' no LT', '')
 
 # Set seaborn style
 sb.set_style("darkgrid")
@@ -246,8 +254,8 @@ fig_spear.set_size_inches([11, 5])
 fig_spear.tight_layout(rect=[0, 0.1, 1, 1])
 
 # Save plot
-filename_spear_plot = "spearman_plot.simplified_vs_general.N{}.tiff".format(iterations)
-filepath_spear_plot = write_dir /  filename_spear_plot
+filename_spear_plot = "spearman_plot.simplified_vs_general.N{}.seed{}.tiff".format(iterations, seed)
+filepath_spear_plot = write_dir_figures /  filename_spear_plot
 print("Saving {}".format(filepath_spear_plot))
 fig_pears.savefig(filepath_spear_plot, dpi=300)
 
@@ -287,6 +295,8 @@ ege_pearson_all_df_m = ege_pearson_all_df.reset_index().rename(
 ege_pearson_all_df_m = ege_pearson_all_df_m.melt(
     id_vars="method", var_name="threshold", value_name="pearson"
 )
+ege_pearson_all_df_m["method"] = ege_pearson_df_m["method"].str.replace(' no LT', '')
+ege_spearman_all_df_m["method"] = ege_spearman_df_m["method"].str.replace(' no LT', '')
 
 
 sb.set_style("darkgrid")
@@ -341,7 +351,7 @@ fig_enh.set_size_inches([11, 5])
 fig_enh.tight_layout(rect=[0, 0.1, 1, 0.95])
 
 # Save plot
-filename_enh_plot = "enhanced_pearson_spearman_plot.simplified_vs_general.N{}.tiff".format(iterations)
-filepath_enh_plot = write_dir /  filename_enh_plot
+filename_enh_plot = "enhanced_pearson_spearman_plot.simplified_vs_general.N{}.seed{}.tiff".format(iterations, seed)
+filepath_enh_plot = write_dir_figures /  filename_enh_plot
 print("Saving {}".format(filepath_enh_plot))
 fig_enh.savefig(filepath_enh_plot, dpi=300)

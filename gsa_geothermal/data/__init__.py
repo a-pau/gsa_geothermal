@@ -25,6 +25,6 @@ def get_df_carbon_footprints_from_literature_enhanced():
         sheet_name="Enhanced",
         index_col=None,
         skiprows=1,
-        nrows=13,
+        nrows=15,
         )
     return df
