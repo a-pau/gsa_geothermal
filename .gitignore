@@ -112,6 +112,7 @@ archived/output_data
 gsa_geothermal/data/Geothermal_power_processes_brightway.xlsx
 gsa_geothermal/data/carbon_footprints_from_literature.xlsx
 dev/write_files
+dev/write_plots
 
 
 # IDE PyCharm 

@@ -5,15 +5,15 @@ import numpy as np
 from pathlib import Path
 
 if __name__ == '__main__':
-    option = 'enhanced'
     iterations = 500  # number of Monte Carlo iterations per model input
     write_dir = Path("write_files")
-    option_dir_conventional = "{}.N{}".format(option, iterations)
+    write_plots = Path('write_plots')
+    option_dir_conventional = "{}.N{}".format("conventional", iterations)
     write_dir_option_conventional = write_dir / option_dir_conventional
-    option_dir_enhanced = "{}.N{}".format(option, iterations)
+    option_dir_enhanced = "{}.N{}".format("enhanced", iterations)
     write_dir_option_enhanced = write_dir / option_dir_enhanced
 
-    col = range(1, 18)
+    col = range(0, 18)
 
     cge_F = pd.read_excel(write_dir_option_conventional / "sobol_first.xlsx", usecols=col)
     cge_T = pd.read_excel(write_dir_option_conventional / "sobol_total.xlsx", usecols=col)
@@ -26,16 +26,16 @@ if __name__ == '__main__':
     # Seaborn style
     sb.set_style("darkgrid")
 
-    #%% First order
+    # %% First order
     def find_least_number(df, threshold):
         params = []
         counter = 0
-        for col in df.columns[1:]:
-            ser = df[["parameters", col]].sort_values(ascending=False, by=col)
+        for col_ in df.columns[1:]:
+            ser = df[["parameters", col_]].sort_values(ascending=False, by=col_)
             sum_ = 0
             i = 0
             while sum_ <= threshold:
-                sum_ += ser[col].iloc[i]
+                sum_ += ser[col_].iloc[i]
                 if not ser["parameters"].iloc[i] in params:
                     params.append(ser["parameters"].iloc[i])
                     counter += 1
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     first_n = pd.concat([cge_F_n, ege_F_n], axis=1)
     first_n.columns = ["Conventional", "Enhanced"]
 
-    #%%Total order
+    # %%Total order
     def find_least_number_for_total(df, threshold):
         df_2 = df[df.columns[1:]]
         df_2 = df_2[df_2 < threshold].dropna()
@@ -78,12 +78,12 @@ if __name__ == '__main__':
     total_n = pd.concat([cge_T_n, ege_T_n], axis=1)
     total_n.columns = ["Conventional", "Enhanced"]
 
-    #%% Subplots
+    # %% Subplots
 
     f1, (ax_first, ax_total) = plt.subplots(nrows=1, ncols=2)
     sb.set_style("darkgrid")
 
-    #%% First order - Manual lollipop categorical chart with matplotlib
+    # %% First order - Manual lollipop categorical chart with matplotlib
     # set width of bars
     barWidth = 0.02
 
@@ -131,8 +131,7 @@ if __name__ == '__main__':
     # grid
     ax_first.grid(b=None, which="major", axis="x")
 
-
-    #%% Total order - Manual lollipop categorical chart with matplotlib
+    # %% Total order - Manual lollipop categorical chart with matplotlib
 
     sb.set_style("darkgrid")
 
@@ -183,8 +182,7 @@ if __name__ == '__main__':
     # grid
     ax_total.grid(b=None, which="major", axis="x")
 
-
-    #%% Layout combined
+    # %% Layout combined
 
     handles, labels = ax_total.get_legend_handles_labels()
     f1.legend(
@@ -199,11 +197,11 @@ if __name__ == '__main__':
     f1.set_size_inches([8, 4.5])
     f1.tight_layout(rect=[0, 0, 1, 0.95])
 
-    #%% Save
-    filepath = write_dir / "paper1_figures" / "lollipop chart - combined.tiff"
+    # %% Save
+    filepath = write_plots / "lollipop chart - combined.tiff"
     f1.savefig(filepath, dpi=300)
 
-    #%% THis is to find parameters for simplified models
+    # %% THis is to find parameters for simplified models
 
     def find_params(df, threshold):
         df_2 = df[df.columns[1:]]
