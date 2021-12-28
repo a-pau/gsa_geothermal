@@ -1,7 +1,6 @@
 #%% Set-up
 import bw2data as bd
 import pandas as pd
-import os
 import seaborn as sb
 import matplotlib.pyplot as plt
 import numpy as np

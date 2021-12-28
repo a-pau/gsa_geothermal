@@ -1,7 +1,6 @@
 # %% Set-up
 import bw2data as bd
 import pandas as pd
-import seaborn as sb
 from pathlib import Path
 
 # Import local
