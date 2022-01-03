@@ -54,6 +54,17 @@ df_enhanced_literature = get_df_carbon_footprints_from_literature_enhanced()
 df_conventional_literature = df_conventional_literature.dropna(subset=["Operational CO2 emissions (g/kWh)"]).reset_index(
     drop=True
 )
+df_enhanced_literature = df_enhanced_literature.dropna(
+    subset=[
+        'Diesel consumption (GJ/m)',
+        'Installed capacity (MW)',
+        'Depth of wells (m)',
+        'Success rate (%)'
+    ]
+).reset_index(
+    drop=True
+)
+     
 # df_conventional_literature = df_conventional_literature.iloc[[4,5,6,7]]
 df_conventional_literature = df_conventional_literature[df_conventional_literature.columns[[0, 2]]]
 df_conventional_literature.columns = ["study", "carbon footprint"]

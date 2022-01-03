@@ -35,6 +35,17 @@ if __name__ == '__main__':
     ).reset_index(
         drop=True
     )
+    df_enhanced_literature = df_enhanced_literature.dropna(
+        subset=[
+            'Diesel consumption (GJ/m)',
+            'Installed capacity (MW)',
+            'Depth of wells (m)',
+            'Success rate (%)'
+        ]
+    ).reset_index(
+        drop=True
+    )
+        
     df_conventional_literature = df_conventional_literature[df_conventional_literature.columns[[0,3,4]]]
     df_conventional_literature.columns = ["study", "co2_emissions", "ch4_emissions"]
     df_conventional_literature["co2_emissions"] = df_conventional_literature["co2_emissions"] / 1000
@@ -50,6 +61,7 @@ if __name__ == '__main__':
         "average_depth_of_wells",
         "success_rate_primary_wells",
     ]
+    
     df_enhanced_literature["specific_diesel_consumption"] = df_enhanced_literature["specific_diesel_consumption"] * 1000
     df_enhanced_literature = df_enhanced_literature.sort_values(by="study")
 
