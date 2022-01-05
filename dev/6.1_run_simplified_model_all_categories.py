@@ -42,12 +42,12 @@ if __name__ == '__main__':
     parameters = get_parameters(option)
     parameters.stochastic(iterations=iterations, seed=seed)
 
-    if "conventional" in option:
-        ModelClass = ConventionalSimplifiedModel
-        # demand = {electricity_conv_prod: 1}
-    elif "enhanced" in option:
-        ModelClass = EnhancedSimplifiedModel
-        # demand = {electricity_enh_prod: 1}
+    # if "conventional" in option:
+    #     ModelClass = ConventionalSimplifiedModel
+    #     # demand = {electricity_conv_prod: 1}
+    # elif "enhanced" in option:
+    #     ModelClass = EnhancedSimplifiedModel
+    #     # demand = {electricity_enh_prod: 1}
 
     # %% Model calculations
 
@@ -60,7 +60,10 @@ if __name__ == '__main__':
         if filepath.exists():
             print("{} already exists".format(filename))
         else:
-            model = ModelClass(setup_geothermal_gsa, path_scores, threshold)
+            if "conventional" in option:
+                model = ConventionalSimplifiedModel(setup_geothermal_gsa, path_scores, threshold, ch4=True)
+            elif "enhanced" in option:
+                model = EnhancedSimplifiedModel(setup_geothermal_gsa, path_scores, threshold)
             # Compute
             simplified_scores = model.run(parameters)
             # Save

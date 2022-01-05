@@ -9,7 +9,7 @@ from .base import GeothermalSimplifiedModel
 
 class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
     """Conventional simplified model CHILD class"""
-    def __init__(self, setup_geothermal_gsa, path, threshold, exploration=True):
+    def __init__(self, setup_geothermal_gsa, path, threshold, exploration=True, ch4=True):
         super(ConventionalSimplifiedModel, self).__init__(
             setup_geothermal_gsa=setup_geothermal_gsa,
             path=path,
@@ -24,8 +24,8 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         parameters.static()
         self.par_subs_dict = self.get_par_dict(parameters)
         self.complete_par_dict(parameters)
-        self.ch4_CF = self.get_ch4_cf()
-        self.simplified_model_dict = self.get_simplified_model()
+        self.ch4 = ch4
+        self.simplified_model_dict = self.get_simplified_model(self.ch4)
 
     @staticmethod
     def get_ch4_cf():
@@ -63,7 +63,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
             )
         )
 
-    def get_simplified_model(self):
+    def get_simplified_model(self, ch4=True):
         """
         Compute constants (alpha, beta) and an expression for the simplified model
         :return:
@@ -80,22 +80,33 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
                 E_co2 = symbols("E_co2")
                 impact_copy = deepcopy(self.impact.subs(par_dict_copy))
                 alpha1 = collect(impact_copy, E_co2, evaluate=False)[E_co2]
-                alpha2 = collect(impact_copy, E_co2, evaluate=False)[1]
+                if ch4:
+                    alpha2_val = self.get_ch4_cf()
+                else:
+                    alpha2_val = 0
+                alpha3 = collect(impact_copy, E_co2, evaluate=False)[1]
                 for method in group["methods"]:
                     is_dict = dict(self.i_coeff_matrix.T[method])
                     alpha1_val = alpha1.subs(is_dict)
-                    alpha2_val = alpha2.subs(is_dict)
+                    alpha3_val = alpha3.subs(is_dict)
+                    # simplified_model_dict[method] = {
+                    #     "s_const": {1: alpha1_val, 2: alpha2_val},
+                    #     "s_model": lambda alpha, parameters: parameters["co2_emissions"]
+                    #     * alpha[1]
+                    #     + alpha[2],
+                    #     "s_model_ch4": lambda alpha, parameters: parameters[
+                    #         "co2_emissions"
+                    #     ]
+                    #     * alpha[1]
+                    #     + alpha[2]
+                    #     + self.ch4_CF * parameters["ch4_emissions"],
+                    # }
                     simplified_model_dict[method] = {
-                        "s_const": {1: alpha1_val, 2: alpha2_val},
-                        "s_model": lambda alpha, parameters: parameters["co2_emissions"]
-                        * alpha[1]
-                        + alpha[2],
-                        "s_model_ch4": lambda alpha, parameters: parameters[
-                            "co2_emissions"
-                        ]
-                        * alpha[1]
-                        + alpha[2]
-                        + self.ch4_CF * parameters["ch4_emissions"],
+                        "s_const": {1: alpha1_val, 2: alpha2_val, 3: alpha3_val},
+                        "s_model": lambda alpha, parameters:
+                        alpha[1] * parameters["co2_emissions"]
+                        + alpha[2] * parameters.get("ch4_emissions", 0)
+                        + alpha[3],
                     }
 
             # Betas, 20/15%
@@ -217,8 +228,8 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
 
         return simplified_model_dict
 
-    def run(self, parameters, lcia_methods=None, ch4=False):
-        return super().run(parameters, self.simplified_model_dict, lcia_methods, ch4)
+    def run(self, parameters, lcia_methods=None):
+        return super().run(parameters, self.simplified_model_dict, lcia_methods, self.ch4)
 
     def get_coeff(self, lcia_methods=None):
         return super().get_coeff(self.simplified_model_dict, lcia_methods)

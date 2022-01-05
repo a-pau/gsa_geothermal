@@ -313,7 +313,7 @@ class GeothermalSimplifiedModel:
 
         return par_dict
 
-    def run(self, parameters_sto, simplified_model_dict, lcia_methods=None, ch4=False):
+    def run(self, parameters_sto, simplified_model_dict, lcia_methods=None):
         """Run simplified model."""
         if lcia_methods is None:
             lcia_methods = self.methods
@@ -321,11 +321,11 @@ class GeothermalSimplifiedModel:
         results = dict()
         for method in lcia_methods:
             s_const = simplified_model_dict[method[-2]]["s_const"]
-            if ch4 and method[-2] == "climate change no LT":
-                s_model = simplified_model_dict[method[-2]]["s_model_ch4"]
-            else:
-                s_model = simplified_model_dict[method[-2]]["s_model"]
-
+            # if ch4 and method[-2] == "climate change no LT":
+            #     s_model = simplified_model_dict[method[-2]]["s_model_ch4"]
+            # else:
+            #     s_model = simplified_model_dict[method[-2]]["s_model"]
+            s_model = simplified_model_dict[method[-2]]["s_model"]
             res = s_model(s_const, parameters_sto)
 
             if isinstance(res, np.ndarray):

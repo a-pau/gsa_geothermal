@@ -70,36 +70,38 @@ if __name__ == '__main__':
 # Only this threshold is needed for conventional and climate change category
 threshold_cge = [0.1]
 
-# Initialize class
-cge_model_s = {}
-for t in threshold_cge:
-    
-    cge_model_s[t] = ConventionalSimplifiedModel(
-        setup_geothermal_gsa=setup_geothermal_gsa,
-        path=path_scores_conv,
-        threshold=t)
-
-# Compute
 options_ch4 = [False, True]
 
-for opt in options_ch4:
+for option_ch4 in options_ch4:
+
+    # Initialize class
+    cge_model_s = {}
+    for t in threshold_cge:
+        cge_model_s[t] = ConventionalSimplifiedModel(
+            setup_geothermal_gsa=setup_geothermal_gsa,
+            path=path_scores_conv,
+            threshold=t,
+            ch4=option_ch4
+        )
+
+    # Compute
     cge_s = {}
     for t in threshold_cge:
         temp_ = {}
         for _, rows in df_conventional_literature.iterrows():
             # Values are multplied by 1000 to get gCO2 eq
             temp_[rows["study"]] = (
-                cge_model_s[t].run(rows, lcia_methods=method, ch4=opt)[method[0][-2]] * 1000
+                cge_model_s[t].run(rows, lcia_methods=method)[method[0][-2]] * 1000
             )
         cge_s[t] = temp_
-    
+
     # Re-arrange
     cge_s_df = pd.DataFrame.from_dict(cge_s)
     cge_s_df.columns = ["{:.0%}".format(t) for t in cge_s_df.columns]
     cge_s_df = cge_s_df.reset_index().rename(columns={"index": "study"})
-    
+
     # Save
-    filename_cge_s = "{}.{}.cc_test_cases.ch4_{}.json".format("conventional", "simplified", str(opt))
+    filename_cge_s = "{}.{}.cc_test_cases.ch4_{}.json".format("conventional", "simplified", str(option_ch4))
     filepath_cge_s = write_dir_validation / filename_cge_s
     print("Saving {}".format(filepath_cge_s))
     cge_s_df.to_json(filepath_cge_s, double_precision=15)

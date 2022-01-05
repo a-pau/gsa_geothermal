@@ -24,7 +24,8 @@ for t in thresholds:
     cge_model_s = ConventionalSimplifiedModel(
         setup_geothermal_gsa=setup_geothermal_gsa,
         path=path_scores_conv,
-        threshold=t
+        threshold=t,
+        ch4=True,
     )
     ege_model_s = EnhancedSimplifiedModel(
         setup_geothermal_gsa=setup_geothermal_gsa,
