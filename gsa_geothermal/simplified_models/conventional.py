@@ -229,7 +229,7 @@ class ConventionalSimplifiedModel(GeothermalSimplifiedModel):
         return simplified_model_dict
 
     def run(self, parameters, lcia_methods=None):
-        return super().run(parameters, self.simplified_model_dict, lcia_methods, self.ch4)
+        return super().run(parameters, self.simplified_model_dict, lcia_methods)
 
     def get_coeff(self, lcia_methods=None):
         return super().get_coeff(self.simplified_model_dict, lcia_methods)

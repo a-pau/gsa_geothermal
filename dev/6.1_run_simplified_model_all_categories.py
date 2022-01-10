@@ -22,11 +22,11 @@ if __name__ == '__main__':
     methods = get_EF_methods()
 
     # Number of iterations
-    iterations = 1000
+    iterations = 10000
 
     # Seed for stochastic parameters # TODO this needs to be moved e.g. in utils
     seed = 13413203
-    option = "conventional"
+    option = "enhanced"
     
     # save data
     write_dir_validation = Path("write_files") / "validation"
@@ -42,13 +42,6 @@ if __name__ == '__main__':
     parameters = get_parameters(option)
     parameters.stochastic(iterations=iterations, seed=seed)
 
-    # if "conventional" in option:
-    #     ModelClass = ConventionalSimplifiedModel
-    #     # demand = {electricity_conv_prod: 1}
-    # elif "enhanced" in option:
-    #     ModelClass = EnhancedSimplifiedModel
-    #     # demand = {electricity_enh_prod: 1}
-
     # %% Model calculations
 
     thresholds = [0.2, 0.15, 0.1, 0.05]
@@ -61,7 +54,7 @@ if __name__ == '__main__':
             print("{} already exists".format(filename))
         else:
             if "conventional" in option:
-                model = ConventionalSimplifiedModel(setup_geothermal_gsa, path_scores, threshold, ch4=True)
+                model = ConventionalSimplifiedModel(setup_geothermal_gsa, path_scores, threshold, ch4=False)
             elif "enhanced" in option:
                 model = EnhancedSimplifiedModel(setup_geothermal_gsa, path_scores, threshold)
             # Compute
