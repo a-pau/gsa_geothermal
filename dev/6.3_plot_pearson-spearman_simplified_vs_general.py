@@ -257,7 +257,7 @@ fig_spear.tight_layout(rect=[0, 0.1, 1, 1])
 filename_spear_plot = "spearman_plot.simplified_vs_general.N{}.seed{}.tiff".format(iterations, seed)
 filepath_spear_plot = write_dir_figures /  filename_spear_plot
 print("Saving {}".format(filepath_spear_plot))
-fig_pears.savefig(filepath_spear_plot, dpi=300)
+fig_spear.savefig(filepath_spear_plot, dpi=300)
 
 
 #%% CALCULATE AND PLOT, PEARSON AND SPEARMAN - ENHANCED ONLY
