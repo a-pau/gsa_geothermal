@@ -25,13 +25,13 @@ if __name__ == '__main__':
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, electricity_conv_prod, electricity_enh_prod = lookup_geothermal()
 
     # Number of iterations
-    iterations = 10000
+    iterations = 10
     
     # Seed for stochastic parameters  # TODO this needs to be moved e.g. in utils
     seed = 13413203
 
     # Options
-    option = "conventional"
+    option = "enhanced"
     exploration = True
     success_rate = True
 

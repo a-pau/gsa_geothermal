@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.ticker as ticker
 from matplotlib.ticker import FormatStrFormatter
-from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
 from pathlib import Path
 
 # Import local
@@ -178,7 +178,9 @@ cge_ax.set(ylabel="$\mathregular{g CO_2 eq./kWh}$")
 cge_ax.set_title("CONVENTIONAL")
 
 # Legend
-handle_placeholder = Line2D([0],[0],color="w")
+handle_placeholder = Rectangle((0,0), 1, 1, fill=False, edgecolor='none',
+                                 visible=False)
+
 handles, labels = cge_ax.get_legend_handles_labels()
 handles = [handles[0], handle_placeholder, handles[1]]
 labels = [labels[0], "simplified model:", labels[1]]
@@ -343,7 +345,7 @@ fig.tight_layout()
 
 # save plot
 filename_plot_ch4_false = (
-    "simplified_vs_general.cc_test_cases.conventiona_ch4_false.N{}.seed{}.tiff".format(iterations, seed)
+    "simplified_vs_general.cc_test_cases.conventional_ch4_false.N{}.seed{}.tiff".format(iterations, seed)
 )
 filepath_plot_ch4_false = write_dir / filename_plot_ch4_false
 print("Saving {}".format(filepath_plot))
